@@ -1,0 +1,7 @@
+# BUGS
++ Changing text double frees:
+	free(): double free detected in tcache 2
+	Aborted
++ Normalize tabs and spaces
++ Ordering function declarations in global.h by alpha order is not smart
++ Handle unused parameters gracefully (#define UNUSED(x) (void)(x))

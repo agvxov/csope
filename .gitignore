@@ -1,0 +1,5 @@
+obj/*.o
+obj/*.gch
+csope
+**/*.out
+src/lex.yy.c
