@@ -87,7 +87,7 @@ BOOL	linemode = NO;		/* use line oriented user interface */
 BOOL	verbosemode = NO;	/* print extra information on line mode */
 BOOL	recurse_dir = NO;	/* recurse dirs when searching for src files */
 char	*namefile;		/* file of file names */
-BOOL	ogs;			/* display OGS book and subsystem names */
+BOOL	ogs = NO;			/* display OGS book and subsystem names */
 char	*prependpath;		/* prepend path to file names */
 FILE	*refsfound;		/* references found file */
 char	temp1[PATHLEN + 1];	/* temporary file name */
@@ -99,11 +99,14 @@ char	tempstring[TEMPSTRING_LEN + 1]; /* use this as a buffer, instead of 'yytext
 				 * which had better be left alone */
 char	*tmpdir;		/* temporary directory */
 
+static char path[PATHLEN + 1];	/* file path */
 
 /* Internal prototypes: */
 static	void	skiplist(FILE *oldrefs);
 static	void	initcompress(void);
 static inline	void	readenv(void);
+static inline	void	linemode_event_loop(void);
+static inline	void	screenmode_event_loop(void);
 
 #if defined(KEY_RESIZE) && !defined(__DJGPP__)
 void 
@@ -115,21 +118,51 @@ sigwinch_handler(int sig, siginfo_t *info, void *unused)
 }
 #endif
 
+static
+inline
+void
+siginit(void){
+    /* if running in the foreground */
+    if (signal(SIGINT, SIG_IGN) != SIG_IGN) {
+	/* cleanup on the interrupt and quit signals */
+	signal(SIGINT, myexit);
+	signal(SIGQUIT, myexit);
+    }
+    /* cleanup on the hangup signal */
+    signal(SIGHUP, myexit);
+
+    /* ditto the TERM signal */
+    signal(SIGTERM, myexit);
+
+    /* ignore PIPE signal, so myexit() will have a chance to clean up in
+     * linemode, while in curses mode the "|" command can cause a pipe signal
+     * too
+     */
+    signal(SIGPIPE, SIG_IGN);
+
+    if (linemode == NO) {
+	signal(SIGINT, SIG_IGN);	/* ignore interrupts */
+#if defined(KEY_RESIZE) && !defined(__DJGPP__)
+    struct sigaction winch_action;
+
+	winch_action.sa_sigaction = sigwinch_handler;
+	sigemptyset(&winch_action.sa_mask);
+	winch_action.sa_flags = SA_SIGINFO;
+	sigaction(SIGWINCH,&winch_action,NULL);
+#endif
+	}
+}
+
 int
 main(int argc, char **argv)
 {
     FILE *names;			/* name file pointer */
     int	oldnum;			/* number in old cross-ref */
-    char path[PATHLEN + 1];	/* file path */
     FILE *oldrefs;	/* old cross-reference file */
     char *s;
-    int c;
     unsigned int i;
     pid_t pid;
     struct stat	stat_buf;
-#if defined(KEY_RESIZE) && !defined(__DJGPP__)
-    struct sigaction winch_action;
-#endif
     mode_t orig_umask;
 	
     yyin = stdin;
@@ -175,24 +208,6 @@ main(int argc, char **argv)
     snprintf(temp1, sizeof(temp1), "%s/cscope.1", tempdirpv);
     snprintf(temp2, sizeof(temp2), "%s/cscope.2", tempdirpv);
 
-    /* if running in the foreground */
-    if (signal(SIGINT, SIG_IGN) != SIG_IGN) {
-	/* cleanup on the interrupt and quit signals */
-	signal(SIGINT, myexit);
-	signal(SIGQUIT, myexit);
-    }
-    /* cleanup on the hangup signal */
-    signal(SIGHUP, myexit);
-
-    /* ditto the TERM signal */
-    signal(SIGTERM, myexit);
-
-    /* ignore PIPE signal, so myexit() will have a chance to clean up in
-     * linemode, while in curses mode the "|" command can cause a pipe signal
-     * too
-     */
-    signal(SIGPIPE, SIG_IGN);
-
     /* if the database path is relative and it can't be created */
     if (reffile[0] != '/' && access(".", WRITE) != 0) {
 
@@ -212,20 +227,12 @@ main(int argc, char **argv)
 	}
     }
 
+	siginit();
+
     if (linemode == NO) {
-	signal(SIGINT, SIG_IGN);	/* ignore interrupts */
-
-#if defined(KEY_RESIZE) && !defined(__DJGPP__)
-	winch_action.sa_sigaction = sigwinch_handler;
-	sigemptyset(&winch_action.sa_mask);
-	winch_action.sa_flags = SA_SIGINFO;
-	sigaction(SIGWINCH,&winch_action,NULL);
-#endif
-
-	dispinit();	/* initialize display parameters */
-	setfield();	/* set the initial cursor position */
-	clearmsg();	/* clear any build progress message */
-	display();	/* display the version number and input fields */
+		dispinit();	/* initialize display parameters */
+		clearmsg();	/* clear any build progress message */
+		display();	/* display the version number and input fields */
     }
 
 
@@ -248,7 +255,7 @@ main(int argc, char **argv)
 	    invertedindex = NO;
 
 	    /* see if there are options in the database */
-	    for (;;) {
+	    for (int c;;) {
 		getc(oldrefs);	/* skip the blank */
 		if ((c = getc(oldrefs)) != '-') {
 		    ungetc(c, oldrefs);
@@ -385,13 +392,16 @@ main(int argc, char **argv)
 
 	/* build the cross-reference */
 	initcompress();
-	if (linemode == NO || verbosemode == YES)    /* display if verbose as well */
+	if (linemode == NO || verbosemode == YES) {    /* display if verbose as well */
 	    postmsg("Building cross-reference...");    		    
+	}
 	build();
-	if (linemode == NO )
+	if (linemode == NO ) {
 	    clearmsg();	/* clear any build progress message */
+	}
 	if (buildonly == YES) {
 	    myexit(0);
+		/* NOTREACHED */
 	}
     }
     opendatabase();
@@ -399,102 +409,7 @@ main(int argc, char **argv)
     /* if using the line oriented user interface so cscope can be a 
        subprocess to emacs or samuel */
     if (linemode == YES) {
-	if (*Pattern != '\0') {		/* do any optional search */
-	    if (search() == YES) {
-		/* print the total number of lines in
-		 * verbose mode */
-		if (verbosemode == YES)
-		    printf("cscope: %d lines\n",
-			   totallines);
-
-		while ((c = getc(refsfound)) != EOF)
-		    putchar(c);
-	    }
-	}
-	if (onesearch == YES)
-	    myexit(0);
-		
-	for (;;) {
-	    char buf[PATLEN + 2];
-			
-	    printf(">> ");
-	    fflush(stdout);
-	    if (fgets(buf, sizeof(buf), stdin) == NULL) {
-		myexit(0);
-	    }
-	    /* remove any trailing newline character */
-	    if (*(s = buf + strlen(buf) - 1) == '\n') {
-		*s = '\0';
-	    }
-	    switch (*buf) {
-	    case '0':
-	    case '1':
-	    case '2':
-	    case '3':
-	    case '4':
-	    case '5':
-	    case '6':
-	    case '7':
-	    case '8':
-	    case '9':	/* samuel only */
-		field = *buf - '0';
-		strcpy(Pattern, buf + 1);
-		if (search() == NO) {
-			printf("Unable to search database\n");
-		} else {
-			printf("cscope: %d lines\n", totallines);
-			while ((c = getc(refsfound)) != EOF) {
-			    putchar(c);
-			}
-		}
-		break;
-
-	    case 'c':	/* toggle caseless mode */
-	    case ctrl('C'):
-		if (caseless == NO) {
-		    caseless = YES;
-		} else {
-		    caseless = NO;
-		}
-		egrepcaseless(caseless);
-		break;
-
-	    case 'r':	/* rebuild database cscope style */
-	    case ctrl('R'):
-		freefilelist();
-		makefilelist();
-		/* FALLTHROUGH */
-
-	    case 'R':	/* rebuild database samuel style */
-		rebuild();
-		putchar('\n');
-		break;
-
-	    case 'C':	/* clear file names */
-		freefilelist();
-		putchar('\n');
-		break;
-
-	    case 'F':	/* add a file name */
-		strcpy(path, buf + 1);
-		if (infilelist(path) == NO &&
-		    (s = inviewpath(path)) != NULL) {
-		    addsrcfile(s);
-		}
-		putchar('\n');
-		break;
-
-	    case 'q':	/* quit */
-	    case ctrl('D'):
-	    case ctrl('Z'):
-		myexit(0);
-
-	    default:
-		fprintf(stderr, "cscope: unknown command '%s'\n", buf);
-		break;
-	    }
-	}
-	/* NOTREACHED */
+		linemode_event_loop();
     }
     /* pause before clearing the screen if there have been error messages */
     if (errorsfound == YES) {
@@ -503,29 +418,13 @@ main(int argc, char **argv)
     }
     /* do any optional search */
     if (*Pattern != '\0') {
-	atfield();		/* move to the input field */
 	command(ctrl('Y'));	/* search */
     } else if (reflines != NULL) {
 	/* read any symbol reference lines file */
 	readrefs(reflines);
     }
-    display();		/* update the display */
 
-    for (;;) {
-		c = mygetch();
-
-		/* exit if the quit command is entered */
-		if (c == EOF || c == ctrl('D')) {
-			break;
-		}
-		if (c == ctrl('Z')) {
-			kill(0, SIGTSTP);
-			continue;
-		}
-
-		command(c);
-		display();
-    }
+	screenmode_event_loop();
     /* cleanup and exit */
     myexit(0);
     /* NOTREACHED */
@@ -671,4 +570,127 @@ static inline void readenv(void){
     lineflag = mygetenv("CSCOPE_LINEFLAG", LINEFLAG);
     lineflagafterfile = getenv("CSCOPE_LINEFLAG_AFTER_FILE") ? 1 : 0;
     tmpdir = mygetenv("TMPDIR", TMPDIR);
+}
+
+static inline	void	linemode_event_loop(void){
+	int c;
+
+	if (*Pattern != '\0') {		/* do any optional search */
+	    if (search() == YES) {
+		/* print the total number of lines in
+		 * verbose mode */
+		if (verbosemode == YES)
+		    printf("cscope: %d lines\n",
+			   totallines);
+
+		while ((c = getc(refsfound)) != EOF)
+		    putchar(c);
+	    }
+	}
+	if (onesearch == YES) {
+	    myexit(0);
+		/* NOTREACHED */
+	}
+		
+	for (char *s;;) {
+	    char buf[PATLEN + 2];
+			
+	    printf(">> ");
+	    fflush(stdout);
+	    if (fgets(buf, sizeof(buf), stdin) == NULL) {
+		myexit(0);
+	    }
+	    /* remove any trailing newline character */
+	    if (*(s = buf + strlen(buf) - 1) == '\n') {
+		*s = '\0';
+	    }
+	    switch (*buf) {
+	    case '0':
+	    case '1':
+	    case '2':
+	    case '3':
+	    case '4':
+	    case '5':
+	    case '6':
+	    case '7':
+	    case '8':
+	    case '9':	/* samuel only */
+		field = *buf - '0';
+		strcpy(Pattern, buf + 1);
+		if (search() == NO) {
+			printf("Unable to search database\n");
+		} else {
+			printf("cscope: %d lines\n", totallines);
+			while ((c = getc(refsfound)) != EOF) {
+			    putchar(c);
+			}
+		}
+		break;
+
+	    case 'c':	/* toggle caseless mode */
+	    case ctrl('C'):
+		if (caseless == NO) {
+		    caseless = YES;
+		} else {
+		    caseless = NO;
+		}
+		egrepcaseless(caseless);
+		break;
+
+	    case 'r':	/* rebuild database cscope style */
+	    case ctrl('R'):
+		freefilelist();
+		makefilelist();
+		/* FALLTHROUGH */
+
+	    case 'R':	/* rebuild database samuel style */
+		rebuild();
+		putchar('\n');
+		break;
+
+	    case 'C':	/* clear file names */
+		freefilelist();
+		putchar('\n');
+		break;
+
+	    case 'F':	/* add a file name */
+		strcpy(path, buf + 1);
+		if (infilelist(path) == NO &&
+		    (s = inviewpath(path)) != NULL) {
+		    addsrcfile(s);
+		}
+		putchar('\n');
+		break;
+
+	    case 'q':	/* quit */
+	    case ctrl('D'):
+	    case ctrl('Z'):
+		myexit(0);
+
+	    default:
+		fprintf(stderr, "cscope: unknown command '%s'\n", buf);
+		break;
+	    }
+	}
+}
+
+static inline	void	screenmode_event_loop(void){
+    int c;
+
+    for (;;) {
+		display();
+
+		c = mygetch();
+
+		/* exit if the quit command is entered */
+		if (c == EOF || c == ctrl('D')) {
+			break;
+		}
+		if (c == ctrl('Z')) {
+			kill(0, SIGTSTP);
+			continue;
+		}
+
+		command(c);
+    }
 }

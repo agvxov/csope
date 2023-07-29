@@ -99,6 +99,61 @@
 #define INCLUDES	8
 #define	FIELDS		10
 
+/* file open modes */
+#ifndef R_OK
+# define	READ	R_OK
+#else
+# define	READ	4	
+#endif
+#ifdef W_OK
+# define	WRITE	W_OK
+#else
+# define	WRITE	2
+#endif
+
+#define O_TEXT 0x00
+#define O_BINARY 0x00
+
+/* Key macros */
+/* These macros are not guaranteed to be defined,
+ *  however we wish to test for these anyways while
+ *  interpretting user commands.
+ * Input values are guaranteed to be postive,
+ *  so setting them to -1 means the test always just silently fail,
+ *  but compile when the they are not supported means of input.
+ */
+#ifndef KEY_DOWN
+# define KEY_DOWN KEY_UNDEF_BASE-1
+#endif
+#ifndef KEY_UP
+# define KEY_UP KEY_UNDEF_BASE-2
+#endif
+#ifndef KEY_LEFT
+# define KEY_LEFT KEY_UNDEF_BASE-3
+#endif
+#ifndef KEY_RIGHT
+# define KEY_RIGHT KEY_UNDEF_BASE-4
+#endif
+#ifndef KEY_HOME
+# define KEY_HOME _KEY_UNDEF_BASE-5
+#endif
+#ifndef KEY_LL
+# define KEY_LL	KEY_UNDEF_BASE-6
+#endif
+#ifndef KEY_PPAGE
+# define KEY_PPAGE KEY_UNDEF_BASE-7
+#endif
+#ifndef KEY_NPAGE
+# define KEY_NPAGE KEY_UNDEF_BASE-8
+#endif
+#ifdef KEY_ENTER
+# define KEY_ENTER KEY_UNDEF_BASE-9
+#endif
+#ifndef KEY_CLEAR
+# define KEY_CLEAR KEY_UNDEF_BASE-10
+#endif
+
+/**/
 #if (BSD || V9) && !__NetBSD__ && !__FreeBSD__ && !__APPLE__
 # define TERMINFO	0	/* no terminfo curses */
 #else
@@ -129,5 +184,7 @@
 #  define killchar()  (_tty.sg_kill)			/* equivalent */
 # endif /* if UNIXPC */
 #endif	/* if !TERMINFO */
+
+#define INPUT_PROMPT "$ "
 
 #endif /* CSCOPE_CONSTANTS_H */

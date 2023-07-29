@@ -1,5 +1,5 @@
 CC=gcc
-CCFLAGS:=-ggdb #-D PRODUCTION
+CFLAGS:=-ggdb
 LDLIBS=-I ${CHDRD} $$(pkg-config --libs ncurses)
 LEX:=flex
 

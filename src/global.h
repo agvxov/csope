@@ -84,23 +84,11 @@ struct cmd {			/* command history struct */
 	char	*text;			/* input field text */
 };
 
-#ifndef R_OK
-# define	READ	R_OK
-#else
-# define	READ	4	
-#endif
-#ifdef W_OK
-# define	WRITE	W_OK
-#else
-# define	WRITE	2
-#endif
-
-#define O_TEXT 0x00
-#define O_BINARY 0x00
 
 #ifndef DFLT_INCDIR
 # define DFLT_INCDIR "/usr/include"
 #endif
+
 
 /* digraph data for text compression */
 extern	char	dichar1[];	/* 16 most frequent first chars */
@@ -155,7 +143,6 @@ extern	char	*tmpdir;	/* temporary directory */
 extern	BOOL	caseless;	/* ignore letter case when searching */
 extern	BOOL	*change;	/* change this line */
 extern	BOOL	changing;	/* changing text */
-extern	int	selecting;
 extern	unsigned int curdispline;
 extern	char	newpat[];	/* new pattern */
 extern	char	Pattern[];	/* symbol or text pattern */
@@ -178,23 +165,22 @@ extern	unsigned long nsrcfiles; /* number of source files */
 extern	unsigned long msrcfiles; /* maximum number of source files */
 
 /* display.c global data */
-extern 	int	booklen;	/* OGS book name display field length */
-extern	int	*displine;	/* screen line of displayed reference */
-extern	unsigned int disprefs;	/* displayed references */
-extern	int	fcnlen;		/* function name display field length */
-extern	int	field;		/* input field */
-extern	int	filelen;	/* file name display field length */
-extern	unsigned fldcolumn;	/* input field column */
-extern	unsigned int mdisprefs;	/* maximum displayed references */
-extern	unsigned int nextline;	/* next line to be shown */
-extern	FILE	*nonglobalrefs;	/* non-global references file */
-extern	int	numlen;		/* line number display field length */
-extern	unsigned int topline;	/* top line of page */
-extern	int	bottomline;	/* bottom line of page */
-extern	long	searchcount;	/* count of files searched */
-extern	int	subsystemlen;	/* OGS subsystem name display field length */
-extern	unsigned int totallines; /* total reference lines */
-extern	const char dispchars[];	/* display chars for jumping to lines */
+extern	int subsystemlen;			/* OGS subsystem name display field length */
+extern 	int booklen;				/* OGS book name display field length */
+extern	int filelen;				/* file name display field length */
+extern	int fcnlen;					/* function name display field length */
+extern	int numlen;					/* line number display field length */
+extern	int	*displine;				/* screen line of displayed reference */
+extern	unsigned int disprefs;		/* displayed references */
+extern	int	field;					/* input field */
+extern	unsigned fldcolumn;			/* input field column */
+extern	unsigned int mdisprefs;		/* maximum displayed references */
+extern	unsigned int nextline;		/* next line to be shown */
+extern	FILE	*nonglobalrefs;		/* non-global references file */
+extern	unsigned int topline;		/* top line of page */
+extern	long	searchcount;		/* count of files searched */
+extern	unsigned int totallines;	/* total reference lines */
+extern	const char dispchars[];		/* display chars for jumping to lines */
 
 /* find.c global data */
 extern	char	block[];	/* cross-reference file block */
@@ -243,13 +229,13 @@ void	usage(void);
 extern BOOL	remove_symfile_onexit;
 extern BOOL	onesearch;		/* one search only in line mode */
 extern char	*reflines;		/* symbol reference lines file */
+void verswp_field(void);
+void horswp_field(void);
 
 void	addcmd(int f, char *s);
 void	addsrcfile(char *path);
 void	askforchar(void);
 void	askforreturn(void);
-void	atchange(void);
-void	atfield(void);
 void	cannotwrite(char *file);
 void	cannotopen(char *file);
 void	clearmsg(void);
@@ -291,7 +277,6 @@ void	putposting(char *term, int type);
 void	fetch_string_from_dbase(char *, size_t);
 void	resetcmd(void);
 void	seekline(unsigned int line);
-void	setfield(void);
 void	shellpath(char *out, int limit, char *in);
 void    sourcedir(char *dirlist);
 void	myungetch(int c);

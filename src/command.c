@@ -47,22 +47,28 @@
 #endif
 #include <ctype.h>
 
-int	selecting;			/* whether the (upper) symbol list is being browsed */
-unsigned int   curdispline = 0;
+/* These are strictly used to test how keys are suppose to behave.
+ * Think of it as modes: in _input mode_ the up arrow interacts
+ *  with the history, while in _mode mode_ it selects what operation
+ *  to perform with the user input.
+ * In the original version this was handled by
+ *  "int selecting // whether the (upper) symbol list is being browsed".
+ */
+extern const void const* winput;
+extern const void const* wmode;
+extern const void const* wresult;
+extern const void const* const* current_window;
 
 BOOL	caseless;		/* ignore letter case when searching */
 BOOL	*change;		/* change this line */
 BOOL	changing;		/* changing text */
 char	newpat[PATLEN + 1];	/* new pattern */
-/* HBB 20040430: renamed to avoid lots of clashes with function arguments
- * also named 'pattern' */
 char	Pattern[PATLEN + 1];	/* symbol or text pattern */
 
-/* HBB FIXME 20060419: these should almost certainly be const */
-static	char	appendprompt[] = "Append to file: ";
-static	char	pipeprompt[] = "Pipe to shell command: ";
-static	char	readprompt[] = "Read from file: ";
-static	char	toprompt[] = "To: ";
+static	const char	appendprompt[] = "Append to file: ";
+static	const char	pipeprompt[] = "Pipe to shell command: ";
+static	const char	readprompt[] = "Read from file: ";
+static	const char	toprompt[] = "To: ";
 
 
 /* Internal prototypes: */
@@ -113,12 +119,9 @@ command(int commandc)
 	totallines = 0;
 	disprefs = 0;	
 	topline = nextline = 1;
-	selecting = 0;
 	break;
 
-#if UNIXPC
     case ESC:	/* possible unixpc mouse selection */
-#endif
     case ctrl('X'):	/* mouse selection */
 	if ((p = getmouseaction(DUMMYCHAR)) == NULL) {
 	    return(NO);	/* unknown control sequence */
@@ -150,7 +153,6 @@ command(int commandc)
 	    if (field >= FIELDS) {
 		field = FIELDS - 1;
 	    }
-	    setfield();
 	    resetcmd();
 	    return(NO);
 	}
@@ -158,107 +160,76 @@ command(int commandc)
 
     case '\t':	/* go to next input field */
 	if (disprefs) {
-	    selecting = !selecting;
-	    if (selecting) {
-		move(displine[curdispline], 0);
-		refresh();
-	    } else {
-		atfield();
-		resetcmd();
-	    }
+		horswp_field();
 	}
 	return(NO);
 
-#ifdef KEY_ENTER
+	case '%':
+		verswp_field();
+	return(NO);
+
     case KEY_ENTER:
-#endif
     case '\r':
     case '\n':	/* go to reference */
-	if (selecting) {
+	if (current_window == &wresult) {
 	    editref(curdispline);
 	    return(YES);
 	}
 	/* FALLTHROUGH */
 
     case ctrl('N'):
-#ifdef KEY_DOWN
     case KEY_DOWN:
-#endif		
-#ifdef KEY_RIGHT
     case KEY_RIGHT:
-#endif
-	if (selecting) {
+	if (current_window == &wresult) {
 	    if ((curdispline + 1) < disprefs) {
-		move(displine[++curdispline], 0);
-		refresh();
+			++curdispline;
 	    }
 	} else {
 	    field = (field + 1) % FIELDS;
-	    setfield();
-	    atfield();
 	    resetcmd();
 	}
 	return(NO);
 
     case ctrl('P'):	/* go to previous input field */
-#ifdef KEY_UP
     case KEY_UP:
-#endif
-#ifdef KEY_LEFT		
     case KEY_LEFT:
-#endif
-	if (selecting) {
+	if (current_window == &wresult) {
 	    if (curdispline) {
-		move(displine[--curdispline], 0);
-		refresh();
+			--curdispline;
 	    }
 	} else {
 	    field = (field + (FIELDS - 1)) % FIELDS;
-	    setfield();
-	    atfield();
 	    resetcmd();
 	}
 	return(NO);
-#ifdef KEY_HOME
     case KEY_HOME:	/* go to first input field */
-	if (selecting) {
+	if (current_window == &wresult) {
 	    curdispline = 0;
-	    move(REFLINE, 0);
-	    refresh();
 	} else {
 	    field = 0;
-	    setfield();
-	    atfield();
 	    resetcmd();
 	}
 	return(NO);
-#endif
 
-#ifdef KEY_LL
     case KEY_LL:	/* go to last input field */
-	if (selecting) {
-	    move(displine[disprefs - 1], 0);
+	if (current_window == &wresult) {
+		curdispline = disprefs;
 	    refresh();
 	} else {
 	    field = FIELDS - 1;
-	    setfield();
-	    atfield();
 	    resetcmd();
 	}
 	return(NO);
-#endif /* def(KEY_LL) */
 
     case ' ':	/* display next page */
     case '+':
     case ctrl('V'):
-#ifdef KEY_NPAGE
     case KEY_NPAGE:
-#endif
 	/* don't redisplay if there are no lines */
 	if (totallines == 0) {
 	    return(NO);
 	}
-	/* note: seekline() is not used to move to the next 
+	/* NOTE: seekline() is not used to move to the next 
 	 * page because display() leaves the file pointer at
 	 * the next page to optimize paging forward
 	 */
@@ -267,9 +238,7 @@ command(int commandc)
 
     case ctrl('H'):
     case '-':	/* display previous page */
-#ifdef KEY_PPAGE
     case KEY_PPAGE:
-#endif
 	/* don't redisplay if there are no lines */
 	if (totallines == 0) {
 	    return(NO);
@@ -392,13 +361,12 @@ cscope: cannot open pipe to shell command: %s\n", newpat);
 	break;
 #endif
     case ctrl('L'):	/* redraw screen */
-#ifdef KEY_CLEAR
     case KEY_CLEAR:
-#endif
-	clearmsg2();
-	clearok(curscr, TRUE);
-	wrefresh(curscr);
-	drawscrollbar(topline, bottomline);
+	/* XXX: no */
+	//clearmsg2();
+	//clearok(curscr, TRUE);
+	//wrefresh(curscr);
+	//drawscrollbar(topline, bottomline);
 	return(NO);
 
     case '!':	/* shell escape */
@@ -417,7 +385,7 @@ cscope: cannot open pipe to shell command: %s\n", newpat);
 	editall();
 	break;
 
-    case ctrl('A'):		/* HBB 20050428: added alt. keymapping */
+    case ctrl('A'):
     case ctrl('Y'):	/* repeat last pattern */
 	if (*Pattern != '\0') {
 	    addstr(Pattern);
@@ -427,8 +395,8 @@ cscope: cannot open pipe to shell command: %s\n", newpat);
 
     case ctrl('B'):		/* cmd history back */
     case ctrl('F'):		/* cmd history fwd */
-	if (selecting) {
-	    selecting = 0;
+	if (current_window == &wresult) {
+	    horswp_field();
 	}
 
 	curritem = currentcmd();
@@ -439,8 +407,6 @@ cscope: cannot open pipe to shell command: %s\n", newpat);
 	}
 	if (item) {
 	    field = item->field;
-	    setfield();
-	    atfield();
 	    addstr(item->text);
 	    strcpy(Pattern, item->text);
 	    switch (c = mygetch()) {
@@ -450,7 +416,6 @@ cscope: cannot open pipe to shell command: %s\n", newpat);
 	    case ctrl('F'):
 	    case ctrl('B'):
 		myungetch(c);
-		atfield();
 		clrtoeol();	/* clear current field */
 		break;
 	    default:
@@ -477,10 +442,9 @@ cscope: cannot open pipe to shell command: %s\n", newpat);
 
     case '.':
 	postmsg("The . command has been replaced by ^Y");
-	atfield();	/* move back to the input field */
 	/* FALLTHROUGH */
     default:
-	if (selecting && !mouse) {
+	if (current_window == &wresult && !mouse) {
 	    char *c;
 
 	    if ((c = strchr(dispchars, commandc)))
@@ -506,7 +470,9 @@ cscope: cannot open pipe to shell command: %s\n", newpat);
 		/* search for the pattern */
 		if (search() == YES) {
 		    curdispline = 0;
-		    ++selecting;
+			if(current_window != &wresult){
+				horswp_field();
+			}
 
 		    switch (field) {
 		    case DEFINITION:
@@ -582,7 +548,6 @@ readrefs(char *filename)
 }
 
 /* change one text string to another */
-
 static BOOL
 changestring(void)
 {
@@ -612,7 +577,7 @@ changestring(void)
 	/* display the current page of lines */
 	display();
     same:
-	atchange();
+	//atchange();
 		
 	/* get a character from the terminal */
 	if ((c = mygetch()) == EOF || c == ctrl('D')) {
@@ -627,26 +592,21 @@ changestring(void)
 #endif
 	}
 	/* see if the input character is a command */
+	// wtf is this? ?!
 	switch (c) {
 	case ' ':	/* display next page */
 	case '+':
 	case ctrl('V'):
-#ifdef KEY_NPAGE
 	case KEY_NPAGE:
-#endif
 	case '-':	/* display previous page */
-#ifdef KEY_PPAGE
 	case KEY_PPAGE:
-#endif
 	case '!':	/* shell escape */
 	case '?':	/* help */
 	    command(c);
 	    break;
 
 	case ctrl('L'):	/* redraw screen */
-#ifdef KEY_CLEAR
 	case KEY_CLEAR:
-#endif
 	    command(c);
 	    goto same;
 
@@ -774,17 +734,16 @@ changestring(void)
 
     /* if any line was marked */
     if (anymarked == YES) {
-		
-	/* edit the files */
-	clearprompt();
-	refresh();
-	fprintf(stderr, "Changed lines:\n\r");
-	execute("sh", "sh", temp2, NULL);
-	askforreturn();
-	seekline(1);
+		/* edit the files */
+		clearprompt();
+		refresh();
+		fprintf(stderr, "Changed lines:\n\r");
+		execute("sh", "sh", temp2, NULL);
+		askforreturn();
+		seekline(1);
     } else {
-    nochange:
-	clearprompt();
+		nochange:
+		clearprompt();
     }
     changing = NO;
     mousemenu();
@@ -867,11 +826,7 @@ countrefs(void)
 
     /* count the references found and find the length of the file,
        function, and line number display fields */
-    subsystemlen = 9;	/* strlen("Subsystem") */
-    booklen = 4;		/* strlen("Book") */
-    filelen = 4;		/* strlen("File") */
-    fcnlen = 8;		/* strlen("Function") */
-    numlen = 0;
+
     /* HBB NOTE 2012-04-07: it may look like we shouldn't assing tempstring here,
      * since it's not used.  But it has to be assigned just so the return value
      * of fscanf will actually reach 4. */

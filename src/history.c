@@ -62,7 +62,7 @@ addcmd(int f, char *s)		/* field number and command text */
 	current = 0;
 }
 
-/* return previous history item */
+/* return previous history item */
 struct cmd *
 prevcmd(void)
 {
@@ -77,7 +77,7 @@ prevcmd(void)
 		return NULL;
 }
 
-/* return next history item */
+/* return next history item */
 struct cmd *
 nextcmd(void)
 {
@@ -89,7 +89,8 @@ nextcmd(void)
 	} else 
 		return NULL;
 }
-/* reset current to tail */
+
+/* reset current to tail */
 void
 resetcmd(void)
 {
