@@ -85,12 +85,7 @@ static int mode_window_height;
 
 #define WRESULT_TABLE_BODY_START 4
 
-static enum {
-	CH_RESULT = 0x0001,
-	CH_INPUT  = CH_RESULT << 1,
-	CH_MODE   = CH_RESULT << 2,
-	CH_ALL    = CH_RESULT | CH_INPUT | CH_MODE
-};
+int window_change = CH_ALL;
 
 const char	dispchars[] = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
@@ -143,7 +138,7 @@ dispinit(void)
 	mode_window_height = LINES - input_window_height - 2 - 1;
 	first_col_width = 48; // (((COLS - 2)%2 == 0) ? ((COLS-2)/2) : (((COLS-2)/2)+1));
 	second_col_width = COLS - 2 - 1 - first_col_width; //((COLS - 2) / 2) - 1;
-	mdisprefs = result_window_height - 1;
+	mdisprefs = result_window_height - WRESULT_TABLE_BODY_START - 1 - 1;
 
 	if (mdisprefs <= 0) {
 		postfatal("%s: screen too small\n", argv0);
@@ -155,6 +150,9 @@ dispinit(void)
 
 	/* allocate the displayed line array */
 	displine = malloc(mdisprefs * sizeof(*displine));
+
+	/* readline */
+	rlinit();
 
 	/* initialize windows */
 	winput = newwin(input_window_height, first_col_width, 1, 1);
@@ -197,7 +195,7 @@ static inline void display_frame(){
 	waddstr(stdscr, helpstring);
 }
 
-static inline void display_input_fields(){
+static inline void display_mode(){
     for(int i = 0; i < FIELDS; ++i){
 		mvwprintw(wmode, i, 0, "%s %s", fields[i].text1, fields[i].text2);
     }
@@ -271,7 +269,7 @@ static inline void display_results(){
 	/* until the max references have been displayed or 
 	   there is no more room */
 	topline = nextline;
-	for (disprefs = 0, screenline = REFLINE;
+	for (disprefs = 0, screenline = WRESULT_TABLE_BODY_START;
 	     disprefs < mdisprefs && screenline <= result_window_height;
 	     ++disprefs, ++screenline)
 	{
@@ -392,9 +390,10 @@ static inline void display_results(){
 		wmove(wresult, screenline, second_col_width - srctxtw);
 	    } /* for(ever) */
 	} /* for(reference output lines) */
-    endrefs:
+
+endrefs:
 	/* position the cursor for the message */
-	i = FLDLINE - 1;
+	i = result_window_height - 1;
 	if (screenline < i) {
 	    waddch(wresult, '\n');
 	}
@@ -408,7 +407,7 @@ static inline void display_results(){
 	    wprintw(wresult, "* Lines %d-%d of %d, %d more - press the space bar to display more *", topline, bottomline, totallines, i);
 	}
 	/* if this is the last page of references */
-	else if (topline > 1 && nextline > totallines) {
+	else{ //if (topline > 1 && nextline > totallines) {	//XXX: i dont see how this condition is ever userful, but i might be wrong
 	    waddstr(wresult, "* Press the space bar to display the first lines again *");
 	}
 }
@@ -422,7 +421,7 @@ void display_cursor(void){
 	}else if(current_window == &wmode){
 		yoffset = field;
 	}else if(current_window == &wresult){
-		yoffset = WRESULT_TABLE_BODY_START + curdispline;
+		yoffset = displine[curdispline];
 	}else{
 		assert(("No window selected.", true));
 	}
@@ -439,17 +438,29 @@ display(void)
 {
     //drawscrollbar(topline, nextline);	/* display the scrollbar */
 
-	display_frame();
-	display_command_field();
-	display_input_fields();
-	display_results();
+	if(window_change){
+		if(window_change & CH_ALL){
+			display_frame();
+		}
+		if(window_change & CH_INPUT){
+			display_command_field();
+		}
+		if(window_change & CH_RESULT){
+			display_results();
+		}
+		if(window_change & CH_MODE){
+			display_mode();
+		}
 
-	display_cursor();
+		display_cursor();
 
-    refresh();
-    wrefresh(winput);
-    wrefresh(wmode);
-    wrefresh(wresult);
+		refresh();
+		wrefresh(winput);
+		wrefresh(wmode);
+		wrefresh(wresult);
+	}
+
+	window_change = CH_NONE;
 }
 
 void
@@ -709,7 +720,7 @@ postmsg2(char *msg)
 	else {
 		clearmsg2();
 		waddstr(wresult, msg);
-		refresh();
+		wrefresh(wresult);
 	}
 }
 

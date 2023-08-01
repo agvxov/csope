@@ -136,7 +136,7 @@ command(int commandc)
 	    return(NO);
 	}
 	/* if this is a line selection */
-	if (p->y1 < FLDLINE) {
+	if (p->y1 > FLDLINE) {
 
 	    /* find the selected line */
 	    /* note: the selection is forced into range */
@@ -173,6 +173,7 @@ command(int commandc)
     case '\n':	/* go to reference */
 	if (current_window == &wresult) {
 	    editref(curdispline);
+		window_change = CH_ALL;
 	    return(YES);
 	}
 	/* FALLTHROUGH */
@@ -304,9 +305,10 @@ command(int commandc)
 	    clearprompt();
 	    shellpath(filename, sizeof(filename), newpat);
 	    if (readrefs(filename) == NO) {
-		postmsg2("Ignoring an empty file");
-		return(NO);
+			postmsg2("Ignoring an empty file");
+			return(NO);
 	    }
+		window_change |= CH_INPUT;
 	    return(YES);
 	}
 	clearprompt();
@@ -499,6 +501,7 @@ cscope: cannot open pipe to shell command: %s\n", newpat);
 	    return(NO);
 	}
     } /* switch(commandc) */
+	window_change |= CH_INPUT;
     return(YES);
 }
 

@@ -84,6 +84,15 @@ struct cmd {			/* command history struct */
 	char	*text;			/* input field text */
 };
 
+enum {
+	CH_NONE   = 0x0000,
+	CH_RESULT = 0x0001 << 0,
+	CH_INPUT  = 0x0001 << 1,
+	CH_MODE   = 0x0001 << 2,
+	CH_ALL    = CH_RESULT | CH_INPUT | CH_MODE
+};
+
+
 
 #ifndef DFLT_INCDIR
 # define DFLT_INCDIR "/usr/include"
@@ -181,6 +190,7 @@ extern	unsigned int topline;		/* top line of page */
 extern	long	searchcount;		/* count of files searched */
 extern	unsigned int totallines;	/* total reference lines */
 extern	const char dispchars[];		/* display chars for jumping to lines */
+extern	int window_change;
 
 /* find.c global data */
 extern	char	block[];	/* cross-reference file block */
@@ -198,6 +208,10 @@ extern	struct	keystruct {
 
 /* mouse.c global data */
 extern	BOOL	mouse;		/* mouse interface */
+
+/* display.c global data */
+extern int input_available;
+extern char input_char;
 
 #if UNIXPC
 extern	BOOL	unixpcmouse;		/* UNIX PC mouse interface */
@@ -231,6 +245,8 @@ extern BOOL	onesearch;		/* one search only in line mode */
 extern char	*reflines;		/* symbol reference lines file */
 void verswp_field(void);
 void horswp_field(void);
+
+void	rlinit(void);
 
 void	addcmd(int f, char *s);
 void	addsrcfile(char *path);

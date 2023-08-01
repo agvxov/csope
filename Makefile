@@ -1,6 +1,6 @@
 CC=gcc
 CFLAGS:=-ggdb
-LDLIBS=-I ${CHDRD} $$(pkg-config --libs ncurses)
+LDLIBS=-I ${CHDRD} $$(pkg-config --libs ncurses readline)
 LEX:=flex
 
 LEXD:=src/

@@ -85,7 +85,6 @@
 #define	FLDLINE	(LINES - FIELDS - 1 - 1)	/* first input field line */
 #define	MSGLINE	0			/* message line */
 #define	PRLINE	(LINES - 1)		/* input prompt line */
-#define REFLINE	3			/* first displayed reference line */
 
 /* input fields (value matches field order on screen) */
 #define	SYMBOL		0

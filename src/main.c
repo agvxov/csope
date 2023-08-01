@@ -681,6 +681,8 @@ static inline	void	screenmode_event_loop(void){
 		display();
 
 		c = mygetch();
+		input_available = 1;
+		rl_callback_read_char();
 
 		/* exit if the quit command is entered */
 		if (c == EOF || c == ctrl('D')) {
@@ -691,6 +693,5 @@ static inline	void	screenmode_event_loop(void){
 			continue;
 		}
 
-		command(c);
     }
 }

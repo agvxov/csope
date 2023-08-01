@@ -56,12 +56,9 @@ static void catchint(int sig);
 
 /* catch the interrupt signal */
 
-/*ARGSUSED*/
 static void
 catchint(int sig)
 {
- 	(void) sig;		/* 'use' it, to avoid a warning */
-
 	signal(SIGINT, catchint);
 	longjmp(env, 1);
 }
