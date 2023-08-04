@@ -2,6 +2,7 @@
 #include <readline/readline.h>
 #include "global.h"
 #include "build.h"
+#include <ncurses.h>
 
 extern int LINES;    // XXX
 
@@ -127,7 +128,10 @@ void rlinit(){
     rl_redisplay_function = redisplay_function;
     rl_callback_handler_install("", callback_handler);
 
-    rl_bind_key(EOF, interpret_break);
+    rl_bind_key(7, rl_rubout);	// XXX: 7 is backspace for some reason (on my system anyways?)
+    rl_bind_key(KEY_BACKSPACE, rl_rubout);
+
+    rl_bind_key(EOF, exit);
     rl_bind_key(ctrl('D'), interpret_break);    //XXX: why the fuck does it not work if its the first char?
     rl_bind_key(ctrl('Z'), ctrl_z);
     rl_bind_key(ctrl('Z'), toggle_caseless);

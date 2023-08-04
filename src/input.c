@@ -417,7 +417,7 @@ global_input(const int c){
         case '+':
         case ctrl('V'):
         case KEY_NPAGE:
-            if (totallines == 0) { return(NO); } /* don't redisplay if there are no lines */
+            if (totallines == 0) { return 0; } /* don't redisplay if there are no lines */
             /* XXX: figure out whether this comment is useful or not */
             /* NOTE: seekline() is not used to move to the next 
              * page because display() leaves the file pointer at
@@ -428,7 +428,7 @@ global_input(const int c){
         case ctrl('H'):    /* display previous page */
         case '-':
         case KEY_PPAGE:
-            if (totallines == 0) { return(NO); } /* don't redisplay if there are no lines */
+            if (totallines == 0) { return 0; } /* don't redisplay if there are no lines */
             curdispline = 0;
             /* if there are only two pages, just go to the other one */
             if (totallines <= 2 * mdisprefs) {
@@ -498,13 +498,13 @@ global_input(const int c){
             //    return(YES);
             //}
             //clearprompt();
-            return(NO);
+            return 0;
         case '|':    /* pipe the lines to a shell command */
         case '^':
             break;        // XXX fix
             if (totallines == 0) {
                 postmsg("There are no lines to pipe to a shell command");
-                return(NO);
+                return 0;
             }
             /* get the shell command */
             move(PRLINE, 0);
