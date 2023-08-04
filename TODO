@@ -11,3 +11,4 @@
 + tab scrolls the results
 
 + recursive macro function to assign KEY_* default values; look for a new and shiny preprocessor?
++ rename to Csoap
