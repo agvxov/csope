@@ -32,7 +32,7 @@
 
 /* vpinit - initialize vpdirs or update vpdirs based on currentdir */
 
-#include <stdio.h>	/* stderr */
+#include <stdio.h>    /* stderr */
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
@@ -43,127 +43,127 @@
 #include "constants.h"
 
 #if !NOMALLOC
-char	**vpdirs;	/* directories (including current) in view path */
+char    **vpdirs;    /* directories (including current) in view path */
 #else
-char	vpdirs[MAXDIR][DIRLEN + 1];
-#define	MAXVPATH (MAXDIR * (DIRLEN + 1))
+char    vpdirs[MAXDIR][DIRLEN + 1];
+#define    MAXVPATH (MAXDIR * (DIRLEN + 1))
 #endif
-int	vpndirs;	/* number of directories in view path */
+int    vpndirs;    /* number of directories in view path */
 
 void
 vpinit(char *current_dir)
 {
-	char	*suffix;	/* path from view path node */
-	char	*vpath;		/* VPATH environment variable value */
-	char	buf[MAXPATH + 1];
-	int	i;
-	char	*s;
+    char    *suffix;	/* path from view path node */
+    char    *vpath;		/* VPATH environment variable value */
+    char    buf[MAXPATH + 1];
+    int    i;
+    char    *s;
 #if NOMALLOC
-	char	*node;		/* view path node */
-	char	vpathbuf[MAXVPATH + 1];
+    char    *node;		/* view path node */
+    char    vpathbuf[MAXVPATH + 1];
 #endif
-	
-	/* if an existing directory list is to be updated, free it */
-	if (current_dir != NULL && vpndirs > 0) {
+    
+    /* if an existing directory list is to be updated, free it */
+    if (current_dir != NULL && vpndirs > 0) {
 #if !NOMALLOC
-		for (i = 0; i < vpndirs; ++i) {
-			free(vpdirs[i]);
-		}
-		free(vpdirs);
+        for (i = 0; i < vpndirs; ++i) {
+        	free(vpdirs[i]);
+        }
+        free(vpdirs);
 #endif
-		vpndirs = 0;
-	}
-	/* return if the directory list has been computed */
-	/* or there isn't a view path environment variable */
-	if (vpndirs > 0 || (vpath = getenv("VPATH")) == NULL ||
-	    *vpath == '\0') {
-		return;
-	}
-	/* if not given, get the current directory name */
-	if (current_dir == NULL && (current_dir = getcwd(buf, MAXPATH)) == NULL) {
-		(void) fprintf(stderr, "%s: cannot get current directory name\n", argv0);
-		return;
-	}
-	/* see if this directory is in the first view path node */
-	for (i = 0; vpath[i] == current_dir[i] && vpath[i] != '\0'; ++i) {
-		;
-	}
-	if ((vpath[i] != ':' && vpath[i] != '\0') ||
-	    (current_dir[i] != '/' && current_dir[i] != '\0')) {
-		return;
-	}
-	suffix = &current_dir[i];
+        vpndirs = 0;
+    }
+    /* return if the directory list has been computed */
+    /* or there isn't a view path environment variable */
+    if (vpndirs > 0 || (vpath = getenv("VPATH")) == NULL ||
+        *vpath == '\0') {
+        return;
+    }
+    /* if not given, get the current directory name */
+    if (current_dir == NULL && (current_dir = getcwd(buf, MAXPATH)) == NULL) {
+        (void) fprintf(stderr, "%s: cannot get current directory name\n", argv0);
+        return;
+    }
+    /* see if this directory is in the first view path node */
+    for (i = 0; vpath[i] == current_dir[i] && vpath[i] != '\0'; ++i) {
+        ;
+    }
+    if ((vpath[i] != ':' && vpath[i] != '\0') ||
+        (current_dir[i] != '/' && current_dir[i] != '\0')) {
+        return;
+    }
+    suffix = &current_dir[i];
 #if !NOMALLOC
 
-	/* count the nodes in the view path */
-	vpndirs = 1;
-	for (i = 0; vpath[i] != '\0'; ++i) {
-		if (vpath[i] == ':' && vpath[i + 1]) {
-			++vpndirs;
-		}
-	}
-	/* create the source directory list */
-	vpdirs = malloc(vpndirs * sizeof(*vpdirs));
+    /* count the nodes in the view path */
+    vpndirs = 1;
+    for (i = 0; vpath[i] != '\0'; ++i) {
+        if (vpath[i] == ':' && vpath[i + 1]) {
+        	++vpndirs;
+        }
+    }
+    /* create the source directory list */
+    vpdirs = malloc(vpndirs * sizeof(*vpdirs));
 
-	/* don't change VPATH in the environment */
-	vpath = strdup(vpath);
-	
-	/* split the view path into nodes */
-	for (i = 0, s = vpath; *s != '\0'; ++i) {
-		vpdirs[i] = s;
-		while (*s != '\0' && *++s != ':') {
-			if (*s == '\n') {
-				*s = '\0';
-			}
-		}
-		if (*s != '\0') {
-			*s++ = '\0';
-		}
-	}
-	/* convert the view path nodes to directories */
-	for (i = 0; i < vpndirs; ++i) {
-		s = malloc(strlen(vpdirs[i]) + strlen(suffix) + 1);
-		(void) strcpy(s, vpdirs[i]);
-		(void) strcat(s, suffix);
-		vpdirs[i] = s;
-	}
-	free(vpath);
+    /* don't change VPATH in the environment */
+    vpath = strdup(vpath);
+    
+    /* split the view path into nodes */
+    for (i = 0, s = vpath; *s != '\0'; ++i) {
+        vpdirs[i] = s;
+        while (*s != '\0' && *++s != ':') {
+        	if (*s == '\n') {
+        		*s = '\0';
+        	}
+        }
+        if (*s != '\0') {
+        	*s++ = '\0';
+        }
+    }
+    /* convert the view path nodes to directories */
+    for (i = 0; i < vpndirs; ++i) {
+        s = malloc(strlen(vpdirs[i]) + strlen(suffix) + 1);
+        (void) strcpy(s, vpdirs[i]);
+        (void) strcat(s, suffix);
+        vpdirs[i] = s;
+    }
+    free(vpath);
 #else
-	/* don't change VPATH in the environment */
-	if (strlen(vpath) > MAXVPATH) {
-		(void) fprintf(stderr, "%s: VPATH is longer than %d characters: %s\n", argv0, MAXVPATH, vpath);
-		return;
-	}
-	(void) strcpy(vpathbuf, vpath);
-	s = vpathbuf;
-	
-	/* convert the view path nodes to directories */
-	while (*s != '\0') {
-		
-		/* get the next node */
-		node = s;
-		while (*s != '\0' && *++s != ':') {
-			if (*s == '\n') {
-				*s = '\0';
-			}
-		}
-		if (*s != '\0') {
-			*s++ = '\0';
-		}
-		/* ignore a directory that is too long */
-		if (strlen(node) + strlen(suffix) > DIRLEN) {
-			(void) fprintf(stderr, "%s: VPATH directory is longer than %d characters: %s%s\n", argv0, DIRLEN, node, suffix);
-		}
-		else if (vpndirs >= MAXDIR) {
-			(void) fprintf(stderr, "%s: VPATH has more than %d nodes\n", argv0, vpndirs);
-			return;
-		}
-		else {
-			/* create the view path directory */
-			(void) strcpy(vpdirs[vpndirs], node);
-			(void) strcat(vpdirs[vpndirs], suffix);
-			++vpndirs;
-		}
-	}
+    /* don't change VPATH in the environment */
+    if (strlen(vpath) > MAXVPATH) {
+        (void) fprintf(stderr, "%s: VPATH is longer than %d characters: %s\n", argv0, MAXVPATH, vpath);
+        return;
+    }
+    (void) strcpy(vpathbuf, vpath);
+    s = vpathbuf;
+    
+    /* convert the view path nodes to directories */
+    while (*s != '\0') {
+        
+        /* get the next node */
+        node = s;
+        while (*s != '\0' && *++s != ':') {
+        	if (*s == '\n') {
+        		*s = '\0';
+        	}
+        }
+        if (*s != '\0') {
+        	*s++ = '\0';
+        }
+        /* ignore a directory that is too long */
+        if (strlen(node) + strlen(suffix) > DIRLEN) {
+        	(void) fprintf(stderr, "%s: VPATH directory is longer than %d characters: %s%s\n", argv0, DIRLEN, node, suffix);
+        }
+        else if (vpndirs >= MAXDIR) {
+        	(void) fprintf(stderr, "%s: VPATH has more than %d nodes\n", argv0, vpndirs);
+        	return;
+        }
+        else {
+        	/* create the view path directory */
+        	(void) strcpy(vpdirs[vpndirs], node);
+        	(void) strcat(vpdirs[vpndirs], suffix);
+        	++vpndirs;
+        }
+    }
 #endif
 }

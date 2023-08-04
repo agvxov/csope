@@ -31,40 +31,40 @@
  =========================================================================*/
 
 /*
- *	VPATH assumptions:
- *		VPATH is the environment variable containing the view path 
- *		where each path name is followed by ':', '\n', or '\0'.
- *		Embedded blanks are considered part of the path.
+ *    VPATH assumptions:
+ *    	VPATH is the environment variable containing the view path 
+ *    	where each path name is followed by ':', '\n', or '\0'.
+ *    	Embedded blanks are considered part of the path.
  */
 
 #ifndef CSCOPE_VP_H
 #define CSCOPE_VP_H
 
-#define MAXPATH	200		/* max length for entire name */
+#define MAXPATH    200		/* max length for entire name */
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
 #else
-# define HAVE_FCNTL_H 1		/* in case of doubt, assume it's there */
+# define HAVE_FCNTL_H 1    	/* in case of doubt, assume it's there */
 #endif
 #ifdef HAVE_FCNTL_H
-# include <fcntl.h>		/* needed for O_... open flags */
+# include <fcntl.h>    	/* needed for O_... open flags */
 #endif
 
 #include <sys/types.h>
 #include <sys/stat.h>
 
 #if !NOMALLOC
-extern	char	**vpdirs;	/* directories (including current) in view path */
+extern    char	**vpdirs;	/* directories (including current) in view path */
 #else
-#define	MAXDIR	25		/* same as libVP */
-#define	DIRLEN	80		/* same as libVP */
-extern	char	vpdirs[MAXDIR][DIRLEN + 1];
+#define    MAXDIR	25		/* same as libVP */
+#define    DIRLEN	80		/* same as libVP */
+extern    char	vpdirs[MAXDIR][DIRLEN + 1];
 #endif
-extern	int	vpndirs;	/* number of directories in view path */
+extern    int	vpndirs;	/* number of directories in view path */
 
-void	vpinit(char *current_dir);
-int	vpopen(char *path, int oflag);
-int	vpaccess(char *path, mode_t amode);
+void    vpinit(char *current_dir);
+int    vpopen(char *path, int oflag);
+int    vpaccess(char *path, mode_t amode);
 
 #endif /* CSCOPE_VP_H */

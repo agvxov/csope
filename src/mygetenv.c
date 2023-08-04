@@ -36,14 +36,14 @@
 
 /* return the non-null environment value or the default argument */
 
-char	*
+char    *
 mygetenv(char *variable, char *deflt)
 {
-	char	*value;
+    char    *value;
 
-	value = getenv(variable);
-	if (value == NULL || *value == '\0') {
-		return(deflt);
-	}
-	return(value);
+    value = getenv(variable);
+    if (value == NULL || *value == '\0') {
+        return(deflt);
+    }
+    return(value);
 }

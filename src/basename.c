@@ -37,10 +37,10 @@
 char *
 basename(char *path)
 {
-	char	*s;
-	
-	if ((s = strrchr(path, '/')) != 0) {
-		return(s + 1);
-	}
-	return(path);
+    char    *s;
+    
+    if ((s = strrchr(path, '/')) != 0) {
+        return(s + 1);
+    }
+    return(path);
 }

@@ -30,13 +30,13 @@
  DAMAGE. 
  =========================================================================*/
 
-/*	cscope - interactive C symbol or text cross-reference
+/*    cscope - interactive C symbol or text cross-reference
  *
- *	command functions
+ *    command functions
  */
 
 #include "global.h"
-#include "build.h"		/* for rebuild() */
+#include "build.h"        /* for rebuild() */
 
 
 #include <stdlib.h>
@@ -59,23 +59,23 @@ extern const void const* wmode;
 extern const void const* wresult;
 extern const void const* const* current_window;
 
-BOOL	caseless;		/* ignore letter case when searching */
-BOOL	*change;		/* change this line */
-BOOL	changing;		/* changing text */
-char	newpat[PATLEN + 1];	/* new pattern */
+BOOL    caseless;    	/* ignore letter case when searching */
+BOOL    *change;    	/* change this line */
+BOOL    changing;    	/* changing text */
+char    newpat[PATLEN + 1];    /* new pattern */
 
 /* Internal prototypes: */
-static	void	clearprompt(void);
-static	void	mark(unsigned int i);
-static	void	scrollbar(MOUSE *p);
+static    void    clearprompt(void);
+static    void    mark(unsigned int i);
+static    void    scrollbar(MOUSE *p);
 
 /* clear the prompt line */
 
 static void
 clearprompt(void)
 {
-	move(PRLINE, 0);
-	clrtoeol();
+    move(PRLINE, 0);
+    clrtoeol();
 }
 
 /* read references from a file */
@@ -83,35 +83,35 @@ clearprompt(void)
 BOOL
 readrefs(char *filename)
 {
-	FILE	*file;
-	int	c;
+    FILE    *file;
+    int    c;
 
-	if ((file = myfopen(filename, "rb")) == NULL) {
-		cannotopen(filename);
-		return(NO);
-	}
-	if ((c = getc(file)) == EOF) {	/* if file is empty */
-		fclose(file);
-		return(NO);
-	}
-	totallines = 0;
-	disprefs = 0;
-	nextline = 1;
-	if (writerefsfound() == YES) {
-		putc(c, refsfound);
-		while ((c = getc(file)) != EOF) {
-			putc(c, refsfound);
-		}
-		fclose(file);
-		fclose(refsfound);
-		if ( (refsfound = myfopen(temp1, "rb")) == NULL) {
-			cannotopen(temp1);
-			return(NO);
-		}
-		countrefs();
-	} else
-		fclose(file);
-	return(YES);
+    if ((file = myfopen(filename, "rb")) == NULL) {
+        cannotopen(filename);
+        return(NO);
+    }
+    if ((c = getc(file)) == EOF) {    /* if file is empty */
+        fclose(file);
+        return(NO);
+    }
+    totallines = 0;
+    disprefs = 0;
+    nextline = 1;
+    if (writerefsfound() == YES) {
+        putc(c, refsfound);
+        while ((c = getc(file)) != EOF) {
+        	putc(c, refsfound);
+        }
+        fclose(file);
+        fclose(refsfound);
+        if ( (refsfound = myfopen(temp1, "rb")) == NULL) {
+        	cannotopen(temp1);
+        	return(NO);
+        }
+        countrefs();
+    } else
+        fclose(file);
+    return(YES);
 }
 
 /* mark/unmark this displayed line to be changed */
@@ -119,18 +119,18 @@ static void
 mark(unsigned int i)
 {
     unsigned int j;
-	
+    
     j = i + topline - 1;
     if (j < totallines) {
-	move(displine[i], 1);
+    move(displine[i], 1);
 
-	if (change[j] == NO) {
-	    change[j] = YES;
-	    addch('>');
-	} else {
-	    change[j] = NO;
-	    addch(' ');
-	}
+    if (change[j] == NO) {
+        change[j] = YES;
+        addch('>');
+    } else {
+        change[j] = NO;
+        addch(' ');
+    }
     }
 }
 
@@ -141,34 +141,34 @@ scrollbar(MOUSE *p)
 {
     /* reposition list if it makes sense */
     if (totallines == 0) {
-	return;
+    return;
     }
     switch (p->percent) {
-		
+        
     case 101: /* scroll down one page */
-	if (nextline + mdisprefs > totallines) {
-	    nextline = totallines - mdisprefs + 1;
-	}
-	break;
-		
+    if (nextline + mdisprefs > totallines) {
+        nextline = totallines - mdisprefs + 1;
+    }
+    break;
+        
     case 102: /* scroll up one page */
-	nextline = topline - mdisprefs;
-	if (nextline < 1) {
-	    nextline = 1;
-	}
-	break;
+    nextline = topline - mdisprefs;
+    if (nextline < 1) {
+        nextline = 1;
+    }
+    break;
 
     case 103: /* scroll down one line */
-	nextline = topline + 1;
-	break;
-		
+    nextline = topline + 1;
+    break;
+        
     case 104: /* scroll up one line */
-	if (topline > 1) {
-	    nextline = topline - 1;
-	}
-	break;
+    if (topline > 1) {
+        nextline = topline - 1;
+    }
+    break;
     default:
-	nextline = p->percent * totallines / 100;
+    nextline = p->percent * totallines / 100;
     }
     seekline(nextline);
 }
@@ -192,40 +192,40 @@ countrefs(void)
      * since it's not used.  But it has to be assigned just so the return value
      * of fscanf will actually reach 4. */
     while (EOF != (i = fscanf(refsfound, 
-			      "%" PATHLEN_STR "s%" PATLEN_STR "s%" NUMLEN_STR "s %" TEMPSTRING_LEN_STR "[^\n]",
-			      file, function, linenum, tempstring
-			     )
-	          )
-	  ) {
-	if (   (i != 4)
-	    || !isgraph((unsigned char) *file)
-	    || !isgraph((unsigned char) *function)
-	    || !isdigit((unsigned char) *linenum)
-	   ) {
-	    postmsg("File does not have expected format");
-	    totallines = 0;
-	    disprefs = 0;
-	    return;
-	}
-	if ((i = strlen(pathcomponents(file, dispcomponents))) > filelen) {
-	    filelen = i;
-	}
-	if (ogs == YES) {
-	    ogsnames(file, &subsystem, &book);
-	    if ((i = strlen(subsystem)) > subsystemlen) {
-		subsystemlen = i;
-	    }
-	    if ((i = strlen(book)) > booklen) {
-		booklen = i;
-	    }
-	}
-	if ((i = strlen(function)) > fcnlen) {
-	    fcnlen = i;
-	}
-	if ((i = strlen(linenum)) > numlen) {
-	    numlen = i;
-	}
-	++totallines;
+        	      "%" PATHLEN_STR "s%" PATLEN_STR "s%" NUMLEN_STR "s %" TEMPSTRING_LEN_STR "[^\n]",
+        	      file, function, linenum, tempstring
+        	     )
+              )
+      ) {
+    if (   (i != 4)
+        || !isgraph((unsigned char) *file)
+        || !isgraph((unsigned char) *function)
+        || !isdigit((unsigned char) *linenum)
+       ) {
+        postmsg("File does not have expected format");
+        totallines = 0;
+        disprefs = 0;
+        return;
+    }
+    if ((i = strlen(pathcomponents(file, dispcomponents))) > filelen) {
+        filelen = i;
+    }
+    if (ogs == YES) {
+        ogsnames(file, &subsystem, &book);
+        if ((i = strlen(subsystem)) > subsystemlen) {
+        subsystemlen = i;
+        }
+        if ((i = strlen(book)) > booklen) {
+        booklen = i;
+        }
+    }
+    if ((i = strlen(function)) > fcnlen) {
+        fcnlen = i;
+    }
+    if ((i = strlen(linenum)) > numlen) {
+        numlen = i;
+    }
+    ++totallines;
     }
     rewind(refsfound);
 
@@ -233,18 +233,18 @@ countrefs(void)
     /* HBB FIXME 20060419: magic number alert! */ 
     i = (COLS - 5) / 3;
     if (ogs == YES) {
-	i = (COLS - 7) / 5;
+    i = (COLS - 7) / 5;
     }
     if (filelen > i && i > 4) {
-	filelen = i;
+    filelen = i;
     }
     if (subsystemlen > i && i > 9) {
-	subsystemlen = i;
+    subsystemlen = i;
     }
     if (booklen > i && i > 4) {
-	booklen = i;
+    booklen = i;
     }
     if (fcnlen > i && i > 8) {
-	fcnlen = i;
+    fcnlen = i;
     }
 }
