@@ -18,11 +18,11 @@
  without specific prior written permission.
 
  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS
- IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT falseT LIMITED TO,
  THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE
+ PURPOSE ARE DISCLAIMED. IN false EVENT SHALL THE REGENTS OR CONTRIBUTORS BE
  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ CONSEQUENTIAL DAMAGES (INCLUDING, BUT falseT LIMITED TO, PROCUREMENT OF
  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
  INTERRUPTION)
  HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
@@ -50,7 +50,7 @@
 #endif
 
 #define	IFLEVELINC	5	/* #if nesting level size increment */
-#define YY_NO_TOP_STATE 1
+#define YY_false_TOP_STATE 1
 
 int	first;	/* buffer index for first char of symbol */
 int	last;	/* buffer index for last char of symbol */
@@ -63,32 +63,32 @@ int	myylineno = 1;
 size_t my_yyleng = 0;
 char *my_yytext = NULL;
 
-static	BOOL	arraydimension;		/* inside array dimension declaration */
-static	BOOL	bplisting;		/* breakpoint listing */
+static	bool	arraydimension;		/* inside array dimension declaration */
+static	bool	bplisting;		/* breakpoint listing */
 static	int	braces;			/* unmatched left brace count */
-static	BOOL	classdef;		/* c++ class definition */
-static	BOOL	elseelif;		/* #else or #elif found */
-static	BOOL	esudef;			/* enum/struct/union global definition */
-static	BOOL	external;		/* external definition */
+static	bool	classdef;		/* c++ class definition */
+static	bool	elseelif;		/* #else or #elif found */
+static	bool	esudef;			/* enum/struct/union global definition */
+static	bool	external;		/* external definition */
 static	int	externalbraces;		/* external definition outer brace count */
-static	BOOL	fcndef;			/* function definition */
-static	BOOL	global;			/* file global scope (outside functions) */
+static	bool	fcndef;			/* function definition */
+static	bool	global;			/* file global scope (outside functions) */
 static	size_t	iflevel;		/* #if nesting level */
-static	BOOL	initializer;		/* data initializer */
+static	bool	initializer;		/* data initializer */
 static	int	initializerbraces;	/* data initializer outer brace count */
-static	BOOL	lex;			/* lex file */
+static	bool	lex;			/* lex file */
 static	size_t	miflevel = IFLEVELINC;	/* maximum #if nesting level */
 static	int	*maxifbraces;		/* maximum brace count within #if */
 static	int	*preifbraces;		/* brace count before #if */
 static	int	parens;			/* unmatched left parenthesis count */
-static	BOOL	ppdefine;		/* preprocessor define statement */
-static	BOOL	pseudoelif;		/* pseudo-#elif */
-static	BOOL	oldtype;		/* next identifier is an old type */
-static	BOOL	rules;			/* lex/yacc rules */
-static	BOOL	sdl;			/* sdl file */
-static	BOOL	structfield;		/* structure field declaration */
+static	bool	ppdefine;		/* preprocessor define statement */
+static	bool	pseudoelif;		/* pseudo-#elif */
+static	bool	oldtype;		/* next identifier is an old type */
+static	bool	rules;			/* lex/yacc rules */
+static	bool	sdl;			/* sdl file */
+static	bool	structfield;		/* structure field declaration */
 static	int	tagdef;			/* class/enum/struct/union tag definition */
-static	BOOL	template;		/* function template */
+static	bool	template;		/* function template */
 static	int	templateparens;		/* function template outer parentheses count */
 static	int	typedefbraces = -1;	/* initial typedef brace count */
 static	int	token;			/* token found */
@@ -117,20 +117,20 @@ wsnl		[ \t\r\v\f\n]|{comment}
 %%
 
 %\{		{	/* lex/yacc C declarations/definitions */
-			global = YES;
+			global = true;
 			goto more;
-			/* NOTREACHED */
+			/* falseTREACHED */
 		}
 %\}		{
-			global = NO;
+			global = false;
 			goto more;
-			/* NOTREACHED */
+			/* falseTREACHED */
 		}
 ^%%		{	/* lex/yacc rules delimiter */
 			braces = 0;
-			if (rules == NO) {
+			if (rules == false) {
 				/* this %% starts the section containing the rules */
-				rules = YES;
+				rules = true;
 
 				/* Copy yytext to private buffer, to be able to add further
 				 * content following it: */
@@ -139,7 +139,7 @@ wsnl		[ \t\r\v\f\n]|{comment}
 				/* simulate a yylex() or yyparse() definition */
 				(void) strcat(my_yytext, " /* ");
 				first = strlen(my_yytext);
-				if (lex == YES) {
+				if (lex == true) {
 					(void) strcat(my_yytext, "yylex");
 				} else {
 					/* yacc: yyparse implicitly calls yylex */
@@ -156,25 +156,25 @@ wsnl		[ \t\r\v\f\n]|{comment}
 				return(FCNDEF);
 			} else {
 				/* were in the rules section, now comes the closing one */
-				rules = NO;
-				global = YES;
+				rules = false;
+				global = true;
 				last = first;
 				my_yymore();
 				return(FCNEND);
-				/* NOTREACHED */
+				/* falseTREACHED */
 			}
 		}
 
 <SDL>STATE[ \t]+({identifier}|\*)	{ /* sdl state, treat as function def */
 			braces = 1;
-			fcndef = YES;
+			fcndef = true;
 			token = FCNDEF;
 			goto findident;
-			/* NOTREACHED */
+			/* falseTREACHED */
 		}
 <SDL>ENDSTATE[ \t]	{ /* end of an sdl state, treat as end of a function */
 			goto endstate;
-			/* NOTREACHED */
+			/* falseTREACHED */
 		}
 
 \{		{	/* count unmatched left braces for fcn def detection */
@@ -184,7 +184,7 @@ wsnl		[ \t\r\v\f\n]|{comment}
 			   can be found */
 			if (tagdef) {
 				if (braces == 1) {
-					esudef = YES;
+					esudef = true;
 				}
 				token = tagdef;
 				tagdef = '\0';
@@ -193,15 +193,15 @@ wsnl		[ \t\r\v\f\n]|{comment}
 				return(token);
 			}
 			goto more;
-			/* NOTREACHED */
+			/* falseTREACHED */
 		}
 
 \#{ws}*	{ /* start a preprocessor line */
-			if (rules == NO)		/* don't consider CPP for lex/yacc rules */
+			if (rules == false)		/* don't consider CPP for lex/yacc rules */
 				BEGIN(IN_PREPROC);
 			yyleng = 1;	/* get rid of the blanks, if any */
 			goto more;
-			/* NOTREACHED */
+			/* falseTREACHED */
 		}
 <IN_PREPROC>endif([^a-zA-Z0-9_$\n].*)?	{	/* #endif */
 			/* delay treatment of #endif depending on whether an
@@ -210,7 +210,7 @@ wsnl		[ \t\r\v\f\n]|{comment}
 			 * after the #endif */
 			BEGIN(WAS_ENDIF);
 			goto more;
-			/* NOTREACHED */
+			/* falseTREACHED */
 		}
 <WAS_ENDIF>\n{wsnl}*#{ws}*if(ndef|def)?{ws}+		{
 			/* attempt to correct erroneous brace count caused by:
@@ -223,16 +223,16 @@ wsnl		[ \t\r\v\f\n]|{comment}
 			 * #endif
 			 */
 			/* the current #if must not have an #else or #elif */
-			if (elseelif == YES) {
+			if (elseelif == true) {
 				goto endif;
-				/* NOTREACHED */
+				/* falseTREACHED */
 			}
-			pseudoelif = YES;
+			pseudoelif = true;
 			BEGIN(INITIAL);
 			yyless(1);	/* rescan all but the line ending */
 			yy_set_bol(1);
 			goto eol;
-			/* NOTREACHED */
+			/* falseTREACHED */
 		}
 <WAS_ENDIF>\n{wsnl}*		 { 	/* an #endif with no #if right after it */
 		endif:
@@ -246,17 +246,17 @@ wsnl		[ \t\r\v\f\n]|{comment}
 			yyless(1);
 			yy_set_bol(1);
 			goto eol;
-			/* NOTREACHED */
+			/* falseTREACHED */
 		}
 
 <IN_PREPROC>ifndef{ws}+	|
 <IN_PREPROC>ifdef{ws}+		|
 <IN_PREPROC>if{ws}+		{ /* #if directive */
-			elseelif = NO;
-			if (pseudoelif == YES) {
-				pseudoelif = NO;
+			elseelif = false;
+			if (pseudoelif == true) {
+				pseudoelif = false;
 				goto elif;
-				/* NOTREACHED */
+				/* falseTREACHED */
 			}
 			/* make sure there is room for the current brace count */
 			if (iflevel == miflevel) {
@@ -269,10 +269,10 @@ wsnl		[ \t\r\v\f\n]|{comment}
 			maxifbraces[iflevel++] = 0;
 			BEGIN(INITIAL);
 			goto more;
-			/* NOTREACHED */
+			/* falseTREACHED */
 		}
 <IN_PREPROC>else({ws}.*)?	{ /* #else --- eat up whole line */
-			elseelif = YES;
+			elseelif = true;
 			if (iflevel > 0) {
 
 				/* save the maximum brace count for this #if */
@@ -284,10 +284,10 @@ wsnl		[ \t\r\v\f\n]|{comment}
 			}
 			BEGIN(INITIAL);
 			goto more;
-			/* NOTREACHED */
+			/* falseTREACHED */
 		}
 <IN_PREPROC>elif{ws}+	{ /* #elif */
-			/* elseelif = YES; --- HBB I doubt this is correct */
+			/* elseelif = true; --- HBB I doubt this is correct */
 		elif:
 			if (iflevel > 0) {
 
@@ -300,7 +300,7 @@ wsnl		[ \t\r\v\f\n]|{comment}
 			}
 			BEGIN(INITIAL);
 			goto more;
-			/* NOTREACHED */
+			/* falseTREACHED */
 		}
 
 <IN_PREPROC>include{ws}*\"[^"\n]+\" |
@@ -317,47 +317,47 @@ wsnl		[ \t\r\v\f\n]|{comment}
 			my_yytext[my_yyleng-1] = remember;
 			first = s - my_yytext;
 			last = my_yyleng - 1;
-			if (compress == YES) {
+			if (compress == true) {
 				my_yytext[0] = '\2';	/* compress the keyword */
 			}
 			BEGIN(INITIAL);
 			return(INCLUDE);
-			/* NOTREACHED */
+			/* falseTREACHED */
 		}
 
 \}		{
 			/* could be the last enum member initializer */
 			if (braces == initializerbraces) {
 				initializerbraces = -1;
-				initializer = NO;
+				initializer = false;
 			}
 			if (--braces <= 0) {
 		endstate:
 				braces = 0;
-				classdef = NO;
+				classdef = false;
 			}
-			if (braces == 0 || (braces == 1 && classdef == YES)) {
+			if (braces == 0 || (braces == 1 && classdef == true)) {
 
 				/* if the end of an enum/struct/union definition */
-				if (esudef == YES) {
-					esudef = NO;
+				if (esudef == true) {
+					esudef = false;
 				}
 				/* if the end of the function */
-				else if (fcndef == YES) {
-					fcndef = NO;
+				else if (fcndef == true) {
+					fcndef = false;
 					last = first;
 					my_yymore();
 					return(FCNEND);
 				}
 			}
 			goto more;
-			/* NOTREACHED */
+			/* falseTREACHED */
 		}
 
 \(		{	/* count unmatched left parentheses for function templates */
 			++parens;
 			goto more;
-			/* NOTREACHED */
+			/* falseTREACHED */
 		}
 \)		{
 			if (--parens <= 0) {
@@ -366,42 +366,42 @@ wsnl		[ \t\r\v\f\n]|{comment}
 			/* if the end of a function template */
 			if (parens == templateparens) {
 				templateparens = -1;
-				template = NO;
+				template = false;
 			}
 			goto more;
-			/* NOTREACHED */
+			/* falseTREACHED */
 		}
 =		{	/* if a global definition initializer */
 			if (!my_yytext)
 				return(LEXERR);
-			if (global == YES && ppdefine == NO && my_yytext[0] != '#') {
+			if (global == true && ppdefine == false && my_yytext[0] != '#') {
 				initializerbraces = braces;
-				initializer = YES;
+				initializer = true;
 			}
 			goto more;
-			/* NOTREACHED */
+			/* falseTREACHED */
 		}
 :		{	/* a if global structure field */
 			if (!my_yytext)
 				return(LEXERR);
-			if (global == YES && ppdefine == NO && my_yytext[0] != '#') {
-				structfield = YES;
+			if (global == true && ppdefine == false && my_yytext[0] != '#') {
+				structfield = true;
 			}
 			goto more;
-			/* NOTREACHED */
+			/* falseTREACHED */
 		}
 \,		{
 			if (braces == initializerbraces) {
 				initializerbraces = -1;
-				initializer = NO;
+				initializer = false;
 			}
-			structfield = NO;
+			structfield = false;
 			goto more;
-			/* NOTREACHED */
+			/* falseTREACHED */
 		}
 ;		{	/* if the enum/struct/union was not a definition */
 			if (braces == 0) {
-				esudef = NO;
+				esudef = false;
 			}
 			/* if the end of a typedef */
 			if (braces == typedefbraces) {
@@ -410,24 +410,24 @@ wsnl		[ \t\r\v\f\n]|{comment}
 			/* if the end of a external definition */
 			if (braces == externalbraces) {
 				externalbraces = -1;
-				external = NO;
+				external = false;
 			}
-			structfield = NO;
-			initializer = NO;
+			structfield = false;
+			initializer = false;
 			goto more;
-			/* NOTREACHED */
+			/* falseTREACHED */
 		}
 <IN_PREPROC>define{ws}+{identifier}	{
 
 			/* preprocessor macro or constant definition */
-			ppdefine = YES;
+			ppdefine = true;
 			token = DEFINE;
-			if (compress == YES) {
+			if (compress == true) {
 				my_yytext[0] = '\1';	/* compress the keyword */
 			}
 		findident:
 			/* search backwards through yytext[] to find the identifier */
-			/* NOTE: this had better be left to flex, by use of
+			/* falseTE: this had better be left to flex, by use of
 			 * yet another starting condition */
 			my_yymore();
 			first = my_yyleng - 1;
@@ -438,28 +438,28 @@ wsnl		[ \t\r\v\f\n]|{comment}
 			last = my_yyleng;
 			BEGIN(INITIAL);
 			goto definition;
-			/* NOTREACHED */
+			/* falseTREACHED */
 		}
 <IN_PREPROC>\n	{   /* unknown preprocessor line */
 			BEGIN(INITIAL);
                         ++myylineno;
 			goto more;
-			/* NOTREACHED */
+			/* falseTREACHED */
 		}
 <IN_PREPROC>.		 |
 <IN_PREPROC>{identifier}	{   /* unknown preprocessor line */
 			BEGIN(INITIAL);
 			goto more;
-			/* NOTREACHED */
+			/* falseTREACHED */
 		}
 
 class{wsnl}+{identifier}({wsnl}|{identifier}|[():])*\{	{	/* class definition */
-			classdef = YES;
+			classdef = true;
 			tagdef =  'c';
 			yyless(5);		/* eat up 'class', and re-scan */
 			yy_set_bol(0);
 			goto more;
-			/* NOTREACHED */
+			/* falseTREACHED */
 		}
 
 ("enum"|"struct"|"union")	{
@@ -477,7 +477,7 @@ class{wsnl}+{identifier}({wsnl}|{identifier}|[():])*\{	{	/* class definition */
 			tagdef = my_yytext[ident_start];
 			BEGIN(INITIAL);
 			if (braces == 0) {
-				esudef = YES;
+				esudef = true;
 			}
 			last = first;
 			yyless(0);  /* re-scan all this as normal text */
@@ -501,7 +501,7 @@ if{wsnl}*\(	{ 	/* ignore 'if' */
 			BEGIN(WAS_IDENTIFIER);
 			ident_start = first;
 			goto more;
-			/* NOTREACHED */
+			/* falseTREACHED */
 		}
 
 <WAS_IDENTIFIER>{
@@ -517,41 +517,41 @@ if{wsnl}*\(	{ 	/* ignore 'if' */
 			 * reason for the parsing bug concerning function pointer usage,
 			 * I suspect. --- I think my new special-case rule for 'if'
 			 * could be helpful in removing that limitation */
-			if ((braces == 0 && ppdefine == NO && my_yytext[0] != '#' && rules == NO) ||
-			    (braces == 1 && classdef == YES)) {
-				fcndef = YES;
+			if ((braces == 0 && ppdefine == false && my_yytext[0] != '#' && rules == false) ||
+			    (braces == 1 && classdef == true)) {
+				fcndef = true;
 				token = FCNDEF;
 				goto fcn;
-				/* NOTREACHED */
+				/* falseTREACHED */
 			}
 			goto fcncal;
-			/* NOTREACHED */
+			/* falseTREACHED */
 		}
 {ws}*\(([*&[\]=,.]|{identifier}|{number}|{wsnl})*		{ 	/* function call */
-		fcncal:	if (fcndef == YES || ppdefine == YES || rules == YES) {
+		fcncal:	if (fcndef == true || ppdefine == true || rules == true) {
 				token = FCNCALL;
 				goto fcn;
-				/* NOTREACHED */
+				/* falseTREACHED */
 			}
-			if (template == NO) {
+			if (template == false) {
 				templateparens = parens;
-				template = YES;
+				template = true;
 			}
 			goto ident;
-			/* NOTREACHED */
+			/* falseTREACHED */
 		}
 ("*"|{wsnl})+{identifier}		{	/* typedef name or modifier use */
 			goto ident;
-			/* NOTREACHED */
+			/* falseTREACHED */
 		}
 .|\n	{		/* general identifer usage */
 			char	*s;
 
-			if (global == YES && ppdefine == NO && my_yytext[0] != '#' &&
-			    external == NO && initializer == NO &&
-			    arraydimension == NO && structfield == NO &&
-			    template == NO && fcndef == NO) {
-				if (esudef == YES) {
+			if (global == true && ppdefine == false && my_yytext[0] != '#' &&
+			    external == false && initializer == false &&
+			    arraydimension == false && structfield == false &&
+			    template == false && fcndef == false) {
+				if (esudef == true) {
 					/* if enum/struct/union */
 					token = MEMBERDEF;
 				} else {
@@ -607,7 +607,7 @@ if{wsnl}*\(	{ 	/* ignore 'if' */
 				/* if the start of a typedef */
 				if (s == typedeftext) {
 					typedefbraces = braces;
-					oldtype = YES;
+					oldtype = true;
 				}
 				/* if an enum/struct/union */
 				/* (needed for "typedef struct tag name;" so
@@ -617,16 +617,16 @@ if{wsnl}*\(	{ 	/* ignore 'if' */
 				} else if (s == externtext) {
 					/* if an external definition */
 					externalbraces = braces;
-					external = YES;
-				} else if (templateparens == parens && template == YES) {
+					external = true;
+				} else if (templateparens == parens && template == true) {
 					/* keyword doesn't start a function
 					 * template */
 					templateparens = -1;
-					template = NO;
+					template = false;
 				} else {
 					/* identifier after typedef was a
 					 * keyword */
-					oldtype = NO;
+					oldtype = false;
 				}
 			} else {
 				/* not a keyword --> found an identifier */
@@ -638,42 +638,42 @@ if{wsnl}*\(	{ 	/* ignore 'if' */
 					token = tagdef;
 					tagdef = '\0';
 					if (braces == 0) {
-						esudef = YES;
+						esudef = true;
 					}
-				} else if (braces == typedefbraces && oldtype == NO &&
-				           arraydimension == NO) {
+				} else if (braces == typedefbraces && oldtype == false &&
+				           arraydimension == false) {
 					/* if a typedef name */
 					token = TYPEDEF;
 				} else {
-					oldtype = NO;
+					oldtype = false;
 				}
 				/* my_yymore(); */
 				return(token);
-				/* NOTREACHED */
+				/* falseTREACHED */
 			}
 		}
 }
 
 \[		{	/* array dimension (don't worry or about subscripts) */
-			arraydimension = YES;
+			arraydimension = true;
 			goto more;
-			/* NOTREACHED */
+			/* falseTREACHED */
 		}
 \]		{
-			arraydimension = NO;
+			arraydimension = false;
 			goto more;
-			/* NOTREACHED */
+			/* falseTREACHED */
 		}
 \\\n		{	/* preprocessor statement is continued on next line */
 			/* save the '\\' to the output file, but not the '\n': */
 			yyleng = 1;
 			my_yymore();
 			goto eol;
-			/* NOTREACHED */
+			/* falseTREACHED */
 		}
 \n		{	/* end of the line */
-			if (ppdefine == YES) {	/* end of a #define */
-				ppdefine = NO;
+			if (ppdefine == true) {	/* end of a #define */
+				ppdefine = false;
 				yyless(yyleng - 1);
 				last = first;
 				my_yymore();
@@ -681,7 +681,7 @@ if{wsnl}*\(	{ 	/* ignore 'if' */
 			}
 			/* skip the first 8 columns of a breakpoint listing line */
 			/* and skip the file path in the page header */
-			if (bplisting == YES) {
+			if (bplisting == true) {
 				int	c, i;
 
 				/* FIXME HBB 20001007: should call input() instead */
@@ -722,41 +722,41 @@ if{wsnl}*\(	{ 	/* ignore 'if' */
 		}
 
 \'		{	/* character constant */
-			if (sdl == NO)
+			if (sdl == false)
 				BEGIN(IN_SQUOTE);
 			goto more;
-			/* NOTREACHED */
+			/* falseTREACHED */
 		}
 <IN_SQUOTE>\'	{
 			BEGIN(INITIAL);
 			goto more;
-			/* NOTREACHED */
+			/* falseTREACHED */
 		}
 \"		{	/* string constant */
 			BEGIN(IN_DQUOTE);
 			goto more;
-			/* NOTREACHED */
+			/* falseTREACHED */
 		}
 <IN_DQUOTE>\"	{
 			BEGIN(INITIAL);
 			goto more;
-			/* NOTREACHED */
+			/* falseTREACHED */
 		}
 <IN_DQUOTE,IN_SQUOTE>{
 \n	  	{	/* syntax error: unexpected EOL */
 			BEGIN(INITIAL);
 			goto eol;
-			/* NOTREACHED */
+			/* falseTREACHED */
 		}
 \\.	|
 .		{
 			goto more;
-			/* NOTREACHED */
+			/* falseTREACHED */
 		}
 \\\n 	{		/* line continuation inside a string! */
 			myylineno++;
 			goto more;
-			/* NOTREACHED */
+			/* falseTREACHED */
 		}
 }
 
@@ -782,12 +782,12 @@ if{wsnl}*\(	{ 	/* ignore 'if' */
 "*"+[^*/\n]*	; /* do nothing */
 [^*\n]*\n		|
 "*"+[^*/\n]*\n	{
-			if (ppdefine == NO) {
+			if (ppdefine == false) {
 				goto eol;
 			} else {
 				++myylineno;
 			}
-			/* NOTREACHED */
+			/* falseTREACHED */
 		}
 "*"+"/"		{
 			/* replace the comment by a single blank */
@@ -799,7 +799,7 @@ if{wsnl}*\(	{ 	/* ignore 'if' */
 "//".*\n?		{
 			/* C++-style one-line comment */
 			goto eol;
-			/* NOTREACHED */
+			/* falseTREACHED */
 		}
 
 {number}				|	/* number */
@@ -825,29 +825,29 @@ initscanner(char *srcfile)
 	last = 0;		/* buffer index for last char of symbol */
 	lineno = 1;		/* symbol line number */
 	myylineno = 1;		/* input line number */
-	arraydimension = NO;	/* inside array dimension declaration */
-	bplisting = NO;		/* breakpoint listing */
+	arraydimension = false;	/* inside array dimension declaration */
+	bplisting = false;		/* breakpoint listing */
 	braces = 0;		/* unmatched left brace count */
-	classdef = NO;		/* c++ class definition */
-	elseelif = NO;		/* #else or #elif found */
-	esudef = NO;		/* enum/struct/union global definition */
-	external = NO;		/* external definition */
+	classdef = false;		/* c++ class definition */
+	elseelif = false;		/* #else or #elif found */
+	esudef = false;		/* enum/struct/union global definition */
+	external = false;		/* external definition */
 	externalbraces = -1;	/* external definition outer brace count */
-	fcndef = NO;		/* function definition */
-	global = YES;		/* file global scope (outside functions) */
+	fcndef = false;		/* function definition */
+	global = true;		/* file global scope (outside functions) */
 	iflevel = 0;		/* #if nesting level */
-	initializer = NO;	/* data initializer */
+	initializer = false;	/* data initializer */
 	initializerbraces = -1;	/* data initializer outer brace count */
-	lex = NO;		/* lex file */
+	lex = false;		/* lex file */
 	parens = 0;		/* unmatched left parenthesis count */
-	ppdefine = NO;		/* preprocessor define statement */
-	pseudoelif = NO;	/* pseudo-#elif */
-	oldtype = NO;		/* next identifier is an old type */
-	rules = NO;		/* lex/yacc rules */
-	sdl = NO;		/* sdl file */
-	structfield = NO;	/* structure field declaration */
+	ppdefine = false;		/* preprocessor define statement */
+	pseudoelif = false;	/* pseudo-#elif */
+	oldtype = false;		/* next identifier is an old type */
+	rules = false;		/* lex/yacc rules */
+	sdl = false;		/* sdl file */
+	structfield = false;	/* structure field declaration */
 	tagdef = '\0';		/* class/enum/struct/union tag definition */
-	template = NO;		/* function template */
+	template = false;		/* function template */
 	templateparens = -1;	/* function template outer parentheses count */
 	typedefbraces = -1;	/* initial typedef braces count */
 	ident_start = 0;	/* start of previously found identifier */
@@ -863,24 +863,24 @@ initscanner(char *srcfile)
 		switch (*++s) {	/* this switch saves time on C files */
 		case 'b':
 			if (strcmp(s, "bp") == 0) {	/* breakpoint listing */
-				bplisting = YES;
+				bplisting = true;
 			}
 			break;
 		case 'l':
 			if (strcmp(s, "l") == 0) {	/* lex */
-				lex = YES;
-				global = NO;
+				lex = true;
+				global = false;
 			}
 			break;
 		case 's':
 			if (strcmp(s, "sd") == 0) {	/* sdl */
-				sdl = YES;
+				sdl = true;
 				BEGIN(SDL);
 			}
 			break;
 		case 'y':
 			if (strcmp(s, "y") == 0) {	/* yacc */
-				global = NO;
+				global = false;
 			}
 			break;
 		}

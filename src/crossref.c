@@ -17,11 +17,11 @@
  without specific prior written permission.
 
  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS
- IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT falseT LIMITED TO,
  THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE
+ PURPOSE ARE DISCLAIMED. IN false EVENT SHALL THE REGENTS OR CONTRIBUTORS BE
  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ CONSEQUENTIAL DAMAGES (INCLUDING, BUT falseT LIMITED TO, PROCUREMENT OF
  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
  INTERRUPTION)
  HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
@@ -64,7 +64,7 @@ do {                                       \
 #define    SYMBOLINC    20	/* symbol list size increment */
 
 long    dboffset;    	/* new database offset */
-BOOL    errorsfound;    	/* prompt before clearing messages */
+bool    errorsfound;    	/* prompt before clearing messages */
 long    lineoffset;    	/* source line database offset */
 long    npostings;    	/* number of postings */
 int    nsrcoffset;             /* number of file name database offsets */
@@ -100,7 +100,7 @@ crossref(char *srcfile)
     if (! ((stat(srcfile, &st) == 0)
        && S_ISREG(st.st_mode))) {
     cannotopen(srcfile);
-    errorsfound = YES;
+    errorsfound = true;
     return;
     }
 
@@ -108,7 +108,7 @@ crossref(char *srcfile)
     /* open the source file */
     if ((yyin = myfopen(srcfile, "r")) == NULL) {
     cannotopen(srcfile);
-    errorsfound = YES;
+    errorsfound = true;
     return;
     }
     filename = srcfile;    /* save the file name for warning messages */
@@ -130,7 +130,7 @@ crossref(char *srcfile)
     default:
         /* if requested, truncate C symbols */
         length = last - first;
-        if (trun_syms == YES && length > 8 &&
+        if (trun_syms == true && length > 8 &&
         token != INCLUDE && token != NEWFILE) {
         length = 8;
         last = first + 8;
@@ -220,10 +220,10 @@ putfilename(char *srcfile)
     /* note: dbputc is not used to avoid lint complaint */
     if (putc(NEWFILE, newrefs) == EOF) {
         cannotwrite(newreffile);
-        /* NOTREACHED */
+        /* falseTREACHED */
     }
     ++dboffset;
-    if (invertedindex == YES) {
+    if (invertedindex == true) {
         srcoffset[nsrcoffset++] = dboffset;
     }
     dbfputs(srcfile);
@@ -237,7 +237,7 @@ putcrossref(void)
 {
     unsigned int i, j;
     unsigned char c;
-    BOOL    blank;          /* blank indicator */
+    bool    blank;          /* blank indicator */
     unsigned int symput = 0;     /* symbols output */
     int     type;
 
@@ -251,18 +251,18 @@ putcrossref(void)
     /* HBB 20010425: added this line: */
     my_yytext[my_yyleng] = '\0';
 
-    blank = NO;
+    blank = false;
     for (i = 0; i < my_yyleng; ++i) {
 
     /* change a tab to a blank and compress blanks */
     if ((c = my_yytext[i]) == ' ' || c == '\t') {
-        blank = YES;
+        blank = true;
     } else if (symput < symbols && i == symbol[symput].first) {
         /* look for the start of a symbol */
 
         /* check for compressed blanks */
-        if (blank == YES) {
-        blank = NO;
+        if (blank == true) {
+        blank = false;
         dbputc(' ');
         }
         dbputc('\n');    /* symbols start on a new line */
@@ -278,7 +278,7 @@ putcrossref(void)
         j = symbol[symput].last;
         c = my_yytext[j];
         my_yytext[j] = '\0';
-        if (invertedindex == YES) {
+        if (invertedindex == true) {
         putposting(my_yytext + i, type);
         }
         writestring(my_yytext + i);
@@ -289,10 +289,10 @@ putcrossref(void)
     } else {
         /* HBB: try to save some time by early-out handling of
          * non-compressed mode */
-        if (compress == NO) {
-        if (blank == YES) {
+        if (compress == false) {
+        if (blank == true) {
             dbputc(' ');
-            blank = NO;
+            blank = false;
         }
         j = i + strcspn(my_yytext+i, "\t ");
         if (symput < symbols
@@ -308,7 +308,7 @@ putcrossref(void)
         }
 
         /* check for compressed blanks */
-        if (blank == YES) {
+        if (blank == true) {
         if (dicode2[c]) {
             c = DICODE_COMPRESS(' ', c);
         } else {
@@ -322,7 +322,7 @@ putcrossref(void)
         ++i;
         }
         dbputc((int) c);
-        blank = NO;
+        blank = false;
 
         /* skip compressed characters */
         if (c < ' ') {
@@ -450,7 +450,7 @@ putposting(char *term, int type)
     }
     if (putc('\n', postings) == EOF) {
         cannotwrite(temp1);
-        /* NOTREACHED */
+        /* falseTREACHED */
     }
     ++npostings;
 }
@@ -463,7 +463,7 @@ writestring(char *s)
     unsigned char c;
     int    i;
 
-    if (compress == NO) {
+    if (compress == false) {
         /* Save some I/O overhead by using puts() instead of putc(): */
         dbfputs(s);
         return;
@@ -488,5 +488,5 @@ warning(char *text)
 
     (void) fprintf(stderr, "cscope: \"%s\", line %d: warning: %s\n", filename,
         myylineno, text);
-    errorsfound = YES;
+    errorsfound = true;
 }

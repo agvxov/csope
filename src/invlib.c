@@ -17,11 +17,11 @@
  without specific prior written permission.
 
  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS
- IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT falseT LIMITED TO,
  THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE
+ PURPOSE ARE DISCLAIMED. IN false EVENT SHALL THE REGENTS OR CONTRIBUTORS BE
  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ CONSEQUENTIAL DAMAGES (INCLUDING, BUT falseT LIMITED TO, PROCUREMENT OF
  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
  INTERRUPTION)
  HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
@@ -940,8 +940,8 @@ boolfile(INVCONTROL *invcntl, long *num, int boolarg)
     ptr2 = ((unsigned long *) ptr) + (entryptr->size + (sizeof(long) - 1)) / sizeof(long);
     *num = entryptr->post;
     switch (boolarg) {
-    case BOOL_OR:
-    case NOT:
+    case bool_OR:
+    case falseT:
         if (*num == 0) {
         	*num = numitems;
         	return(item);
@@ -951,14 +951,14 @@ boolfile(INVCONTROL *invcntl, long *num, int boolarg)
     u = 0;
     switch (boolarg) {
     case AND:
-    case NOT:
+    case falseT:
         newsetp = item;
         break;
 
-    case BOOL_OR:
+    case bool_OR:
         u = enditem - item;
         /* FALLTHROUGH */
-    case REVERSENOT:
+    case REVERSEfalseT:
         u += *num;
         if (item == item2) {
         	if (u > setsize1) {
@@ -996,7 +996,7 @@ boolfile(INVCONTROL *invcntl, long *num, int boolarg)
     fread(&posting, sizeof(posting), 1, file);
     newsetc = 0;
     switch (boolarg) {
-    case BOOL_OR:
+    case bool_OR:
         /* while something in both sets */
         set1p = item;
         newsetp = newitem;
@@ -1041,7 +1041,7 @@ boolfile(INVCONTROL *invcntl, long *num, int boolarg)
         	}
         }
         item = newitem;
-        break; /* end of BOOL_OR */
+        break; /* end of bool_OR */
 #if 0
     case AND:
         for (set1c = 0, set2c = 0; set1c < numitems && set2c < *num; ) {
@@ -1071,7 +1071,7 @@ boolfile(INVCONTROL *invcntl, long *num, int boolarg)
         }
         break; /* end of AND */
 
-    case NOT:
+    case falseT:
         for (set1c = 0, set2c = 0; set1c < numitems && set2c < *num; ) {
         	if (set1p->lineoffset < posting.lineoffset) {
         		*newsetp++ = *set1p++;
@@ -1102,9 +1102,9 @@ boolfile(INVCONTROL *invcntl, long *num, int boolarg)
         while (set1c++ < numitems) {
         	*newsetp++ = *set1p++;
         }
-        break; /* end of NOT */
+        break; /* end of falseT */
 
-    case REVERSENOT:  /* core NOT incoming set */
+    case REVERSEfalseT:  /* core falseT incoming set */
         for (set1c = 0, set2c = 0; set1c < numitems && set2c < *num; ) {
         	if (set1p->lineoffset < posting.lineoffset) {
         		set1p++;
@@ -1137,7 +1137,7 @@ boolfile(INVCONTROL *invcntl, long *num, int boolarg)
         	fread(&posting, (int) sizeof(posting), 1, file);
         }
         item = newitem;
-        break; /* end of REVERSENOT  */
+        break; /* end of REVERSEfalseT  */
 #endif
     }
     numitems = newsetc;

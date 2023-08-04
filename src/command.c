@@ -17,11 +17,11 @@
  without specific prior written permission.
 
  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS
- IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT falseT LIMITED TO,
  THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE
+ PURPOSE ARE DISCLAIMED. IN false EVENT SHALL THE REGENTS OR CONTRIBUTORS BE
  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ CONSEQUENTIAL DAMAGES (INCLUDING, BUT falseT LIMITED TO, PROCUREMENT OF
  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
  INTERRUPTION)
  HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
@@ -59,9 +59,9 @@ extern const void const* wmode;
 extern const void const* wresult;
 extern const void const* const* current_window;
 
-BOOL    caseless;    	/* ignore letter case when searching */
-BOOL    *change;    	/* change this line */
-BOOL    changing;    	/* changing text */
+bool    caseless;    	/* ignore letter case when searching */
+bool    *change;    	/* change this line */
+bool    changing;    	/* changing text */
 char    newpat[PATLEN + 1];    /* new pattern */
 
 /* Internal prototypes: */
@@ -80,7 +80,7 @@ clearprompt(void)
 
 /* read references from a file */
 
-BOOL
+bool
 readrefs(char *filename)
 {
     FILE    *file;
@@ -88,16 +88,16 @@ readrefs(char *filename)
 
     if ((file = myfopen(filename, "rb")) == NULL) {
         cannotopen(filename);
-        return(NO);
+        return(false);
     }
     if ((c = getc(file)) == EOF) {    /* if file is empty */
         fclose(file);
-        return(NO);
+        return(false);
     }
     totallines = 0;
     disprefs = 0;
     nextline = 1;
-    if (writerefsfound() == YES) {
+    if (writerefsfound() == true) {
         putc(c, refsfound);
         while ((c = getc(file)) != EOF) {
         	putc(c, refsfound);
@@ -106,12 +106,12 @@ readrefs(char *filename)
         fclose(refsfound);
         if ( (refsfound = myfopen(temp1, "rb")) == NULL) {
         	cannotopen(temp1);
-        	return(NO);
+        	return(false);
         }
         countrefs();
     } else
         fclose(file);
-    return(YES);
+    return(true);
 }
 
 /* mark/unmark this displayed line to be changed */
@@ -124,11 +124,11 @@ mark(unsigned int i)
     if (j < totallines) {
     move(displine[i], 1);
 
-    if (change[j] == NO) {
-        change[j] = YES;
+    if (change[j] == false) {
+        change[j] = true;
         addch('>');
     } else {
-        change[j] = NO;
+        change[j] = false;
         addch(' ');
     }
     }
@@ -188,7 +188,7 @@ countrefs(void)
     /* count the references found and find the length of the file,
        function, and line number display fields */
 
-    /* HBB NOTE 2012-04-07: it may look like we shouldn't assing tempstring here,
+    /* HBB falseTE 2012-04-07: it may look like we shouldn't assing tempstring here,
      * since it's not used.  But it has to be assigned just so the return value
      * of fscanf will actually reach 4. */
     while (EOF != (i = fscanf(refsfound,
@@ -210,7 +210,7 @@ countrefs(void)
     if ((i = strlen(pathcomponents(file, dispcomponents))) > filelen) {
         filelen = i;
     }
-    if (ogs == YES) {
+    if (ogs == true) {
         ogsnames(file, &subsystem, &book);
         if ((i = strlen(subsystem)) > subsystemlen) {
         subsystemlen = i;
@@ -232,7 +232,7 @@ countrefs(void)
     /* restrict the width of displayed columns */
     /* HBB FIXME 20060419: magic number alert! */
     i = (COLS - 5) / 3;
-    if (ogs == YES) {
+    if (ogs == true) {
     i = (COLS - 7) / 5;
     }
     if (filelen > i && i > 4) {

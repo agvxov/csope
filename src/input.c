@@ -17,11 +17,11 @@
  without specific prior written permission.
 
  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS
- IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT falseT LIMITED TO,
  THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE
+ PURPOSE ARE DISCLAIMED. IN false EVENT SHALL THE REGENTS OR CONTRIBUTORS BE
  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ CONSEQUENTIAL DAMAGES (INCLUDING, BUT falseT LIMITED TO, PROCUREMENT OF
  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
  INTERRUPTION)
  HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
@@ -104,7 +104,7 @@ mygetch(void)
 
 /* get a line from the terminal in non-canonical mode */
 int
-mygetline(char p[], char s[], unsigned size, int firstchar, BOOL iscaseless)
+mygetline(char p[], char s[], unsigned size, int firstchar, bool iscaseless)
 {
     int    c;
     unsigned int i = 0, j;
@@ -126,7 +126,7 @@ mygetline(char p[], char s[], unsigned size, int firstchar, BOOL iscaseless)
     i += strlen(p);
     /* if a character already has been typed */
     if (firstchar != '\0') {
-    if(iscaseless == YES) {
+    if(iscaseless == true) {
         firstchar = tolower(firstchar);
     }
     addch(firstchar);    /* display it */
@@ -193,7 +193,7 @@ mygetline(char p[], char s[], unsigned size, int firstchar, BOOL iscaseless)
         i = 0;
     } else if (isprint(c) || c == '\t') {
         /* printable */
-        if(iscaseless == YES) {
+        if(iscaseless == true) {
         c = tolower(c);
         }
         /* if it will fit on the line */
@@ -207,10 +207,10 @@ mygetline(char p[], char s[], unsigned size, int firstchar, BOOL iscaseless)
         }
         }
 #if UNIXPC
-    } else if (unixpcmouse == YES && c == ESC) {    /* mouse */
+    } else if (unixpcmouse == true && c == ESC) {    /* mouse */
         getmouseaction(ESC);    /* ignore it */
 #endif
-    } else if (mouse == YES && c == ctrl('X')) {
+    } else if (mouse == true && c == ctrl('X')) {
         getmouseaction(ctrl('X'));    /* ignore it */
     } else if (c == EOF) {                /* end-of-file */
         break;
@@ -251,7 +251,7 @@ askforreturn(void)
     fprintf(stderr, "Press the RETURN key to continue: ");
     getchar();
     /* HBB 20060419: message probably messed up the screen --- redraw */
-    if (incurses == YES) {
+    if (incurses == true) {
     redrawwin(curscr);
     }
 }
