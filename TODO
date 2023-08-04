@@ -7,5 +7,6 @@
 + Handle unused parameters gracefully (#define UNUSED(x) (void)(x))
 + Figure out what the deal is with changestring()
 + scollbar() uses int literals?
++ ctrl+d segfaults
 
 + recursive macro function to assign KEY_* default values; look for a new and shiny preprocessor?
