@@ -1,7 +1,7 @@
 # CC=gcc
 CFLAGS:=-Wall -Wextra -Wpedantic
-CPPFLAGS:=-D_DEFAULT_SOURCE -D_XOPEN_SOURCE=600
-LDLIBS=-I ${CHDRD} -lncurses -ltinfo -lreadline
+CPPFLAGS:=${shell pkg-config --cflags ncurses readline}
+LDLIBS=-I ${CHDRD} ${shell pkg-config --libs ncurses readline}
 LEX:=flex
 
 LEXD:=src/
