@@ -153,6 +153,256 @@ siginit(void){
 	}
 }
 
+void
+cannotopen(char *file)
+{
+    posterr("Cannot open file %s", file);
+}
+
+/* FIXME MTE - should use postfatal here */
+void
+cannotwrite(char *file)
+{
+    char	msg[MSGLEN + 1];
+
+    snprintf(msg, sizeof(msg), "Removed file %s because write failed", file);
+
+    myperror(msg);	/* display the reason */
+
+    unlink(file);
+    myexit(1);	/* calls exit(2), which closes files */
+}
+
+
+/* set up the digraph character tables for text compression */
+static void
+initcompress(void)
+{
+    int	i;
+	
+    if (compress == YES) {
+	for (i = 0; i < 16; ++i) {
+	    dicode1[(unsigned char) (dichar1[i])] = i * 8 + 1;
+	}
+	for (i = 0; i < 8; ++i) {
+	    dicode2[(unsigned char) (dichar2[i])] = i + 1;
+	}
+    }
+}
+
+/* skip the list in the cross-reference file */
+
+static void
+skiplist(FILE *oldrefs)
+{
+    int	i;
+	
+    if (fscanf(oldrefs, "%d", &i) != 1) {
+	postfatal("cscope: cannot read list size from file %s\n", reffile);
+	/* NOTREACHED */
+    }
+    while (--i >= 0) {
+	if (fscanf(oldrefs, "%*s") != 0) {
+	    postfatal("cscope: cannot read list name from file %s\n", reffile);
+	    /* NOTREACHED */
+	}
+    }
+}
+
+
+/* enter curses mode */
+void
+entercurses(void)
+{
+    incurses = YES;
+#ifndef __MSDOS__ /* HBB 20010313 */
+    nonl();		    /* don't translate an output \n to \n\r */
+#endif
+    raw();			/* single character input */
+    noecho();			/* don't echo input characters */
+    clear();			/* clear the screen */
+    mouseinit();		/* initialize any mouse interface */
+    drawscrollbar(topline, nextline);
+}
+
+
+/* exit curses mode */
+void
+exitcurses(void)
+{
+	/* clear the bottom line */
+	move(LINES - 1, 0);
+	clrtoeol();
+	refresh();
+
+	/* exit curses and restore the terminal modes */
+	endwin();
+	incurses = NO;
+
+	/* restore the mouse */
+	mousecleanup();
+	fflush(stdout);
+}
+
+/* cleanup and exit */
+void
+myexit(int sig)
+{
+	/* Close file before unlinking it. DOS absolutely needs it */
+	if (refsfound != NULL){
+		fclose(refsfound);
+	}
+	
+	/* remove any temporary files */
+	if (temp1[0] != '\0') {
+		unlink(temp1);
+		unlink(temp2);
+		rmdir(tempdirpv);		
+	}
+	/* restore the terminal to its original mode */
+	if (incurses == YES) {
+		exitcurses();
+	}
+	/* dump core for debugging on the quit signal */
+	if (sig == SIGQUIT) {
+		abort();
+	}
+	/* HBB 20000421: be nice: free allocated data */
+	freefilelist();
+	freeinclist();
+	freesrclist();
+	freecrossref();
+	free_newbuildfiles();
+
+	if( remove_symfile_onexit == YES ) {
+		unlink( reffile );
+		unlink( invname );
+		unlink( invpost );
+	}
+
+	exit(sig);
+}
+
+static inline void readenv(void){
+    editor = mygetenv("EDITOR", EDITOR);
+    editor = mygetenv("VIEWER", editor); /* use viewer if set */
+    editor = mygetenv("CSCOPE_EDITOR", editor);	/* has last word */
+    home = mygetenv("HOME", HOME);
+    shell = mygetenv("SHELL", SHELL);
+    lineflag = mygetenv("CSCOPE_LINEFLAG", LINEFLAG);
+    lineflagafterfile = getenv("CSCOPE_LINEFLAG_AFTER_FILE") ? 1 : 0;
+    tmpdir = mygetenv("TMPDIR", TMPDIR);
+}
+
+static inline	void	linemode_event_loop(void){
+	int c;
+
+	if (*input_line != '\0') {		/* do any optional search */
+	    if (search() == YES) {
+		/* print the total number of lines in
+		 * verbose mode */
+		if (verbosemode == YES)
+		    printf("cscope: %d lines\n",
+			   totallines);
+
+		while ((c = getc(refsfound)) != EOF)
+		    putchar(c);
+	    }
+	}
+	if (onesearch == YES) {
+	    myexit(0);
+		/* NOTREACHED */
+	}
+		
+	for (char *s;;) {
+	    char buf[PATLEN + 2];
+			
+	    printf(">> ");
+	    fflush(stdout);
+	    if (fgets(buf, sizeof(buf), stdin) == NULL) {
+		myexit(0);
+	    }
+	    /* remove any trailing newline character */
+	    if (*(s = buf + strlen(buf) - 1) == '\n') {
+		*s = '\0';
+	    }
+	    switch (*buf) {
+	    case '0':
+	    case '1':
+	    case '2':
+	    case '3':
+	    case '4':
+	    case '5':
+	    case '6':
+	    case '7':
+	    case '8':
+	    case '9':	/* samuel only */
+		field = *buf - '0';
+		strcpy(input_line, buf + 1);
+		if (search() == NO) {
+			printf("Unable to search database\n");
+		} else {
+			printf("cscope: %d lines\n", totallines);
+			while ((c = getc(refsfound)) != EOF) {
+			    putchar(c);
+			}
+		}
+		break;
+
+	    case 'c':	/* toggle caseless mode */
+	    case ctrl('C'):
+		if (caseless == NO) {
+		    caseless = YES;
+		} else {
+		    caseless = NO;
+		}
+		egrepcaseless(caseless);
+		break;
+
+	    case 'r':	/* rebuild database cscope style */
+	    case ctrl('R'):
+		freefilelist();
+		makefilelist();
+		/* FALLTHROUGH */
+
+	    case 'R':	/* rebuild database samuel style */
+		rebuild();
+		putchar('\n');
+		break;
+
+	    case 'C':	/* clear file names */
+		freefilelist();
+		putchar('\n');
+		break;
+
+	    case 'F':	/* add a file name */
+		strcpy(path, buf + 1);
+		if (infilelist(path) == NO &&
+		    (s = inviewpath(path)) != NULL) {
+		    addsrcfile(s);
+		}
+		putchar('\n');
+		break;
+
+	    case 'q':	/* quit */
+	    case ctrl('D'):
+	    case ctrl('Z'):
+		myexit(0);
+
+	    default:
+		fprintf(stderr, "cscope: unknown command '%s'\n", buf);
+		break;
+	    }
+	}
+}
+
+static inline	void	screenmode_event_loop(void){
+    for (;;) {
+		display();
+		if(handle_input(getch())){ break; }
+    }
+}
+
 int
 main(int argc, char **argv)
 {
@@ -334,7 +584,7 @@ main(int argc, char **argv)
 		    switch (i) {
 		    case 'p':	/* file path components to display */
 			if (*s < '0' || *s > '9') {
-			    posterr("cscope: -p option in file %s: missing or invalid numeric value\n", 								namefile);
+			    posterr("cscope: -p option in file %s: missing or invalid numeric value\n", namefile);
 
 			}
 			dispcomponents = atoi(s);
@@ -417,8 +667,8 @@ main(int argc, char **argv)
 	askforreturn();
     }
     /* do any optional search */
-    if (*Pattern != '\0') {
-	command(ctrl('Y'));	/* search */
+    if (*input_line != '\0') {
+	//command(ctrl('Y'));	/* search */	// XXX: fix
     } else if (reflines != NULL) {
 	/* read any symbol reference lines file */
 	readrefs(reflines);
@@ -429,269 +679,4 @@ main(int argc, char **argv)
     myexit(0);
     /* NOTREACHED */
     return 0;		/* avoid warning... */
-}
-
-void
-cannotopen(char *file)
-{
-    posterr("Cannot open file %s", file);
-}
-
-/* FIXME MTE - should use postfatal here */
-void
-cannotwrite(char *file)
-{
-    char	msg[MSGLEN + 1];
-
-    snprintf(msg, sizeof(msg), "Removed file %s because write failed", file);
-
-    myperror(msg);	/* display the reason */
-
-    unlink(file);
-    myexit(1);	/* calls exit(2), which closes files */
-}
-
-
-/* set up the digraph character tables for text compression */
-static void
-initcompress(void)
-{
-    int	i;
-	
-    if (compress == YES) {
-	for (i = 0; i < 16; ++i) {
-	    dicode1[(unsigned char) (dichar1[i])] = i * 8 + 1;
-	}
-	for (i = 0; i < 8; ++i) {
-	    dicode2[(unsigned char) (dichar2[i])] = i + 1;
-	}
-    }
-}
-
-/* skip the list in the cross-reference file */
-
-static void
-skiplist(FILE *oldrefs)
-{
-    int	i;
-	
-    if (fscanf(oldrefs, "%d", &i) != 1) {
-	postfatal("cscope: cannot read list size from file %s\n", reffile);
-	/* NOTREACHED */
-    }
-    while (--i >= 0) {
-	if (fscanf(oldrefs, "%*s") != 0) {
-	    postfatal("cscope: cannot read list name from file %s\n", reffile);
-	    /* NOTREACHED */
-	}
-    }
-}
-
-
-/* enter curses mode */
-void
-entercurses(void)
-{
-    incurses = YES;
-#ifndef __MSDOS__ /* HBB 20010313 */
-    nonl();		    /* don't translate an output \n to \n\r */
-#endif
-    raw();			/* single character input */
-    noecho();			/* don't echo input characters */
-    clear();			/* clear the screen */
-    mouseinit();		/* initialize any mouse interface */
-    drawscrollbar(topline, nextline);
-}
-
-
-/* exit curses mode */
-void
-exitcurses(void)
-{
-	/* clear the bottom line */
-	move(LINES - 1, 0);
-	clrtoeol();
-	refresh();
-
-	/* exit curses and restore the terminal modes */
-	endwin();
-	incurses = NO;
-
-	/* restore the mouse */
-	mousecleanup();
-	fflush(stdout);
-}
-
-/* cleanup and exit */
-void
-myexit(int sig)
-{
-	/* HBB 20010313; close file before unlinking it. Unix may not care
-	 * about that, but DOS absolutely needs it */
-	if (refsfound != NULL)
-		fclose(refsfound);
-	
-	/* remove any temporary files */
-	if (temp1[0] != '\0') {
-		unlink(temp1);
-		unlink(temp2);
-		rmdir(tempdirpv);		
-	}
-	/* restore the terminal to its original mode */
-	if (incurses == YES) {
-		exitcurses();
-	}
-	/* dump core for debugging on the quit signal */
-	if (sig == SIGQUIT) {
-		abort();
-	}
-	/* HBB 20000421: be nice: free allocated data */
-	freefilelist();
-	freeinclist();
-	freesrclist();
-	freecrossref();
-	free_newbuildfiles();
-
-	if( remove_symfile_onexit == YES ) {
-		unlink( reffile );
-		unlink( invname );
-		unlink( invpost );
-	}
-
-	exit(sig);
-}
-
-static inline void readenv(void){
-    editor = mygetenv("EDITOR", EDITOR);
-    editor = mygetenv("VIEWER", editor); /* use viewer if set */
-    editor = mygetenv("CSCOPE_EDITOR", editor);	/* has last word */
-    home = mygetenv("HOME", HOME);
-    shell = mygetenv("SHELL", SHELL);
-    lineflag = mygetenv("CSCOPE_LINEFLAG", LINEFLAG);
-    lineflagafterfile = getenv("CSCOPE_LINEFLAG_AFTER_FILE") ? 1 : 0;
-    tmpdir = mygetenv("TMPDIR", TMPDIR);
-}
-
-static inline	void	linemode_event_loop(void){
-	int c;
-
-	if (*Pattern != '\0') {		/* do any optional search */
-	    if (search() == YES) {
-		/* print the total number of lines in
-		 * verbose mode */
-		if (verbosemode == YES)
-		    printf("cscope: %d lines\n",
-			   totallines);
-
-		while ((c = getc(refsfound)) != EOF)
-		    putchar(c);
-	    }
-	}
-	if (onesearch == YES) {
-	    myexit(0);
-		/* NOTREACHED */
-	}
-		
-	for (char *s;;) {
-	    char buf[PATLEN + 2];
-			
-	    printf(">> ");
-	    fflush(stdout);
-	    if (fgets(buf, sizeof(buf), stdin) == NULL) {
-		myexit(0);
-	    }
-	    /* remove any trailing newline character */
-	    if (*(s = buf + strlen(buf) - 1) == '\n') {
-		*s = '\0';
-	    }
-	    switch (*buf) {
-	    case '0':
-	    case '1':
-	    case '2':
-	    case '3':
-	    case '4':
-	    case '5':
-	    case '6':
-	    case '7':
-	    case '8':
-	    case '9':	/* samuel only */
-		field = *buf - '0';
-		strcpy(Pattern, buf + 1);
-		if (search() == NO) {
-			printf("Unable to search database\n");
-		} else {
-			printf("cscope: %d lines\n", totallines);
-			while ((c = getc(refsfound)) != EOF) {
-			    putchar(c);
-			}
-		}
-		break;
-
-	    case 'c':	/* toggle caseless mode */
-	    case ctrl('C'):
-		if (caseless == NO) {
-		    caseless = YES;
-		} else {
-		    caseless = NO;
-		}
-		egrepcaseless(caseless);
-		break;
-
-	    case 'r':	/* rebuild database cscope style */
-	    case ctrl('R'):
-		freefilelist();
-		makefilelist();
-		/* FALLTHROUGH */
-
-	    case 'R':	/* rebuild database samuel style */
-		rebuild();
-		putchar('\n');
-		break;
-
-	    case 'C':	/* clear file names */
-		freefilelist();
-		putchar('\n');
-		break;
-
-	    case 'F':	/* add a file name */
-		strcpy(path, buf + 1);
-		if (infilelist(path) == NO &&
-		    (s = inviewpath(path)) != NULL) {
-		    addsrcfile(s);
-		}
-		putchar('\n');
-		break;
-
-	    case 'q':	/* quit */
-	    case ctrl('D'):
-	    case ctrl('Z'):
-		myexit(0);
-
-	    default:
-		fprintf(stderr, "cscope: unknown command '%s'\n", buf);
-		break;
-	    }
-	}
-}
-
-static inline	void	screenmode_event_loop(void){
-    int c;
-
-    for (;;) {
-		display();
-
-		c = mygetch();
-		input_available = 1;
-		rl_callback_read_char();
-
-		/* exit if the quit command is entered */
-		if (c == EOF || c == ctrl('D')) {
-			break;
-		}
-		if (c == ctrl('Z')) {
-			kill(0, SIGTSTP);
-			continue;
-		}
-
-    }
 }

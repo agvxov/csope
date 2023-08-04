@@ -57,7 +57,9 @@
    this macro will always be in a statement by itself */
 #define	skiprefchar()	if (*(++blockp + 1) == '\0') (void) read_block()
 
-#define	ESC	'\033'		/* escape character */
+#ifndef ESC
+# define	ESC	'\033'		/* escape character */
+#endif
 #define	DEL	'\177'		/* delete character */
 #define	DUMMYCHAR	' '	/* use space as a dummy character */
 #define	MSGLEN	((PATLEN) + 80)	/* displayed message length */
@@ -151,6 +153,9 @@
 #ifndef KEY_CLEAR
 # define KEY_CLEAR KEY_UNDEF_BASE-10
 #endif
+#ifndef KEY_RESIZE
+# define KEY_RESIZE KEY_UNDEF_BASE-11
+#endif
 
 /**/
 #if (BSD || V9) && !__NetBSD__ && !__FreeBSD__ && !__APPLE__
@@ -183,7 +188,5 @@
 #  define killchar()  (_tty.sg_kill)			/* equivalent */
 # endif /* if UNIXPC */
 #endif	/* if !TERMINFO */
-
-#define INPUT_PROMPT "$ "
 
 #endif /* CSCOPE_CONSTANTS_H */

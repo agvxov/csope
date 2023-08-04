@@ -126,6 +126,7 @@ myexecvp(char *a, char **args)
     askforreturn();		/* wait until the user sees the message */
     myexit(1);		/* exit the child */
     /* NOTREACHED */
+	return 0;
 }
 
 /* myfork acts like fork but also handles signals */

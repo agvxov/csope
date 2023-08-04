@@ -55,7 +55,7 @@ char ** parse_options(int *argc, char **argv)
 					cscope: pattern too long, cannot be > \
 					%d characters\n", PATLEN);
 			}
-			strcpy(Pattern, optarg);	
+			strcpy(input_line, optarg);	
 			break;
 		case 'b':	/* only build the cross-reference */
 			buildonly = YES;

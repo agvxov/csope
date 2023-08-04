@@ -328,3 +328,247 @@ shellpath(char *out, int limit, char *in)
     }
     *out = '\0';
 }
+
+static int
+wmode_input(const int c){
+    switch (c) {
+		case KEY_ENTER:
+		case '\r':
+		case '\n':
+		case ctrl('N'):	/* go to next input field */
+		case KEY_DOWN:
+		case KEY_RIGHT:
+			field = (field + 1) % FIELDS;
+			resetcmd();
+			return(NO);
+		case ctrl('P'):	/* go to previous input field */
+		case KEY_UP:
+		case KEY_LEFT:
+			field = (field + (FIELDS - 1)) % FIELDS;
+			resetcmd();
+			return(NO);
+    	case KEY_HOME:	/* go to first input field */
+			field = 0;
+			resetcmd();
+			return(NO);
+    	case KEY_LL:	/* go to last input field */
+			curdispline = disprefs;
+			return(YES);
+	}
+}
+
+static int
+wresult_input(const int c){
+    switch (c) {
+		case KEY_ENTER: /* open for editing */
+		case '\r':
+		case '\n':
+			editref(curdispline);
+			window_change = CH_ALL;
+	    	return(YES);
+		case ctrl('N'):
+		case KEY_DOWN:
+		case KEY_RIGHT:
+			if ((curdispline + 1) < disprefs) {
+				++curdispline;
+			}
+			return(NO);
+		case ctrl('P'):
+		case KEY_UP:
+		case KEY_LEFT:
+			if (curdispline) {
+				--curdispline;
+			}
+			return(NO);
+    	case KEY_HOME:
+	    	curdispline = 0;
+			return(NO);
+    	case KEY_LL:
+			field = FIELDS - 1;
+			resetcmd();
+			return(NO);
+		default:
+			char *e;
+			if ((e = strchr(dispchars, c)))
+			editref(e - dispchars);
+	}
+}
+
+static int
+global_input(const int c){
+	switch(c){
+		case ' ':	/* display next page */
+		case '+':
+		case ctrl('V'):
+		case KEY_NPAGE:
+			if (totallines == 0) { return(NO); } /* don't redisplay if there are no lines */
+			/* XXX: figure out whether this comment is useful or not */
+			/* NOTE: seekline() is not used to move to the next 
+			 * page because display() leaves the file pointer at
+			 * the next page to optimize paging forward
+			 */
+			curdispline = 0;
+			break;
+		case ctrl('H'):	/* display previous page */
+		case '-':
+		case KEY_PPAGE:
+			if (totallines == 0) { return(NO); } /* don't redisplay if there are no lines */
+			curdispline = 0;
+			/* if there are only two pages, just go to the other one */
+			if (totallines <= 2 * mdisprefs) {
+				break;
+			}
+			/* if on first page but not at beginning, go to beginning */
+			nextline -= mdisprefs;	/* already at next page */
+			if (nextline > 1 && nextline <= mdisprefs) {
+				nextline = 1;
+			} else {
+				nextline -= mdisprefs;
+				if (nextline < 1) {
+					nextline = totallines - mdisprefs + 1;
+					if (nextline < 1) {
+						nextline = 1;
+					}
+				}
+			}
+			seekline(nextline);
+			break;
+		case '>':	/* write or append the lines to a file */
+			break;					// XXX
+    		//char filename[PATHLEN + 1];	
+			//char* s;
+			//char ch;
+			//FILE* file;
+			//if (totallines == 0) {
+			//	postmsg("There are no lines to write to a file");
+			//	return(NO);
+			//}
+			//move(PRLINE, 0);
+			////addstr("Write to file: ");		// XXX
+			//s = "w";
+			//if ((ch = mygetch()) == '>') {
+			//move(PRLINE, 0);
+			////addstr(appendprompt);	// XXX fix
+			////ch = '\0';
+			////s = "a";
+			////}
+			////if (ch != '\r' && mygetline("", newpat, COLS - sizeof(appendprompt), c, NO) > 0) {
+			////	shellpath(filename, sizeof(filename), newpat);
+			////	if ((file = myfopen(filename, s)) == NULL) {
+			////		cannotopen(filename);
+			////	} else {
+			////		seekline(1);
+			////		while ((ch = getc(refsfound)) != EOF) {
+			////		putc(ch, file);
+			////		}
+			////		seekline(topline);
+			////		fclose(file);
+			////	}
+			////}
+			////clearprompt();
+			return(NO);	/* return to the previous field */
+		case '<':	/* read lines from a file */
+			break;					// XXX
+			move(PRLINE, 0);
+			//addstr(readprompt); // XXX fix
+			//if (mygetline("", newpat, COLS - sizeof(readprompt), '\0', NO) > 0) {
+			//	clearprompt();
+			//	shellpath(filename, sizeof(filename), newpat);
+			//	if (readrefs(filename) == NO) {
+			//		postmsg2("Ignoring an empty file");
+			//		return(NO);
+			//	}
+			//	window_change |= CH_INPUT;
+			//	return(YES);
+			//}
+			//clearprompt();
+			return(NO);
+		case '|':	/* pipe the lines to a shell command */
+		case '^':
+			break;		// XXX fix
+			if (totallines == 0) {
+				postmsg("There are no lines to pipe to a shell command");
+				return(NO);
+			}
+			/* get the shell command */
+			move(PRLINE, 0);
+			//addstr(pipeprompt);
+			//if (mygetline("", newpat, COLS - sizeof(pipeprompt), '\0', NO) == 0) {
+			//	clearprompt();
+			//	return(NO);
+			//}
+			///* if the ^ command, redirect output to a temp file */
+			//if (commandc == '^') {
+			//	strcat(strcat(newpat, " >"), temp2);
+			//	/* HBB 20020708: somebody might have even
+			//	 * their non-interactive default shells
+			//	 * complain about clobbering
+			//	 * redirections... --> delete before
+			//	 * overwriting */
+			//	remove(temp2);
+			//}
+			//exitcurses();
+			//if ((file = mypopen(newpat, "w")) == NULL) {
+			//	fprintf(stderr, "cscope: cannot open pipe to shell command: %s\n", newpat);
+			//} else {
+			//	seekline(1);
+			//	while ((c = getc(refsfound)) != EOF) {
+			//	putc(c, file);
+			//	}
+			//	seekline(topline);
+			//	mypclose(file);
+			//}
+			//if (commandc == '^') {
+			//	if (readrefs(temp2) == NO) {
+			//	postmsg("Ignoring empty output of ^ command");
+			//	}
+			//}
+			//askforreturn();
+			//entercurses();
+			break;
+		case '!':	/* shell escape */
+			execute(shell, shell, NULL);
+			seekline(topline);
+			break;
+		case KEY_RESIZE:
+			/* XXX: fill in*/
+			break;
+		case ctrl('L'):	/* redraw screen */
+		case KEY_CLEAR:
+			window_change = CH_ALL;
+			return(NO);
+		case '?':	/* help */
+			clear();
+			help();
+			clear();
+			seekline(topline);
+			break;
+		case ctrl('E'):	/* edit all lines */
+			editall();
+			break;
+	}
+
+	return 0;
+}
+
+extern const void const* winput;
+extern const void const* wmode;
+extern const void const* wresult;
+extern const void const* const* current_window;
+
+int
+handle_input(const char c){
+	/* --- global --- */
+	const int r = global_input(c);
+	if(r){ return r; }
+	/* --- mode specific --- */
+	if(*current_window == winput){
+		return interpret(c);
+	}else if(*current_window == wmode){
+		return wmode_input(c);
+	}else if(*current_window == wresult){
+		return wresult_input(c);
+	}
+
+	return 0;
+}

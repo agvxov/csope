@@ -154,7 +154,6 @@ extern	BOOL	*change;	/* change this line */
 extern	BOOL	changing;	/* changing text */
 extern	unsigned int curdispline;
 extern	char	newpat[];	/* new pattern */
-extern	char	Pattern[];	/* symbol or text pattern */
 
 /* crossref.c global data */
 extern	long	dboffset;	/* new database offset */
@@ -209,9 +208,10 @@ extern	struct	keystruct {
 /* mouse.c global data */
 extern	BOOL	mouse;		/* mouse interface */
 
-/* display.c global data */
-extern int input_available;
-extern char input_char;
+/* readline.c global data */
+extern char* rl_line_buffer;
+extern char input_line[PATLEN + 1];
+extern int rl_point;
 
 #if UNIXPC
 extern	BOOL	unixpcmouse;		/* UNIX PC mouse interface */
@@ -245,6 +245,8 @@ extern BOOL	onesearch;		/* one search only in line mode */
 extern char	*reflines;		/* symbol reference lines file */
 void verswp_field(void);
 void horswp_field(void);
+BOOL interpret(int c);	// XXX: probably rename
+int handle_input(const char c);
 
 void	rlinit(void);
 
@@ -299,7 +301,6 @@ void	myungetch(int c);
 void	warning(char *text);
 void	writestring(char *s);
 
-BOOL	command(int commandc);
 BOOL	infilelist(char *file);
 BOOL	readrefs(char *filename);
 BOOL	search(void);

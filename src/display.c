@@ -52,6 +52,12 @@
 #include <stdarg.h>
 #include <assert.h>
 
+static	const char	appendprompt[] = "Append to file: ";
+static	const char	pipeprompt[] = "Pipe to shell command: ";
+static	const char	readprompt[] = "Read from file: ";
+static	const char	toprompt[] = "To: ";
+static	const char	inputprompt[] = "$ ";
+
 int subsystemlen	= sizeof("Subsystem")-1;	/* OGS subsystem name display field length */
 int booklen			= sizeof("Book")-1;     	/* OGS book name display field length */
 int filelen			= sizeof("File")-1;     	/* file name display field length */
@@ -202,7 +208,8 @@ static inline void display_mode(){
 }
 
 static inline void display_command_field(){
-	mvwprintw(winput, 0, 0, INPUT_PROMPT);
+	mvwaddstr(winput, 0, 0, inputprompt);
+	waddstr(winput, rl_line_buffer);
 }
 
 static inline void display_results(){
@@ -228,10 +235,10 @@ static inline void display_results(){
 
 	/* display the pattern */
 	if (changing == YES) {
-	    wprintw(wresult, "Change \"%s\" to \"%s\"", Pattern, newpat);
+	    wprintw(wresult, "Change \"%s\" to \"%s\"", input_line, newpat);
 	} else {
 	    wprintw(wresult, "%c%s: %s", toupper((unsigned char)fields[field].text2[0]),
-		   fields[field].text2 + 1, Pattern);
+		   fields[field].text2 + 1, input_line);
 	}
 	/* display the column headings */
 	wmove(wresult, 2, 2);
@@ -417,7 +424,7 @@ void display_cursor(void){
 	int yoffset = 0, xoffset = 0;
 
 	if(current_window == &winput){
-		xoffset = sizeof(INPUT_PROMPT)-1;
+		xoffset = sizeof(inputprompt)-1 + rl_point;
 	}else if(current_window == &wmode){
 		yoffset = field;
 	}else if(current_window == &wresult){
@@ -439,16 +446,19 @@ display(void)
     //drawscrollbar(topline, nextline);	/* display the scrollbar */
 
 	if(window_change){
-		if(window_change & CH_ALL){
+		if(window_change == CH_ALL){
 			display_frame();
 		}
 		if(window_change & CH_INPUT){
+			werase(winput);
 			display_command_field();
 		}
 		if(window_change & CH_RESULT){
+			werase(wresult);
 			display_results();
 		}
 		if(window_change & CH_MODE){
+			werase(wmode);
 			display_mode();
 		}
 
@@ -478,32 +488,6 @@ verswp_field(void){
 	if(current_window == &wresult){ return; }
 	current_window = (current_window == &winput) ? &wmode : &winput;
 }
-
-/* set the cursor position for the field */
-//void
-//setfield(void)
-//{
-//	fldline = FLDLINE + field;
-//	fldcolumn = strlen(fields[field].text1) + strlen(fields[field].text2) + 3;
-//}
-
-/* move to the current input field */
-//
-//void
-//atfield(void)
-//{
-//	wmove(input_fields, fldline, fldcolumn);
-//}
-
-/* move to the changing lines prompt */
-
-//void
-//atchange(void)
-//{
-//	wmove(wresult, PRLINE, (int) sizeof(selprompt) - 1);
-//}
-
-/* search for the symbol or text pattern */
 
 /*ARGSUSED*/
 static void
@@ -536,15 +520,15 @@ search(void)
 	if (sigsetjmp(env, 1) == 0) {
 		f = fields[field].findfcn;
 		if (f == findregexp || f == findstring) {
-			findresult = (*f)(Pattern);
+			findresult = (*f)(input_line);
 		} else {
 			if ((nonglobalrefs = myfopen(temp2, "wb")) == NULL) {
 				cannotopen(temp2);
 				return(NO);
 			}
-			if ((rc = findinit(Pattern)) == NOERROR) {
+			if ((rc = findinit(input_line)) == NOERROR) {
 				(void) dbseek(0L); /* read the first block */
-				findresult = (*f)(Pattern);
+				findresult = (*f)(input_line);
 				if (f == findcalledby) 
 					funcexist = (*findresult == 'y');
 				findcleanup();
@@ -582,20 +566,20 @@ search(void)
 	if ((c = getc(refsfound)) == EOF) {
 		if (findresult != NULL) {
 			(void) snprintf(lastmsg, sizeof(lastmsg), "Egrep %s in this pattern: %s", 
-				       findresult, Pattern);
+				       findresult, input_line);
 		} else if (rc == NOTSYMBOL) {
 			(void) snprintf(lastmsg, sizeof(lastmsg), "This is not a C symbol: %s", 
-				       Pattern);
+				       input_line);
 		} else if (rc == REGCMPERROR) {
 			(void) snprintf(lastmsg, sizeof(lastmsg), "Error in this regcomp(3) regular expression: %s", 
-				       Pattern);
+				       input_line);
 			
 		} else if (funcexist == NO) {
 			(void) snprintf(lastmsg, sizeof(lastmsg), "Function definition does not exist: %s", 
-				       Pattern);
+				       input_line);
 		} else {
 			(void) snprintf(lastmsg, sizeof(lastmsg), "Could not find the %s: %s", 
-				       fields[field].text2, Pattern);
+				       fields[field].text2, input_line);
 		}
 		return(NO);
 	}
