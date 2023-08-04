@@ -1,7 +1,7 @@
 /*===========================================================================
- Copyright (c) 1998-2000, The Santa Cruz Operation 
+ Copyright (c) 1998-2000, The Santa Cruz Operation
  All rights reserved.
- 
+
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:
 
@@ -14,7 +14,7 @@
 
  *Neither name of The Santa Cruz Operation nor the names of its contributors
  may be used to endorse or promote products derived from this software
- without specific prior written permission. 
+ without specific prior written permission.
 
  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS
  IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
@@ -27,7 +27,7 @@
  HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
  LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
- DAMAGE. 
+ DAMAGE.
  =========================================================================*/
 
 
@@ -125,7 +125,7 @@ sourcedir(char *dirlist)
 
     makevpsrcdirs();        /* make the view source directory list */
     dirlist = strdup(dirlist); /* don't change environment variable text */
-    
+
     /* parse the directory list */
     dir = strtok(dirlist, DIRSEPS);
     while (dir != NULL) {
@@ -133,10 +133,10 @@ sourcedir(char *dirlist)
 
     addsrcdir(dir);
 
-    /* if it isn't a full path name and there is a 
+    /* if it isn't a full path name and there is a
        multi-directory view path */
     if (*dirlist != '/' && vpndirs > 1) {
-        	
+
         /* compute its path from higher view path source dirs */
         for (i = 1; i < nvpsrcdirs; ++i) {
         snprintf(path, sizeof(path), "%.*s/%s",
@@ -158,7 +158,7 @@ addsrcdir(char *dir)
     struct    stat	statstruct;
 
     /* make sure it is a directory */
-    if (lstat(compath(dir), &statstruct) == 0 && 
+    if (lstat(compath(dir), &statstruct) == 0 &&
         S_ISDIR(statstruct.st_mode)) {
 
         /* note: there already is a source directory list */
@@ -193,7 +193,7 @@ includedir(char *dirlist)
 
     makevpsrcdirs();        /* make the view source directory list */
     dirlist = strdup(dirlist); /* don't change environment variable text */
-    
+
     /* parse the directory list */
     dir = strtok(dirlist, DIRSEPS);
     while (dir != NULL) {
@@ -201,13 +201,13 @@ includedir(char *dirlist)
 
     addincdir(dir, dir);
 
-    /* if it isn't a full path name and there is a 
+    /* if it isn't a full path name and there is a
        multi-directory view path */
     if (*dirlist != '/' && vpndirs > 1) {
-        	
+
         /* compute its path from higher view path source dirs */
         for (i = 1; i < nvpsrcdirs; ++i) {
-        snprintf(path, sizeof(path), "%.*s/%s", 
+        snprintf(path, sizeof(path), "%.*s/%s",
         	(int)(PATHLEN - 2 - dir_len),
         	srcdirs[i], dir);
         addincdir(dir, path);
@@ -226,7 +226,7 @@ addincdir(char *name, char *path)
     struct    stat	statstruct;
 
     /* make sure it is a directory */
-    if (lstat(compath(path), &statstruct) == 0 && 
+    if (lstat(compath(path), &statstruct) == 0 &&
         S_ISDIR(statstruct.st_mode)) {
         if (incdirs == NULL) {
         	incdirs = malloc(mincdirs * sizeof(*incdirs));
@@ -247,7 +247,7 @@ addincdir(char *name, char *path)
 void
 freeinclist()
 {
-    if (!incdirs)    
+    if (!incdirs)
         return;
     while(nincdirs>0) {
         free(incdirs[--nincdirs]);
@@ -275,7 +275,7 @@ makefilelist(void)
 
     /* if -i was NOT given and there are source file arguments */
     if (namefile == NULL && fileargc > 0) {
-        
+
     /* put them in a list that can be expanded */
     for (i = 0; i < fileargc; ++i) {
         file = fileargv[i];
@@ -325,24 +325,24 @@ makefilelist(void)
     /* Kill away \n left at end of fgets()'d string: */
     if (*point_in_line == '\n')
         *point_in_line = '\0';
-        	
+
     /* Parse whitespace-terminated strings in line: */
     point_in_line = line;
     while (sscanf(point_in_line, "%" PATHLEN_STR "s", path) == 1) {
         /* Have to store this length --- inviewpath() will
          * modify path, later! */
         length_of_name = strlen(path);
-        	  
+
         if (*path == '-') {    /* if an option */
         if (unfinished_option) {
             /* Can't have another option directly after an
              * -I or -p option with no name after it! */
             fprintf(stderr, "\
-cscope: Syntax error in namelist file %s: unfinished -I or -p option\n", 
+cscope: Syntax error in namelist file %s: unfinished -I or -p option\n",
         	    namefile);
             unfinished_option = 0;
         }
-        				
+
         i = path[1];
         switch (i) {
         case 'c':	/* ASCII characters only in crossref */
@@ -363,8 +363,8 @@ cscope: Syntax error in namelist file %s: unfinished -I or -p option\n",
             s = path + 2;		/* for "-Ipath" */
             if (*s == '\0') {	/* if "-I path" */
         	unfinished_option = i;
-        	break; 
-            } 
+        	break;
+            }
 
             /* this code block used several times in here
              * --> make it a macro to avoid unnecessary
@@ -398,7 +398,7 @@ cscope: Syntax error in namelist file %s: unfinished -I or -p option\n",
             HANDLE_OPTION_ARGUMENT(i, s)
         	break;
         default:
-            fprintf(stderr, "cscope: only -I, -c, -k, -p, and -T options can be in file %s\n", 
+            fprintf(stderr, "cscope: only -I, -c, -k, -p, and -T options can be in file %s\n",
         	    namefile);
         } /* switch(i) */
         } /* if('-') */
@@ -424,7 +424,7 @@ cscope: Syntax error in namelist file %s: unfinished -I or -p option\n",
             } else {
         	newpath[out++] = point_in_line[in++];
             }
-        } /* while(in) */ 
+        } /* while(in) */
         if (in >= PATHLEN) { /* safeguard against almost-overflow */
             newpath[out]='\0';
         }
@@ -489,7 +489,7 @@ scan_dir(const char *adir, BOOL recurse_dir)
         struct dirent *entry;
         char	path[PATHLEN + 1];
 
-        while ((entry = readdir(dirfile)) != NULL) { 
+        while ((entry = readdir(dirfile)) != NULL) {
         	if ((strcmp(".",entry->d_name) != 0)
         	    && (strcmp("..",entry->d_name) != 0)) {
         		struct stat buf;
@@ -499,7 +499,7 @@ scan_dir(const char *adir, BOOL recurse_dir)
         			entry->d_name);
 
         		if (lstat(path,&buf) == 0) {
-        			if (recurse_dir 
+        			if (recurse_dir
                                             && S_ISDIR(buf.st_mode) ) {
         				scan_dir(path, recurse_dir);
         			} else if (issrcfile(path)
@@ -552,13 +552,13 @@ issrcfile(char *path)
         }
     } else if ((s[2] == '\0') /* 2 char suffix */
            && ((s[0] == 'b' && s[1] == 'p') /* breakpoint listing */
-               || (s[0] == 'q' 
+               || (s[0] == 'q'
         	   && (s[1] == 'c' || s[1] == 'h')) /* Ingres */
                || (s[0] == 's' && s[1] == 'd') /* SDL */
                || (s[0] == 'c' && s[1] == 'c') /* C++ source */
                || (s[0] == 'h' && s[1] == 'h'))) { /* C++ header */
         looks_like_source = YES;
-        	
+
     } else if((s[3] == '\0') /* 3 char suffix */
           /* C++ template source */
           && ((s[0] == 't' && s[1] == 'c' && s[2] == 'c' )
@@ -573,9 +573,9 @@ issrcfile(char *path)
 
     if (looks_like_source != YES)
         return NO;
-    
+
     /* make sure it is a file */
-    if (lstat(path, &statstruct) == 0 && 
+    if (lstat(path, &statstruct) == 0 &&
         S_ISREG(statstruct.st_mode)) {
         return(YES);
     }
@@ -695,7 +695,7 @@ addsrcfile(char *path)
 {
     struct    listitem *p;
     int    i;
-    
+
     /* make sure there is room for the file */
     if (nsrcfiles == msrcfiles) {
         msrcfiles += SRCINC;
@@ -718,7 +718,7 @@ freefilelist(void)
     struct    listitem *p, *nextp;
     int    i;
 
-    /* if '-d' option is used a string space block is allocated */    
+    /* if '-d' option is used a string space block is allocated */
     if (isuptodate == NO) {
         while (nsrcfiles > 0) {
         	free (srcfiles[--nsrcfiles]);
@@ -734,7 +734,7 @@ freefilelist(void)
     free (srcfiles);     /* HBB 20000421: avoid leak */
     msrcfiles = 0;
     srcfiles=0;
-    
+
     for (i = 0; i < HASHMOD; ++i) {
         for (p = srcnames[i]; p != NULL; p = nextp) {
         	/* HBB 20000421: avoid memory leak */

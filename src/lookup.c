@@ -1,7 +1,7 @@
 /*===========================================================================
- Copyright (c) 1998-2000, The Santa Cruz Operation 
+ Copyright (c) 1998-2000, The Santa Cruz Operation
  All rights reserved.
- 
+
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:
 
@@ -14,7 +14,7 @@
 
  *Neither name of The Santa Cruz Operation nor the names of its contributors
  may be used to endorse or promote products derived from this software
- without specific prior written permission. 
+ without specific prior written permission.
 
  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS
  IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
@@ -27,7 +27,7 @@
  HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
  LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
- DAMAGE. 
+ DAMAGE.
  =========================================================================*/
 
 /*    cscope - interactive C symbol cross-reference
@@ -84,7 +84,7 @@ struct    keystruct keyword[] = {
     {"unsigned",    ' ',	NULL},
     {"void",    ' ',	NULL},
     {"while",    '(',	NULL},
-    
+
     /* these keywords are not compressed */
     {"do",    	'\0',	NULL},
     {"auto",    ' ',	NULL},
@@ -106,7 +106,7 @@ initsymtab(void)
 {
     unsigned int i, j;
     struct keystruct *p;
-    
+
     for (i = 1; i < KEYWORDS; ++i) {
     p = keyword + i;
     j = hash(p->text) % HASHMOD;
@@ -122,7 +122,7 @@ lookup(char *ident)
 {
     struct    keystruct *p;
     int    c;
-    
+
     /* look up the identifier in the keyword table */
     for (p = hashtab[hash(ident) % HASHMOD]; p != NULL; p = p->next) {
         if (strequal(ident, p->text)) {
@@ -142,7 +142,7 @@ hash(char *ss)
 {
     int    i;
     unsigned char     *s = (unsigned char *)ss;
-    
+
     for (i = 0; *s != '\0'; )
         i += *s++;	/* += is faster than <<= for cscope */
     return(i);

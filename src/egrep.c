@@ -70,9 +70,9 @@
 #line 1 "src/egrep.y"
 
 /*===========================================================================
- Copyright (c) 1998-2000, The Santa Cruz Operation 
+ Copyright (c) 1998-2000, The Santa Cruz Operation
  All rights reserved.
- 
+
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:
 
@@ -85,7 +85,7 @@
 
  *Neither name of The Santa Cruz Operation nor the names of its contributors
  may be used to endorse or promote products derived from this software
- without specific prior written permission. 
+ without specific prior written permission.
 
  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS
  IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
@@ -98,7 +98,7 @@
  HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
  LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
- DAMAGE. 
+ DAMAGE.
  =========================================================================*/
 
 /*
@@ -1565,7 +1565,7 @@ yylex(void)
     return (DOT);
     case '\0':
     return (0);
-    case '[': 
+    case '[':
     x = CCL;
     cclcnt = 0;
     count = nxtchar++;
@@ -1679,12 +1679,12 @@ cfoll(int v)
 
     if (left[v] == 0) {
     count = 0;
-    for (i = 1; i <= line; i++) 
+    for (i = 1; i <= line; i++)
         tmpstat[i] = 0;
     follow(v);
     add(foll, v);
     } else if (right[v] == 0)
-    cfoll(left[v]); 
+    cfoll(left[v]);
     else {
     cfoll(left[v]);
     cfoll(right[v]);
@@ -1877,7 +1877,7 @@ follow(unsigned int v)
 {
     unsigned int p;
 
-    if (v == line) 
+    if (v == line)
     return;
     p = parent[v];
     switch(name[p]) {
@@ -1896,7 +1896,7 @@ follow(unsigned int v)
         follow(p);
         return;
         }
-    } else 
+    } else
         follow(p);
     return;
     case FINAL:
@@ -1968,7 +1968,7 @@ egrep(char *file, FILE *output, char *format)
     int in_line;
     FILE *fptr;
 
-    if ((fptr = myfopen(file, "r")) == NULL) 
+    if ((fptr = myfopen(file, "r")) == NULL)
     return(-1);
 
     lnum = 1;
@@ -2037,7 +2037,7 @@ egrep(char *file, FILE *output, char *format)
     brk2:
     if (--ccount <= 0) {
         ccount = read_next_chunk(&p, fptr);
-        if (ccount <= 0) 
+        if (ccount <= 0)
         break;
     }
     in_line = 1;

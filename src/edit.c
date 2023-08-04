@@ -1,7 +1,7 @@
 /*===========================================================================
- Copyright (c) 1998-2000, The Santa Cruz Operation 
+ Copyright (c) 1998-2000, The Santa Cruz Operation
  All rights reserved.
- 
+
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:
 
@@ -14,7 +14,7 @@
 
  *Neither name of The Santa Cruz Operation nor the names of its contributors
  may be used to endorse or promote products derived from this software
- without specific prior written permission. 
+ without specific prior written permission.
 
  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS
  IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
@@ -27,7 +27,7 @@
  HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
  LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
- DAMAGE. 
+ DAMAGE.
  =========================================================================*/
 
 /*    cscope - interactive C symbol cross-reference
@@ -56,7 +56,7 @@ editref(int i)
     }
     /* get the selected line */
     seekline(i + topline);
-    
+
     /* get the file name and line number */
     if (fscanf(refsfound, "%" PATHLEN_STR "s%*s%" NUMLEN_STR "s", file, linenum) == 2) {
         edit(file, linenum);	/* edit it */
@@ -79,7 +79,7 @@ editall(void)
     }
     /* get the first line */
     seekline(1);
-    
+
     /* get each file name and line number */
     while (fscanf(refsfound, "%" PATHLEN_STR "s%*s%" NUMLEN_STR "s%*[^\n]", file, linenum) == 2) {
         edit(file, linenum);	/* edit it */
@@ -92,7 +92,7 @@ editall(void)
     }
     seekline(topline);
 }
-    
+
 /* call the editor */
 
 void
@@ -108,7 +108,7 @@ edit(char *file, char *linenum)
     (void) snprintf(plusnum, sizeof(plusnum), lineflag, linenum);
     /* if this is the more or page commands */
     if (strcmp(s = basename(editor), "more") == 0 || strcmp(s, "page") == 0) {
-        
+
         /* get it to pause after displaying a file smaller than the screen
            length */
         (void) execute(editor, editor, plusnum, file, "/dev/null", NULL);
@@ -128,7 +128,7 @@ char *
 filepath(char *file)
 {
     static    char	path[PATHLEN + 1];
-    
+
     if (prependpath != NULL && *file != '/') {
         (void) snprintf(path, sizeof(path), "%s/%s", prependpath, file);
         file = path;

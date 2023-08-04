@@ -76,11 +76,11 @@ static int rebuild_reference(){
     if (errorsfound == YES) {
         errorsfound = NO;
         askforreturn();
-    }    	
+    }
     entercurses();
     clearmsg();    	/* clear any previous message */
     totallines = 0;
-    disprefs = 0;    
+    disprefs = 0;
     topline = nextline = 1;
     return(YES);
 }
@@ -95,7 +95,7 @@ static int process_mouse(){
     if (p->button == '0') {
         //scrollbar(p);    // XXX
         return(NO);
-    } 
+    }
     /* ignore a sweep */
     if (p->x2 >= 0) {
         return(NO);

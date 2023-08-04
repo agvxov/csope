@@ -1,7 +1,7 @@
 /*===========================================================================
- Copyright (c) 1998-2000, The Santa Cruz Operation 
+ Copyright (c) 1998-2000, The Santa Cruz Operation
  All rights reserved.
- 
+
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:
 
@@ -14,7 +14,7 @@
 
  *Neither name of The Santa Cruz Operation nor the names of its contributors
  may be used to endorse or promote products derived from this software
- without specific prior written permission. 
+ without specific prior written permission.
 
  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS
  IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
@@ -27,7 +27,7 @@
  HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
  LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
- DAMAGE. 
+ DAMAGE.
  =========================================================================*/
 
 
@@ -279,8 +279,8 @@ invmake(char *invname, char *invpost, FILE *infile)
     }
     /* save the size for reference later */
     nextsupfing = sizeof(long) + sizeof(long) * numlogblk + (supfing - SUPFING);
-    /* make sure the file ends at a logical block boundary.  This is 
-    necessary for invinsert to correctly create extended blocks 
+    /* make sure the file ends at a logical block boundary.  This is
+    necessary for invinsert to correctly create extended blocks
      */
     i = nextsupfing % sizeof(t_logicalblk);
     /* write out junk to fill log blk */
@@ -329,7 +329,7 @@ invmake(char *invname, char *invpost, FILE *infile)
     if (showzipf) {
         printf("\n*************   ZIPF curve  ****************\n");
         for (j = ZIPFSIZE; j > 1; j--)
-        	if (zipf[j]) 
+        	if (zipf[j])
         		break;
         for (i = 1; i < j; ++i) {
         	printf("%3d -%6d ", i, zipf[i]);
@@ -386,7 +386,7 @@ invnewterm(void)
         }
         supfing = i + SUPFING;
 #if DEBUG
-        printf("reallocated superfinger space to %d, totpost=%ld\n", 
+        printf("reallocated superfinger space to %d, totpost=%ld\n",
            supersize, totpost);
 #endif
     }
@@ -427,7 +427,7 @@ invnewterm(void)
     }
     logicalblk.invblk[0] = numinvitems;
     /* set forward pointer pointing to next */
-    logicalblk.invblk[1] = numlogblk + 1; 
+    logicalblk.invblk[1] = numlogblk + 1;
     /* set back pointer to last block */
     logicalblk.invblk[2] = numlogblk - 1;
     if (fwrite(logicalblk.chrblk, 1, sizeof(t_logicalblk), outfile) == 0) {
@@ -440,7 +440,7 @@ invnewterm(void)
     /* check if had to back up, if so do it */
     if (backupflag) {
         char *tptr2;
-        
+
         /* find out where the end of the new block is */
         iteminfo.packword[0] = logicalblk.invblk[numinvitems*2+1];
         tptr3 = logicalblk.chrblk + iteminfo.e.offset;
@@ -507,13 +507,13 @@ invnewterm(void)
     return(1);
 }
 
-/* 
+/*
  * If 'invname' ends with the 'from' substring, it is replaced inline with the
  * 'to' substring (which must be of the exact same length), and the function
- * returns 0. Otherwise, returns -1.  
+ * returns 0. Otherwise, returns -1.
  */
 
-static int 
+static int
 invflipname(char * invname, const char *from, const char *to)
 {
     char *temp, *i = NULL;
@@ -540,9 +540,9 @@ open_for_reading(char *name, int stat)
 
 /* handle opening of a file under a possibly "flipped" name */
 /* If db created without '-f', but now invoked with '-f cscope.out',
- * we need to check for 'cscope.in.out', rather than 'cscope.out.in': 
+ * we need to check for 'cscope.in.out', rather than 'cscope.out.in':
  * I.e, hack around our own violation of the inverse db naming convention */
-/* more silliness: if you create the db with '-f cscope', then try to open 
+/* more silliness: if you create the db with '-f cscope', then try to open
  * it without '-f cscope', you'll fail unless we check for 'cscope.out.in'
  * here. */
 static FILE *
@@ -708,31 +708,31 @@ static void
 invstep(INVCONTROL *invcntl)
 {
     if (invcntl->keypnt < (invcntl->logblk->invblk[0] - 1)) {
-        invcntl->keypnt++; 
+        invcntl->keypnt++;
         return;
     }
 
     /* move forward a block else wrap */
-    invcntl->numblk = invcntl->logblk->invblk[1]; /* was: *(int *)(invcntl->logblk + sizeof(long))*/                           
+    invcntl->numblk = invcntl->logblk->invblk[1]; /* was: *(int *)(invcntl->logblk + sizeof(long))*/
 
     /* now read in the block  */
     fseek(invcntl->invfile,
           invcntl->numblk*invcntl->param.sizeblk + invcntl->param.cntlsize,
           SEEK_SET);
     fread(invcntl->logblk, (int) invcntl->param.sizeblk, 1,
-          invcntl->invfile); 
-    invcntl->keypnt = 0; 
+          invcntl->invfile);
+    invcntl->keypnt = 0;
 }
 
 /** invforward moves forward one term in the inverted file  **/
 int
 invforward(INVCONTROL *invcntl)
 {
-    invstep(invcntl); 
+    invstep(invcntl);
     /* skip things with 0 postings */
     /* FIXME HBB: magic number alert! (3) */
     while (((ENTRY * )(invcntl->logblk->invblk + 3) + invcntl->keypnt)->post == 0) {
-        invstep(invcntl); 
+        invstep(invcntl);
     }
     /* Check for having wrapped - reached start of inverted file! */
     if ((invcntl->numblk == 0) && (invcntl->keypnt == 0))
@@ -894,14 +894,14 @@ static int
 boolready(void)
 {
     numitems = 0;
-    if (item1 != NULL) 
+    if (item1 != NULL)
         free(item1);
     setsize1 = SETINC;
     if ((item1 = malloc(SETINC * sizeof(*item1))) == NULL) {
         invcannotalloc(SETINC);
         return(-1);
     }
-    if (item2 != NULL) 
+    if (item2 != NULL)
         free(item2);
     setsize2 = SETINC;
     if ((item2 = malloc(SETINC * sizeof(*item2))) == NULL) {
@@ -1155,7 +1155,7 @@ boolsave(int clear)        /* flag about whether to clear core  */
     POSTING    *oldstuff, *newstuff;
 
     if (numitems == 0) {
-        if (clear) 
+        if (clear)
         	boolclear();
         return(NULL);
     }

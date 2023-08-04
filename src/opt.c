@@ -1,9 +1,9 @@
 #include "global.h"
 
-#include "build.h" 
+#include "build.h"
 #include "vp.h"
 #include "version.h"    /* FILEVERSION and FIXVERSION */
-#include "scanner.h" 
+#include "scanner.h"
 
 #include <stdlib.h>    /* atoi */
 #include <getopt.h>
@@ -55,7 +55,7 @@ char ** parse_options(int *argc, char **argv)
         			cscope: pattern too long, cannot be > \
         			%d characters\n", PATLEN);
         	}
-        	strcpy(input_line, optarg);	
+        	strcpy(input_line, optarg);
         	break;
         case 'b':	/* only build the cross-reference */
         	buildonly = YES;
@@ -150,7 +150,7 @@ char ** parse_options(int *argc, char **argv)
         }
     }
     /*
-      * This adjusts argv so that we only see the remaining 
+      * This adjusts argv so that we only see the remaining
       * args.  Its ugly, but we need to do it so that the rest
       * of the main routine doesn't get all confused
       */

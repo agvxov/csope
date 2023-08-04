@@ -1,7 +1,7 @@
 /*===========================================================================
- Copyright (c) 1998-2000, The Santa Cruz Operation 
+ Copyright (c) 1998-2000, The Santa Cruz Operation
  All rights reserved.
- 
+
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:
 
@@ -14,7 +14,7 @@
 
  *Neither name of The Santa Cruz Operation nor the names of its contributors
  may be used to endorse or promote products derived from this software
- without specific prior written permission. 
+ without specific prior written permission.
 
  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS
  IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
@@ -27,7 +27,7 @@
  HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
  LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
- DAMAGE. 
+ DAMAGE.
  =========================================================================*/
 
 /*    cscope - interactive C symbol cross-reference
@@ -89,7 +89,7 @@ mouseinit(void)
 
     /* see if this is emacsterm or viterm */
     term = mygetenv("TERM", "");
-    if (strcmp(term, "emacsterm") == 0 || 
+    if (strcmp(term, "emacsterm") == 0 ||
         strcmp(term, "viterm") == 0) {
         emacsviterm = YES;
         mouse = YES;
@@ -101,7 +101,7 @@ mouseinit(void)
         mouse = YES;
     }
 #if UNIXPC
-    else if (strcmp(term,"s4") == 0 || 
+    else if (strcmp(term,"s4") == 0 ||
              strcmp(term,"s120") == 0 ||
              strcmp(term,"s90") == 0) {
         int retval;
@@ -109,11 +109,11 @@ mouseinit(void)
         struct umdata umd;	/* Mouse data structure */
 
         /* Ask for character size info */
-        	
+
         retval = ioctl(1,WIOCGETD,&uwd);
         if(retval || uwd.uw_hs <= 0 || uwd.uw_vs <= 0) {
         	/**************************************************
-        	 * something wrong with the kernel, so fake it... 
+        	 * something wrong with the kernel, so fake it...
         	 **************************************************/
         	if(!strcmp(term,"s4")) {
         		uw_hs = 9;
@@ -129,7 +129,7 @@ mouseinit(void)
         	uw_hs = uwd.uw_hs;
         	uw_vs = uwd.uw_vs;
         }
-        
+
         /**************************************************
          * Now turn on mouse reporting so we can actually
          * make use of all this stuff.
@@ -178,13 +178,13 @@ loadmenu(MENU *menu)
     }
     else {    /* myx */
         int	len;
-        
+
         mousecleanup();
         (void) printf("\033[6;1X\033[9;1X");
         for (i = 0; menu[i].text != NULL; ++i) {
         	len = strlen(menu[i].text);
         	(void) printf("\033[%d;%dx%s%s", len,
-        		      (int) (len + strlen(menu[i].value)), 
+        		      (int) (len + strlen(menu[i].value)),
         		      menu[i].text, menu[i].value);
         }
         loaded = menu;
@@ -214,7 +214,7 @@ mousecleanup(void)
     int    i;
 
     if (loaded != NULL) {    /* only true for myx */
-        
+
         /* remove the mouse menu */
         (void) printf("\033[6;0X\033[9;0X");
         for (i = 0; loaded[i].text != NULL; ++i) {
@@ -273,7 +273,7 @@ getmouseaction(char leading_char)
          */
         int x = 0, y = 0, button = 0, reason = 0;
         int i;
-    
+
         /* Get a mouse report.  The form is: XX;YY;B;RM where
          * XX is 1,2, or 3 decimal digits with the X pixel position.
          * Similarly for YY.  B is a single decimal digit with the
@@ -286,13 +286,13 @@ getmouseaction(char leading_char)
          * return the last character read to the input stream with
          * myungetch().
          */
-        
+
         /* Check for "[?" being next 2 chars */
         if(((i = mygetch()) != '[') || ((i = mygetch()) != '?')) {
         	myungetch(i);
         	return(NULL);
         }
-    
+
         /* Grab the X position (in pixels) */
         while(isdigit(i = mygetch())) {
         	x = (x*10) + (i - '0');
@@ -301,7 +301,7 @@ getmouseaction(char leading_char)
         	myungetch(i);
         	return(NULL);	/* not a mouse report after all */
         }
-    
+
         /* Grab the Y position (in pixels) */
         while(isdigit(i = mygetch())) {
         	y = (y*10) + (i - '0');
@@ -310,7 +310,7 @@ getmouseaction(char leading_char)
         	myungetch(i);
         	return(NULL);
         }
-    
+
         /* Get which button */
         if((button = mygetch()) > '4') {
         	myungetch(button);
@@ -320,20 +320,20 @@ getmouseaction(char leading_char)
         	myungetch(i);
         	return(NULL);
         }
-        
+
         /* Get the reason for this mouse report */
         if((reason = mygetch()) > '8') {
         	myungetch(reason);
         	return(NULL);
         }
-        
+
         /* sequence should terminate with an 'M' */
         if((i = mygetch()) != 'M') {
         	myungetch(i);
         	return(NULL);
         }
-    
-    
+
+
         /* OK.  We get a mouse report whenever a button is depressed
          * or released.  Let's ignore the report whenever the button
          * is depressed until when I am ready to implement sweeping.
@@ -341,23 +341,23 @@ getmouseaction(char leading_char)
         if(reason != '2') {
         	return(NULL);	/* '2' means button is released */
         }
-    
+
         /************************************************************
          * Always indicate button 1 irregardless of which button was
          * really pushed.
          ************************************************************/
         m.button = 1;
-    
+
         /************************************************************
          * Convert pixel coordinates to line and column coords.
          * The height and width are obtained using an ioctl() call
          * in mouseinit().  This assumes that variable width chars
          * are not being used ('though it would probably work anyway).
          ************************************************************/
-        
+
         m.x1 = x/uw_hs;	/* pixel/horizontal_spacing */
         m.y1 = y/uw_vs;	/* pixel/vertical_spacing   */
-    
+
         /* "null" out the other fields */
         m.percent = m.x2 = m.y2 = -1;
     }
@@ -365,7 +365,7 @@ getmouseaction(char leading_char)
 #endif    /* not UNIXPC */
 
     if (mouse == YES && leading_char == ctrl('X')) {
-    
+
         switch (mygetch()) {
         case ctrl('_'):		/* click */
         	if ((m.button = mygetch()) == '0') {	/* if scrollbar */
@@ -377,7 +377,7 @@ getmouseaction(char leading_char)
         		m.x2 = m.y2 = -1;
         	}
         	break;
-    
+
         case ctrl(']'):		/* sweep */
         	m.button = mygetch();
         	m.x1 = getcoordinate();

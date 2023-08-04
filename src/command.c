@@ -1,7 +1,7 @@
 /*===========================================================================
- Copyright (c) 1998-2000, The Santa Cruz Operation 
+ Copyright (c) 1998-2000, The Santa Cruz Operation
  All rights reserved.
- 
+
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:
 
@@ -14,7 +14,7 @@
 
  *Neither name of The Santa Cruz Operation nor the names of its contributors
  may be used to endorse or promote products derived from this software
- without specific prior written permission. 
+ without specific prior written permission.
 
  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS
  IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
@@ -27,7 +27,7 @@
  HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
  LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
- DAMAGE. 
+ DAMAGE.
  =========================================================================*/
 
 /*    cscope - interactive C symbol or text cross-reference
@@ -119,7 +119,7 @@ static void
 mark(unsigned int i)
 {
     unsigned int j;
-    
+
     j = i + topline - 1;
     if (j < totallines) {
     move(displine[i], 1);
@@ -144,13 +144,13 @@ scrollbar(MOUSE *p)
     return;
     }
     switch (p->percent) {
-        
+
     case 101: /* scroll down one page */
     if (nextline + mdisprefs > totallines) {
         nextline = totallines - mdisprefs + 1;
     }
     break;
-        
+
     case 102: /* scroll up one page */
     nextline = topline - mdisprefs;
     if (nextline < 1) {
@@ -161,7 +161,7 @@ scrollbar(MOUSE *p)
     case 103: /* scroll down one line */
     nextline = topline + 1;
     break;
-        
+
     case 104: /* scroll up one line */
     if (topline > 1) {
         nextline = topline - 1;
@@ -191,7 +191,7 @@ countrefs(void)
     /* HBB NOTE 2012-04-07: it may look like we shouldn't assing tempstring here,
      * since it's not used.  But it has to be assigned just so the return value
      * of fscanf will actually reach 4. */
-    while (EOF != (i = fscanf(refsfound, 
+    while (EOF != (i = fscanf(refsfound,
         	      "%" PATHLEN_STR "s%" PATLEN_STR "s%" NUMLEN_STR "s %" TEMPSTRING_LEN_STR "[^\n]",
         	      file, function, linenum, tempstring
         	     )
@@ -230,7 +230,7 @@ countrefs(void)
     rewind(refsfound);
 
     /* restrict the width of displayed columns */
-    /* HBB FIXME 20060419: magic number alert! */ 
+    /* HBB FIXME 20060419: magic number alert! */
     i = (COLS - 5) / 3;
     if (ogs == YES) {
     i = (COLS - 7) / 5;
