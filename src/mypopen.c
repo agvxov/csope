@@ -35,11 +35,11 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/wait.h>
-#include "global.h"	/* pid_t, shell, and basename() */
+#include "global.h"    /* pid_t, shell, and basename() */
 
-#define	tst(a,b) (*mode == 'r'? (b) : (a))
-#define	RDR	0
-#define	WTR	1
+#define    tst(a,b) (*mode == 'r'? (b) : (a))
+#define    RDR    0
+#define    WTR    1
 
 /* HBB 20010312: make this a bit safer --- don't blindly assume it's 1 */
 #ifdef FD_CLOEXEC
@@ -49,7 +49,7 @@
 #endif
 
 #ifdef HAVE_IO_H
-# include <io.h>		/* for setmode() */
+# include <io.h>        /* for setmode() */
 #endif
 
 static pid_t popen_pid[20];
@@ -66,34 +66,34 @@ myopen(char *path, int flag, int mode)
      * mode for files in "binary mounted" paths */
 #if O_BINARY != O_TEXT
     if (! (flag | O_BINARY))
-	flag |= O_TEXT;
+    flag |= O_TEXT;
 #endif
     if(mode)
-	fd = open(path, flag, mode);
+    fd = open(path, flag, mode);
     else
-	fd = open(path, flag);
+    fd = open(path, flag);
 
-#ifdef __DJGPP__		/* FIXME: test feature, not platform */
+#ifdef __DJGPP__        /* FIXME: test feature, not platform */
     /* HBB 20010312: DOS GCC doesn't have FD_CLOEXEC (yet), so it 
      * always fails this call. Have to skip that step */
     if(fd != -1)
-	return(fd);
+    return(fd);
 #endif
     if(fd != -1 && (fcntl(fd, F_SETFD, CLOSE_ON_EXEC) != -1))
-	return(fd);
+    return(fd);
 
     else
-	{
-	    /* Ensure that if the fcntl fails and fd is valid, then
-	       the file is closed properly. In general this should
-	       not happen. */
-	    if (fd != -1)
-		{
-		    close (fd);
-		}
+    {
+        /* Ensure that if the fcntl fails and fd is valid, then
+           the file is closed properly. In general this should
+           not happen. */
+        if (fd != -1)
+        {
+            close (fd);
+        }
 
-	    return(-1);
-	}
+        return(-1);
+    }
 }
 
 FILE *
@@ -106,70 +106,70 @@ myfopen(char *path, char *mode)
 
 #ifdef SETMODE
     if (fp && ! strchr(mode, 'b')) {
-	SETMODE(fileno(fp), O_TEXT);
+    SETMODE(fileno(fp), O_TEXT);
     }
 #endif /* SETMODE */
-	
+    
 #ifdef __DJGPP__ /* FIXME: test feature, not platform */
     /* HBB 20010312: DOS GCC doesn't have FD_CLOEXEC (yet), so it 
      * always fails this call. Have to skip that step */
     if(fp)
 #else
-	if(fp && (fcntl(fileno(fp), F_SETFD, CLOSE_ON_EXEC) != -1))
+    if(fp && (fcntl(fileno(fp), F_SETFD, CLOSE_ON_EXEC) != -1))
 #endif
-	    return(fp);
+        return(fp);
 
-	else {
-	    if (fp)
-		fclose(fp);
-	    return(NULL);
-	}
+    else {
+        if (fp)
+        fclose(fp);
+        return(NULL);
+    }
 }
 
 FILE *
 mypopen(char *cmd, char *mode)
 {
 #ifdef __DJGPP__
-	/* HBB 20010312: Has its own implementation of popen(), which
-	 * is better suited to the platform than cscope's */
-	return (popen)(cmd, mode);
+    /* HBB 20010312: Has its own implementation of popen(), which
+     * is better suited to the platform than cscope's */
+    return (popen)(cmd, mode);
 #else
-	int	p[2];
-	pid_t *poptr;
-	int myside, yourside;
-	pid_t pid;
+    int    p[2];
+    pid_t *poptr;
+    int myside, yourside;
+    pid_t pid;
 
-	if(pipe(p) < 0)
-		return(NULL);
-	myside = tst(p[WTR], p[RDR]);
-	yourside = tst(p[RDR], p[WTR]);
-	if((pid = fork()) == 0) {
-		/* myside and yourside reverse roles in child */
-		int	stdio;
+    if(pipe(p) < 0)
+        return(NULL);
+    myside = tst(p[WTR], p[RDR]);
+    yourside = tst(p[RDR], p[WTR]);
+    if((pid = fork()) == 0) {
+        /* myside and yourside reverse roles in child */
+        int	stdio;
 
-		/* close all pipes from other popen's */
-		for (poptr = popen_pid; poptr < popen_pid+20; poptr++) {
-			if(*poptr)
-				(void) close(poptr - popen_pid);
-		}
-		stdio = tst(0, 1);
-		close(myside);
-		close(stdio);
+        /* close all pipes from other popen's */
+        for (poptr = popen_pid; poptr < popen_pid+20; poptr++) {
+        	if(*poptr)
+        		(void) close(poptr - popen_pid);
+        }
+        stdio = tst(0, 1);
+        close(myside);
+        close(stdio);
 #if V9
-		dup2(yourside, stdio);
+        dup2(yourside, stdio);
 #else
-		fcntl(yourside, F_DUPFD, stdio);
+        fcntl(yourside, F_DUPFD, stdio);
 #endif
-		close(yourside);
-		execlp(shell, basename(shell), "-c", cmd, (void *)0);
-		_exit(1);
-	} else if (pid > 0)
-		tstat = signal(SIGTSTP, SIG_DFL);
-	if(pid == -1)
-		return(NULL);
-	popen_pid[myside] = pid;
-	(void) close(yourside);
-	return(fdopen(myside, mode));
+        close(yourside);
+        execlp(shell, basename(shell), "-c", cmd, (void *)0);
+        _exit(1);
+    } else if (pid > 0)
+        tstat = signal(SIGTSTP, SIG_DFL);
+    if(pid == -1)
+        return(NULL);
+    popen_pid[myside] = pid;
+    (void) close(yourside);
+    return(fdopen(myside, mode));
 #endif /* DJGPP */
 }
 
@@ -179,30 +179,30 @@ int
 mypclose(FILE *ptr)
 {
 #ifdef __DJGPP__ 
-	/* HBB 20010705: This system has its own pclose(), which we
-	 * don't want to replace */
-	return (pclose)(ptr);
+    /* HBB 20010705: This system has its own pclose(), which we
+     * don't want to replace */
+    return (pclose)(ptr);
 #else
-	int f;
-	pid_t r;
-	int status = -1;
-	sighandler_t hstat, istat, qstat;
+    int f;
+    pid_t r;
+    int status = -1;
+    sighandler_t hstat, istat, qstat;
 
-	f = fileno(ptr);
-	(void) fclose(ptr);
-	istat = signal(SIGINT, SIG_IGN);
-	qstat = signal(SIGQUIT, SIG_IGN);
-	hstat = signal(SIGHUP, SIG_IGN);
-	while((r = wait(&status)) != popen_pid[f] && r != -1)
-		; /* nothing */
-	if(r == -1)
-		status = -1;
-	(void) signal(SIGINT, istat);
-	(void) signal(SIGQUIT, qstat);
-	(void) signal(SIGHUP, hstat);
-	(void) signal(SIGTSTP, tstat);
-	/* mark this pipe closed */
-	popen_pid[f] = 0;
-	return(status);
+    f = fileno(ptr);
+    (void) fclose(ptr);
+    istat = signal(SIGINT, SIG_IGN);
+    qstat = signal(SIGQUIT, SIG_IGN);
+    hstat = signal(SIGHUP, SIG_IGN);
+    while((r = wait(&status)) != popen_pid[f] && r != -1)
+        ; /* nothing */
+    if(r == -1)
+        status = -1;
+    (void) signal(SIGINT, istat);
+    (void) signal(SIGQUIT, qstat);
+    (void) signal(SIGHUP, hstat);
+    (void) signal(SIGTSTP, tstat);
+    /* mark this pipe closed */
+    popen_pid[f] = 0;
+    return(status);
 #endif /* DJGPP */
 }

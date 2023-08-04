@@ -30,20 +30,20 @@
  DAMAGE. 
  =========================================================================*/
 
-/*	cscope - interactive C symbol cross-reference
+/*    cscope - interactive C symbol cross-reference
  *
- *	keyword look-up routine for the C symbol scanner
+ *    keyword look-up routine for the C symbol scanner
  */
 
 #include "global.h"
 #include "lookup.h"
 
 /* keyword text for fast testing of keywords in the scanner */
-char	enumtext[] = "enum";
-char	externtext[] = "extern";
-char	structtext[] = "struct";
-char	typedeftext[] = "typedef";
-char	uniontext[] = "union";
+char    enumtext[] = "enum";
+char    externtext[] = "extern";
+char    structtext[] = "struct";
+char    typedeftext[] = "typedef";
+char    uniontext[] = "union";
 
 /* This keyword table is also used for keyword text compression.  Keywords
  * with an index less than the numeric value of a space are replaced with the
@@ -51,53 +51,53 @@ char	uniontext[] = "union";
  * without changing the database file version and adding compatibility code
  * for old databases.
  */
-struct	keystruct keyword[] = {
-	{"",		'\0',	NULL},	/* dummy entry */
-	{"#define",	' ',	NULL},	/* must be table entry 1 */
-	{"#include",	' ',	NULL},	/* must be table entry 2 */
-	{"break",	'\0',	NULL},	/* rarely in cross-reference */
-	{"case",	' ',	NULL},
-	{"char",	' ',	NULL},
-	{"continue",	'\0',	NULL},	/* rarely in cross-reference */
-	{"default",	'\0',	NULL},	/* rarely in cross-reference */
-	{"double",	' ',	NULL},
-	{"\t",		'\0',	NULL},	/* must be the table entry 9 */
-	{"\n",		'\0',	NULL},	/* must be the table entry 10 */
-	{"else",	' ',	NULL},
-	{enumtext,	' ',	NULL},
-	{externtext,	' ',	NULL},
-	{"float",	' ',	NULL},
-	{"for",		'(',	NULL},
-	{"goto",	' ',	NULL},
-	{"if",		'(',	NULL},
-	{"int",		' ',	NULL},
-	{"long",	' ',	NULL},
-	{"register",	' ',	NULL},
-	{"return",	'\0',	NULL},
-	{"short",	' ',	NULL},
-	{"sizeof",	'\0',	NULL},
-	{"static",	' ',	NULL},
-	{structtext,	' ',	NULL},
-	{"switch",	'(',	NULL},
-	{typedeftext,	' ',	NULL},
-	{uniontext,	' ',	NULL},
-	{"unsigned",	' ',	NULL},
-	{"void",	' ',	NULL},
-	{"while",	'(',	NULL},
-	
-	/* these keywords are not compressed */
-	{"do",		'\0',	NULL},
-	{"auto",	' ',	NULL},
-	{"fortran",	' ',	NULL},
-	{"const",	' ',	NULL},
-	{"signed",	' ',	NULL},
-	{"volatile",	' ',	NULL},
+struct    keystruct keyword[] = {
+    {"",    	'\0',	NULL},	/* dummy entry */
+    {"#define",    ' ',	NULL},	/* must be table entry 1 */
+    {"#include",    ' ',	NULL},	/* must be table entry 2 */
+    {"break",    '\0',	NULL},	/* rarely in cross-reference */
+    {"case",    ' ',	NULL},
+    {"char",    ' ',	NULL},
+    {"continue",    '\0',	NULL},	/* rarely in cross-reference */
+    {"default",    '\0',	NULL},	/* rarely in cross-reference */
+    {"double",    ' ',	NULL},
+    {"\t",    	'\0',	NULL},	/* must be the table entry 9 */
+    {"\n",    	'\0',	NULL},	/* must be the table entry 10 */
+    {"else",    ' ',	NULL},
+    {enumtext,    ' ',	NULL},
+    {externtext,    ' ',	NULL},
+    {"float",    ' ',	NULL},
+    {"for",    	'(',	NULL},
+    {"goto",    ' ',	NULL},
+    {"if",    	'(',	NULL},
+    {"int",    	' ',	NULL},
+    {"long",    ' ',	NULL},
+    {"register",    ' ',	NULL},
+    {"return",    '\0',	NULL},
+    {"short",    ' ',	NULL},
+    {"sizeof",    '\0',	NULL},
+    {"static",    ' ',	NULL},
+    {structtext,    ' ',	NULL},
+    {"switch",    '(',	NULL},
+    {typedeftext,    ' ',	NULL},
+    {uniontext,    ' ',	NULL},
+    {"unsigned",    ' ',	NULL},
+    {"void",    ' ',	NULL},
+    {"while",    '(',	NULL},
+    
+    /* these keywords are not compressed */
+    {"do",    	'\0',	NULL},
+    {"auto",    ' ',	NULL},
+    {"fortran",    ' ',	NULL},
+    {"const",    ' ',	NULL},
+    {"signed",    ' ',	NULL},
+    {"volatile",    ' ',	NULL},
 };
-#define KEYWORDS	(sizeof(keyword) / sizeof(keyword[0]))
+#define KEYWORDS    (sizeof(keyword) / sizeof(keyword[0]))
 
-#define HASHMOD	(KEYWORDS * 2 + 1)
+#define HASHMOD    (KEYWORDS * 2 + 1)
 
-static	struct	keystruct *hashtab[HASHMOD]; /* pointer table */
+static    struct    keystruct *hashtab[HASHMOD]; /* pointer table */
 
 /* put the keywords into the symbol table */
 
@@ -106,12 +106,12 @@ initsymtab(void)
 {
     unsigned int i, j;
     struct keystruct *p;
-	
+    
     for (i = 1; i < KEYWORDS; ++i) {
-	p = keyword + i;
-	j = hash(p->text) % HASHMOD;
-	p->next = hashtab[j];
-	hashtab[j] = p;
+    p = keyword + i;
+    j = hash(p->text) % HASHMOD;
+    p->next = hashtab[j];
+    hashtab[j] = p;
     }
 }
 
@@ -120,30 +120,30 @@ initsymtab(void)
 char *
 lookup(char *ident)
 {
-	struct	keystruct *p;
-	int	c;
-	
-	/* look up the identifier in the keyword table */
-	for (p = hashtab[hash(ident) % HASHMOD]; p != NULL; p = p->next) {
-		if (strequal(ident, p->text)) {
-			if (compress == YES && (c = p - keyword) < ' ') {
-				ident[0] = c;	/* compress the keyword */
-			}
-			return(p->text);
-		}
-	}
-	/* this is an identifier */
-	return(NULL);
+    struct    keystruct *p;
+    int    c;
+    
+    /* look up the identifier in the keyword table */
+    for (p = hashtab[hash(ident) % HASHMOD]; p != NULL; p = p->next) {
+        if (strequal(ident, p->text)) {
+        	if (compress == YES && (c = p - keyword) < ' ') {
+        		ident[0] = c;	/* compress the keyword */
+        	}
+        	return(p->text);
+        }
+    }
+    /* this is an identifier */
+    return(NULL);
 }
 
 /* form hash value for string */
 int
 hash(char *ss)
 {
-	int	i;
-	unsigned char 	*s = (unsigned char *)ss;
-	
-	for (i = 0; *s != '\0'; )
-		i += *s++;	/* += is faster than <<= for cscope */
-	return(i);
+    int    i;
+    unsigned char     *s = (unsigned char *)ss;
+    
+    for (i = 0; *s != '\0'; )
+        i += *s++;	/* += is faster than <<= for cscope */
+    return(i);
 }
