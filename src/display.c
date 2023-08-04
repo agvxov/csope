@@ -586,10 +586,10 @@ search(void)
 	/* put back the character read */
 	(void) ungetc(c, refsfound);
 
-	/* HBB 20041027: this used to hold a copy of the code of 
-	 * countrefs(), but with the crucial display width adjustments
-	 * missing.  Just call the real thing instead! */
 	countrefs();
+
+	window_change |= CH_RESULT;
+
 	return(YES);
 }
 
