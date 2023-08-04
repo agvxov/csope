@@ -1,7 +1,7 @@
 /*===========================================================================
- Copyright (c) 1998-2000, The Santa Cruz Operation 
+ Copyright (c) 1998-2000, The Santa Cruz Operation
  All rights reserved.
- 
+
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:
 
@@ -14,7 +14,7 @@
 
  *Neither name of The Santa Cruz Operation nor the names of its contributors
  may be used to endorse or promote products derived from this software
- without specific prior written permission. 
+ without specific prior written permission.
 
  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS
  IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
@@ -27,7 +27,7 @@
  HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
  LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
- DAMAGE. 
+ DAMAGE.
  =========================================================================*/
 
 /*    cscope - interactive C symbol cross-reference
@@ -99,7 +99,7 @@ static    int    fldline;		/* input field line */
 static    sigjmp_buf    env;		/* setjmp/longjmp buffer */
 static    char    lastmsg[MSGLEN + 1];	/* last message displayed */
 static    const char    helpstring[] = "Press the ? key for help";
-static    const char    selprompt[] = 
+static    const char    selprompt[] =
     "Select lines to change (press the ? key for help): ";
 
 typedef char * (*FP)(char *);    /* pointer to function returning a character pointer */
@@ -273,7 +273,7 @@ static inline void display_results(){
     }
     srctxtw -= numlen+1;
 
-    /* until the max references have been displayed or 
+    /* until the max references have been displayed or
        there is no more room */
     topline = nextline;
     for (disprefs = 0, screenline = WRESULT_TABLE_BODY_START;
@@ -284,7 +284,7 @@ static inline void display_results(){
         if (
         		fscanf(refsfound, "%" PATHLEN_STR "s%" PATHLEN_STR "s%" NUMLEN_STR "s %" TEMPSTRING_LEN_STR "[^\n]",
         				file,
-        				function, 
+        				function,
         				linenum,
         				tempstring
         			)
@@ -296,7 +296,7 @@ static inline void display_results(){
         }
         ++nextline;
         displine[disprefs] = screenline;
-        	
+
         wprintw(wresult, "%c", dispchars[disprefs]);
 
         /* display any change mark */
@@ -344,7 +344,7 @@ static inline void display_results(){
         for (;;) {
         /* if the source line does not fit */
         if ((i = strlen(s)) > srctxtw) {
-        			
+
             /* find the nearest blank */
             for (i = srctxtw; s[i] != ' ' && i > 0; --i) {
         		;
@@ -357,7 +357,7 @@ static inline void display_results(){
         /* print up to this point */
         wprintw(wresult, "%.*s", i, s);
         s += i;
-        		
+
         /* if line didn't wrap around */
         if (i < srctxtw) {
             waddch(wresult, '\n');	/* go to next line */
@@ -380,14 +380,14 @@ static inline void display_results(){
         	/* break out of two loops */
         	goto endrefs;
             }
-        			
+
             /* erase the reference */
             while (--screenline >= displine[disprefs]) {
         		wmove(wresult, screenline, 0);
         		wclrtoeol(wresult);
             }
             ++screenline;
-        			 
+
             /* go back to the beginning of this reference */
             --nextline;
             seekline(nextline);
@@ -506,7 +506,7 @@ search(void)
     sighandler_t savesig;    	/* old value of signal */
     FP    f;			/* searching function */
     int    c;
-    
+
     /* open the references found file for writing */
     if (writerefsfound() == NO) {
         return(NO);
@@ -529,7 +529,7 @@ search(void)
         	if ((rc = findinit(input_line)) == NOERROR) {
         		(void) dbseek(0L); /* read the first block */
         		findresult = (*f)(input_line);
-        		if (f == findcalledby) 
+        		if (f == findcalledby)
         			funcexist = (*findresult == 'y');
         		findcleanup();
 
@@ -551,7 +551,7 @@ search(void)
 
     /* rewind the cross-reference file */
     (void) lseek(symrefs, (long) 0, 0);
-    
+
     /* reopen the references found file for reading */
     (void) fclose(refsfound);
     if ((refsfound = myfopen(temp1, "rb")) == NULL) {
@@ -561,24 +561,24 @@ search(void)
     nextline = 1;
     totallines = 0;
     disprefs = 0;
-    
+
     /* see if it is empty */
     if ((c = getc(refsfound)) == EOF) {
         if (findresult != NULL) {
-        	(void) snprintf(lastmsg, sizeof(lastmsg), "Egrep %s in this pattern: %s", 
+        	(void) snprintf(lastmsg, sizeof(lastmsg), "Egrep %s in this pattern: %s",
         		       findresult, input_line);
         } else if (rc == NOTSYMBOL) {
-        	(void) snprintf(lastmsg, sizeof(lastmsg), "This is not a C symbol: %s", 
+        	(void) snprintf(lastmsg, sizeof(lastmsg), "This is not a C symbol: %s",
         		       input_line);
         } else if (rc == REGCMPERROR) {
-        	(void) snprintf(lastmsg, sizeof(lastmsg), "Error in this regcomp(3) regular expression: %s", 
+        	(void) snprintf(lastmsg, sizeof(lastmsg), "Error in this regcomp(3) regular expression: %s",
         		       input_line);
-        	
+
         } else if (funcexist == NO) {
-        	(void) snprintf(lastmsg, sizeof(lastmsg), "Function definition does not exist: %s", 
+        	(void) snprintf(lastmsg, sizeof(lastmsg), "Function definition does not exist: %s",
         		       input_line);
         } else {
-        	(void) snprintf(lastmsg, sizeof(lastmsg), "Could not find the %s: %s", 
+        	(void) snprintf(lastmsg, sizeof(lastmsg), "Could not find the %s: %s",
         		       fields[field].text2, input_line);
         }
         return(NO);
@@ -586,10 +586,10 @@ search(void)
     /* put back the character read */
     (void) ungetc(c, refsfound);
 
-    /* HBB 20041027: this used to hold a copy of the code of 
-     * countrefs(), but with the crucial display width adjustments
-     * missing.  Just call the real thing instead! */
     countrefs();
+
+    window_change |= CH_RESULT;
+
     return(YES);
 }
 
@@ -647,7 +647,7 @@ progress(char *what, long current, long max)
 
 /* print error message on system call failure */
 void
-myperror(char *text) 
+myperror(char *text)
 {
     char    msg[MSGLEN + 1];	/* message */
     char    *s;
@@ -661,7 +661,7 @@ myperror(char *text)
 /* postmsg clears the message line and prints the message */
 
 void
-postmsg(char *msg) 
+postmsg(char *msg)
 {
     if (linemode == YES || incurses == NO) {
         (void) printf("%s\n", msg);
@@ -696,7 +696,7 @@ clearmsg2(void)
 
 /* postmsg2 clears the second message line and prints the message */
 void
-postmsg2(char *msg) 
+postmsg2(char *msg)
 {
     if (linemode == YES) {
         (void) printf("%s\n", msg);
@@ -710,19 +710,19 @@ postmsg2(char *msg)
 
 /* display an error mesg - stdout or on second msg line */
 void
-posterr(char *msg, ...) 
+posterr(char *msg, ...)
 {
     va_list ap;
     char errbuf[MSGLEN];
-    
+
     va_start(ap, msg);
     if (linemode == YES || incurses == NO)
     {
-        (void) vfprintf(stderr, msg, ap); 
+        (void) vfprintf(stderr, msg, ap);
     (void) fputc('\n', stderr);
     } else {
         vsnprintf(errbuf, sizeof(errbuf), msg, ap);
-        postmsg2(errbuf); 
+        postmsg2(errbuf);
     }
     va_end(ap);
 }
@@ -750,7 +750,7 @@ postfatal(const char *msg, ...)
 
 /* position references found file at specified line */
 void
-seekline(unsigned int line) 
+seekline(unsigned int line)
 {
     int    c;
 
@@ -760,7 +760,7 @@ seekline(unsigned int line)
     }
     /* go to the beginning of the file */
     rewind(refsfound);
-    
+
     /* find the requested line */
     nextline = 1;
     while (nextline < line && (c = getc(refsfound)) != EOF) {
@@ -804,7 +804,7 @@ pathcomponents(char *path, int components)
 {
     int    i;
     char    *s;
-    
+
     s = path + strlen(path) - 1;
     for (i = 0; i < components; ++i) {
         while (s > path && *--s != '/') {
