@@ -476,17 +476,24 @@ display(void)
 void
 horswp_field(void){
 	if(current_window != &wresult){
+		if(current_window == &winput){
+			window_change |= CH_INPUT;
+		}else{
+			window_change |= CH_MODE;
+		}
 		last_window = current_window;
 		current_window = &wresult;
 	}else{
 		current_window = last_window;
 	}
+	window_change |= CH_RESULT;
 }
 
 void
 verswp_field(void){
 	if(current_window == &wresult){ return; }
 	current_window = (current_window == &winput) ? &wmode : &winput;
+	window_change |= CH_INPUT | CH_MODE;
 }
 
 /*ARGSUSED*/

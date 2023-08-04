@@ -37,14 +37,6 @@ static void callback_handler(char* line){
 	search();
 }
 
-static int horswp_field_proxy(int i, int h){
-	horswp_field();
-}
-
-static int verswp_field_proxy(int i, int h){
-	verswp_field();
-}
-
 static int interpret_break(){
 	do_terminate = YES;
 }
@@ -134,9 +126,6 @@ void rlinit(){
 	rl_input_available_hook = input_available_hook;
 	rl_redisplay_function = redisplay_function;
 	rl_callback_handler_install("", callback_handler);
-
-	rl_bind_key('\t', horswp_field_proxy);
-	rl_bind_key('%', verswp_field_proxy);
 
 	rl_bind_key(EOF, interpret_break);
 	rl_bind_key(ctrl('D'), interpret_break);	//XXX: why the fuck does it not work if its the first char?

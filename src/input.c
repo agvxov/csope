@@ -397,6 +397,12 @@ wresult_input(const int c){
 static int
 global_input(const int c){
 	switch(c){
+		case '\t':
+			horswp_field();
+			break;
+		case '%':
+			verswp_field();
+			break;
 		case ' ':	/* display next page */
 		case '+':
 		case ctrl('V'):
@@ -466,7 +472,7 @@ global_input(const int c){
 			////	}
 			////}
 			////clearprompt();
-			return(NO);	/* return to the previous field */
+			break;
 		case '<':	/* read lines from a file */
 			break;					// XXX
 			move(PRLINE, 0);
@@ -536,7 +542,7 @@ global_input(const int c){
 		case ctrl('L'):	/* redraw screen */
 		case KEY_CLEAR:
 			window_change = CH_ALL;
-			return(NO);
+			break;
 		case '?':	/* help */
 			clear();
 			help();
@@ -546,9 +552,11 @@ global_input(const int c){
 		case ctrl('E'):	/* edit all lines */
 			editall();
 			break;
+		default:
+			return 0;
 	}
 
-	return 0;
+	return 1;
 }
 
 extern const void const* winput;
@@ -560,7 +568,7 @@ int
 handle_input(const char c){
 	/* --- global --- */
 	const int r = global_input(c);
-	if(r){ return r; }
+	if(r){ return 0; }
 	/* --- mode specific --- */
 	if(*current_window == winput){
 		return interpret(c);
