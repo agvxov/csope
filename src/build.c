@@ -1,7 +1,7 @@
 /*===========================================================================
- Copyright (c) 1998-2000, The Santa Cruz Operation 
+ Copyright (c) 1998-2000, The Santa Cruz Operation
  All rights reserved.
- 
+
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:
 
@@ -14,7 +14,7 @@
 
  *Neither name of The Santa Cruz Operation nor the names of its contributors
  may be used to endorse or promote products derived from this software
- without specific prior written permission. 
+ without specific prior written permission.
 
  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS
  IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
@@ -27,7 +27,7 @@
  HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
  LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
- DAMAGE. 
+ DAMAGE.
  =========================================================================*/
 
 
@@ -102,7 +102,7 @@ cscope: cannot create inverted index; ignoring -q option\n");
     invertedindex = NO;
     errorsfound = YES;
     fprintf(stderr, "\
-cscope: removed files %s and %s\n", 
+cscope: removed files %s and %s\n",
         newinvname, newinvpost);
     unlink(newinvname);
     unlink(newinvpost);
@@ -165,7 +165,7 @@ opendatabase(void)
     myexit(1);
     }
     blocknumber = -1;    /* force next seek to read the first block */
-    
+
     /* open any inverted index */
     if (invertedindex == YES &&
     invopen(&invcontrol, invname, invpost, INVAVAIL) == -1) {
@@ -232,7 +232,7 @@ build(void)
     /* or this is an unconditional build */
     if ((oldrefs = vpfopen(reffile, "rb")) != NULL
     && unconditional == NO
-    && fscanf(oldrefs, "cscope %d %" PATHLEN_STR "s", &fileversion, olddir) == 2 
+    && fscanf(oldrefs, "cscope %d %" PATHLEN_STR "s", &fileversion, olddir) == 2
     && (strcmp(olddir, currentdir) == 0 /* remain compatible */
         || strcmp(olddir, newdir) == 0)) {
     /* get the cross-reference file's modification time */
@@ -294,10 +294,10 @@ cscope: -q option mismatch between command line and old symbol database\n");
         goto outofdate;
     }
     /* see if the directory lists are the same */
-    if (samelist(oldrefs, srcdirs, nsrcdirs) == NO 
-        || samelist(oldrefs, incdirs, nincdirs) == NO 
+    if (samelist(oldrefs, srcdirs, nsrcdirs) == NO
+        || samelist(oldrefs, incdirs, nincdirs) == NO
         /* get the old number of files */
-        || fscanf(oldrefs, "%lu", &oldnum) != 1 
+        || fscanf(oldrefs, "%lu", &oldnum) != 1
         /* skip the string space size */
         || (fileversion >= 9 && fscanf(oldrefs, "%*s") != 0)) {
         goto outofdate;
@@ -320,7 +320,7 @@ cscope: -q option mismatch between command line and old symbol database\n");
     }
     fclose(oldrefs);
     return;
-        
+
     outofdate:
     /* if the database format has changed, rebuild it all */
     if (fileversion != FILEVERSION) {
@@ -339,7 +339,7 @@ cscope: converting to new symbol database file format\n");
     scanpast('\t');    /* skip the header */
     oldfile = getoldfile();
     } else {    /* force cross-referencing of all the source files */
-    force:    
+    force:
     reftime = 0;
     oldfile = NULL;
     }
@@ -377,7 +377,7 @@ cscope: converting to new symbol database file format\n");
 
     /* get the next source file name */
     for (fileindex = firstfile; fileindex < lastfile; ++fileindex) {
-        	
+
         /* display the progress about every three seconds */
         if (interactive == YES && fileindex % 10 == 0) {
         progress("Building symbol database", fileindex, lastfile);
@@ -396,14 +396,14 @@ cscope: converting to new symbol database file format\n");
         /* if this file was modified */
         crossref(file);
         ++built;
-        		
+
         /* skip its old crossref so modifying the last source
          * file does not cause all included files to be built.
          * Unfortunately a new file that is alphabetically
          * last will cause all included files to be build, but
          * this is less likely */
         oldfile = getoldfile();
-        } else {    
+        } else {
         /* copy its cross-reference */
         putfilename(file);
         if (invertedindex == YES) {
@@ -430,10 +430,10 @@ cscope: converting to new symbol database file format\n");
     /* add a null file name to the trailing tab */
     putfilename("");
     dbputc('\n');
-    
+
     /* get the file trailer offset */
     traileroffset = dboffset;
-    
+
     /* output the source and include directory and file lists */
     putlist(srcdirs, nsrcdirs);
     putlist(incdirs, nincdirs);
@@ -474,7 +474,7 @@ cscope: converting to new symbol database file format\n");
     rewind(newrefs);
     putheader(newdir);
     fclose(newrefs);
-    
+
     /* close the old database file */
     if (symrefs >= 0) {
     close(symrefs);
@@ -485,7 +485,7 @@ cscope: converting to new symbol database file format\n");
     /* replace it with the new database file */
     movefile(newreffile, reffile);
 }
-    
+
 
 /* string comparison function for qsort */
 static int
@@ -493,14 +493,14 @@ compare(const void *arg_s1, const void *arg_s2)
 {
     const char **s1 = (const char **) arg_s1;
     const char **s2 = (const char **) arg_s2;
-        	
+
     return(strcmp(*s1, *s2));
 }
 
 
 /* seek to the trailer, in a given file */
-void 
-seek_to_trailer(FILE *f) 
+void
+seek_to_trailer(FILE *f)
 {
     if (fscanf(f, "%ld", &traileroffset) != 1) {
     postfatal("cscope: cannot read trailer offset from file %s\n", reffile);
@@ -541,7 +541,7 @@ void free_newbuildfiles(void)
     free(newinvname);
     free(newinvpost);
     free(newreffile);
-}    
+}
 
 
 /* output the cscope version, current directory, database format options, and
@@ -555,7 +555,7 @@ putheader(char *dir)
     }
     if (invertedindex == YES) {
     dboffset += fprintf(newrefs, " -q %.10ld", totalterms);
-    } else {    
+    } else {
     /* leave space so if the header is overwritten without -q
      * because writing the inverted index failed, the header
      * is the same length */
@@ -567,7 +567,7 @@ putheader(char *dir)
 
     dboffset += fprintf(newrefs, " %.10ld\n", traileroffset);
 #ifdef PRINTF_RETVAL_BROKEN
-    dboffset = ftell(newrefs); 
+    dboffset = ftell(newrefs);
 #endif
 }
 
@@ -577,7 +577,7 @@ static void
 putlist(char **names, int count)
 {
     int    i, size = 0;
-    
+
     fprintf(newrefs, "%d\n", count);
     if (names == srcfiles) {
 
@@ -613,7 +613,7 @@ copydata(void)
         }
     } while (*++cp == '\0' && (cp = read_block()) != NULL);
     dbputc('\t');    /* copy the tab */
-        
+
     /* get the next character */
     /* HBB 2010-08-21: potential problem if above loop was left
      * with cp==NULL */
@@ -659,7 +659,7 @@ copyinverted(void)
         }
     } while (*++cp == '\0' && (cp = read_block()) != NULL);
     dbputc('\n');    /* copy the newline */
-        
+
     /* get the next character */
     /* HBB 2010-08-21: potential problem if above loop was left
      * with cp==NULL */
@@ -735,4 +735,3 @@ fetch_include_from_dbase(char *s, size_t length)
     fetch_string_from_dbase(s, length);
     incfile(s + 1, s);
 }
-

@@ -1,7 +1,7 @@
 /*===========================================================================
- Copyright (c) 1998-2000, The Santa Cruz Operation 
+ Copyright (c) 1998-2000, The Santa Cruz Operation
  All rights reserved.
- 
+
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:
 
@@ -14,7 +14,7 @@
 
  *Neither name of The Santa Cruz Operation nor the names of its contributors
  may be used to endorse or promote products derived from this software
- without specific prior written permission. 
+ without specific prior written permission.
 
  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS
  IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
@@ -27,7 +27,7 @@
  HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
  LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
- DAMAGE. 
+ DAMAGE.
  =========================================================================*/
 
 /*    cscope - interactive C symbol or text cross-reference
@@ -49,7 +49,7 @@
 #include <regex.h>
 
 /* most of these functions have been optimized so their innermost loops have
- * only one test for the desired character by putting the char and 
+ * only one test for the desired character by putting the char and
  * an end-of-block marker (\0) at the end of the disk block buffer.
  * When the inner loop exits on the char, an outer loop will see if
  * the char is followed by a \0.  If so, it will read the next block
@@ -101,7 +101,7 @@ findassign(char *pattern)
 /* Test reference whether it's an assignment to the symbol found at
  * (global variable) 'blockp' */
 static BOOL
-check_for_assignment(void) 
+check_for_assignment(void)
 {
     /* Do the extra work here to determine if this is an
      * assignment or not.  Do this by examining the next character
@@ -123,21 +123,21 @@ check_for_assignment(void)
     return YES;
     }
     /* check for plain '=', not '==' */
-    if ((asgn_char[0] == '=') && 
-    (((asgn_char[1] != '=') && !(asgn_char[1] & 0x80)) || 
+    if ((asgn_char[0] == '=') &&
+    (((asgn_char[1] != '=') && !(asgn_char[1] & 0x80)) ||
      ((asgn_char[1] & 0x80) && (dichar1[(asgn_char[1]& 0177)/8] != '=')))) {
     return YES;
     }
 
     /* check for operator assignments: +=, ... ^= ? */
-    if (   (   (asgn_char[0] == '+') 
+    if (   (   (asgn_char[0] == '+')
         || (asgn_char[0] == '-')
-        || (asgn_char[0] == '*') 
-        || (asgn_char[0] == '/') 
-        || (asgn_char[0] == '%') 
-        || (asgn_char[0] == '&') 
-        || (asgn_char[0] == '|') 
-        || (asgn_char[0] == '^') 
+        || (asgn_char[0] == '*')
+        || (asgn_char[0] == '/')
+        || (asgn_char[0] == '%')
+        || (asgn_char[0] == '&')
+        || (asgn_char[0] == '|')
+        || (asgn_char[0] == '^')
        )
     && ((asgn_char[1] == '=') || ((asgn_char[1] & 0x80) && (dichar1[(asgn_char[1] &0177)/8] == '=')))
 
@@ -146,7 +146,7 @@ check_for_assignment(void)
     }
 
     /* check for two-letter operator assignments: <<= or >>= ? */
-    if (   (   (asgn_char[0] == '<') 
+    if (   (   (asgn_char[0] == '<')
             || (asgn_char[0] == '>')
            )
     && (asgn_char[1] == asgn_char[0])
@@ -190,7 +190,7 @@ find_symbol_or_assignment(char *pattern, BOOL assign_flag)
     fetch_string_from_dbase(file, sizeof(file));
     strcpy(function, global); /* set the dummy global function name */
     strcpy(macro, global);    /* set the dummy global macro name */
-    
+
     /* find the next symbol */
     /* note: this code was expanded in-line for speed */
     /* other macros were replaced by code using cp instead of blockp */
@@ -220,21 +220,21 @@ find_symbol_or_assignment(char *pattern, BOOL assign_flag)
         		/* save the name */
         		skiprefchar();
         		fetch_string_from_dbase(file, sizeof(file));
-        	
+
         		/* check for the end of the symbols */
         		if (*file == '\0') {
         			return NULL;
         		}
         		progress("Search", searchcount, nsrcfiles);
         		/* FALLTHROUGH */
-        		
+
         	case FCNEND:		/* function end */
         		(void) strcpy(function, global);
         		goto notmatched;	/* don't match name */
-        		
+
         	case FCNDEF:		/* function name */
         		fcndef = YES;
-        		s = function; 
+        		s = function;
         		s_len = sizeof(function);
         		break;
 
@@ -242,7 +242,7 @@ find_symbol_or_assignment(char *pattern, BOOL assign_flag)
         		if (fileversion >= 10) {
         			s = macro;
         			s_len = sizeof(macro);
-        		} else {	
+        		} else {
         			s = symbol;
         			s_len = sizeof(symbol);
         		}
@@ -254,7 +254,7 @@ find_symbol_or_assignment(char *pattern, BOOL assign_flag)
 
         	case INCLUDE:			/* #include file */
         		goto notmatched;	/* don't match name */
-        	
+
         	default:		/* other symbol */
         		s = symbol;
         		s_len = sizeof(symbol);
@@ -264,11 +264,11 @@ find_symbol_or_assignment(char *pattern, BOOL assign_flag)
         	fetch_string_from_dbase(s, s_len);
 
         	/* see if this is a regular expression pattern */
-        	if (isregexp_valid == YES) { 
+        	if (isregexp_valid == YES) {
         		if (caseless == YES) {
         			s = lcasify(s);
         		}
-        		if (*s != '\0' && regexec (&regexp, s, (size_t)0, NULL, 0) == 0) { 
+        		if (*s != '\0' && regexec (&regexp, s, (size_t)0, NULL, 0) == 0) {
         			goto matched;
         		}
         	}
@@ -280,9 +280,9 @@ find_symbol_or_assignment(char *pattern, BOOL assign_flag)
         }
         /* if this is a regular expression pattern */
         if (isregexp_valid == YES) {
-        	
+
         	/* if this is a symbol */
-        	
+
         	/**************************************************
         	 * The first character may be a digraph'ed char, so
         	 * unpack it into firstchar, and then test that.
@@ -296,7 +296,7 @@ find_symbol_or_assignment(char *pattern, BOOL assign_flag)
         	else {
         		firstchar = *cp;
         	}
-        	
+
         	if (isalpha((unsigned char)firstchar) || firstchar == '_') {
         		blockp = cp;
         		fetch_string_from_dbase(symbol, sizeof(symbol));
@@ -306,7 +306,7 @@ find_symbol_or_assignment(char *pattern, BOOL assign_flag)
         		else {
         			s = symbol;
         		}
-        		
+
         		/* match the symbol to the regular expression */
         		if (*s != '\0' && regexec (&regexp, s, (size_t)0, NULL, 0) == 0) {
         			goto matched;
@@ -386,7 +386,7 @@ finddef(char *pattern)
     /* find the next file name or definition */
     while (scanpast('\t') != NULL) {
         switch (*blockp) {
-        	
+
         case NEWFILE:
         	skiprefchar();	/* save file name */
         	fetch_string_from_dbase(file, sizeof(file));
@@ -407,14 +407,14 @@ finddef(char *pattern)
         case GLOBALDEF:		/* other global definition */
         	skiprefchar();	/* match name to pattern */
         	if (match()) {
-        
+
         		/* output the file, function and source line */
         		putref(0, file, pattern);
         	}
         	break;
         }
     }
-    
+
     return NULL;
 }
 /* find all function definitions (used by samuel only) */
@@ -430,7 +430,7 @@ findallfcns(char *dummy)
     /* find the next file name or definition */
     while (scanpast('\t') != NULL) {
         switch (*blockp) {
-        	
+
         case NEWFILE:
         	skiprefchar();	/* save file name */
         	fetch_string_from_dbase(file, sizeof(file));
@@ -439,7 +439,7 @@ findallfcns(char *dummy)
         	}
         	progress("Search", searchcount, nsrcfiles);
         	/* FALLTHROUGH */
-        	
+
         case FCNEND:		/* function end */
         	(void) strcpy(function, global);
         	break;
@@ -471,7 +471,7 @@ findcalling(char *pattern)
 
     if (invertedindex == YES) {
         POSTING	*p;
-        
+
         findterm(pattern);
         while ((p = getposting()) != NULL) {
         	if (p->type == FCNCALL) {
@@ -487,7 +487,7 @@ findcalling(char *pattern)
     for (i = 0; i < 10; i++) *(tmpfunc[i]) = '\0';
     while (scanpast('\t') != NULL) {
         switch (*blockp) {
-        	
+
         case NEWFILE:		/* save file name */
         	skiprefchar();
         	fetch_string_from_dbase(file, sizeof(file));
@@ -497,7 +497,7 @@ findcalling(char *pattern)
         	progress("Search", searchcount, nsrcfiles);
         	(void) strcpy(function, global);
         	break;
-        	
+
         case DEFINE:		/* could be a macro */
         	if (fileversion >= 10) {
         		skiprefchar();
@@ -520,7 +520,7 @@ findcalling(char *pattern)
         		if (++morefuns >= 10) morefuns = 9;
         	}
         	break;
-        	
+
         case FCNEND:
         	for (i = 0; i < morefuns; i++)
         		*(tmpfunc[i]) = '\0';
@@ -530,7 +530,7 @@ findcalling(char *pattern)
         case FCNCALL:		/* match function called to pattern */
         	skiprefchar();
         	if (match()) {
-        		
+
         		/* output the file, calling function or macro, and source */
         		if (*macro != '\0') {
         			putref(1, file, macro);
@@ -545,7 +545,7 @@ findcalling(char *pattern)
         	}
         }
     }
-    
+
     return NULL;
 }
 
@@ -566,7 +566,7 @@ findstring(char *pattern)
         *cp++ = *pp;
     }
     *cp = '\0';
-    
+
     /* search the source files */
     return(findregexp(egreppat));
 }
@@ -601,7 +601,7 @@ char *
 findfile(char *dummy)
 {
     unsigned int i;
-    
+
     (void) dummy;        /* unused argument */
 
     for (i = 0; i < nsrcfiles; ++i) {
@@ -613,7 +613,7 @@ findfile(char *dummy)
         s = srcfiles[i];
     }
     if (regexec (&regexp, s, (size_t)0, NULL, 0) == 0) {
-        (void) fprintf(refsfound, "%s <unknown> 1 <unknown>\n", 
+        (void) fprintf(refsfound, "%s <unknown> 1 <unknown>\n",
         	   srcfiles[i]);
     }
     }
@@ -643,7 +643,7 @@ findinclude(char *pattern)
     /* find the next file name or function definition */
     while (scanpast('\t') != NULL) {
         switch (*blockp) {
-        	
+
         case NEWFILE:		/* save file name */
         	skiprefchar();
         	fetch_string_from_dbase(file, sizeof(file));
@@ -652,18 +652,18 @@ findinclude(char *pattern)
         	}
         	progress("Search", searchcount, nsrcfiles);
         	break;
-        	
+
         case INCLUDE:		/* match function called to pattern */
         	skiprefchar();
         	skiprefchar();	/* skip global or local #include marker */
         	if (match()) {
-        		
+
         		/* output the file and source line */
         		putref(0, file, global);
         	}
         }
     }
-    
+
     return NULL;
 }
 
@@ -685,7 +685,7 @@ findinit(char *pattern)
     isregexp_valid = NO;
 
     /* remove trailing white space */
-    for (s = pattern + strlen(pattern) - 1; 
+    for (s = pattern + strlen(pattern) - 1;
          isspace((unsigned char)*s);
          --s) {
         *s = '\0';
@@ -700,7 +700,7 @@ findinit(char *pattern)
 
     /* allow a partial match for a file name */
     if (field == FILENAME || field == INCLUDES) {
-        if (regcomp (&regexp, pattern, REG_EXTENDED | REG_NOSUB) != 0) { 
+        if (regcomp (&regexp, pattern, REG_EXTENDED | REG_NOSUB) != 0) {
         	return(REGCMPERROR);
         } else {
         	isregexp_valid = YES;
@@ -818,7 +818,7 @@ static BOOL
 matchrest(void)
 {
     int    i = 1;
-    
+
     skiprefchar();
     do {
         while (*blockp == cpattern[i]) {
@@ -826,7 +826,7 @@ matchrest(void)
         	++i;
         }
     } while (*(blockp + 1) == '\0' && read_block() != NULL);
-    
+
     if (*blockp == '\n' && cpattern[i] == '\0') {
         return(YES);
     }
@@ -858,7 +858,7 @@ putsource(int seemore, FILE *output)
     char *tmpblockp;
     char    *cp, nextc = '\0';
     BOOL Change = NO, retreat = NO;
-    
+
     if (fileversion <= 5) {
         (void) scanpast(' ');
         putline(output);
@@ -877,7 +877,7 @@ putsource(int seemore, FILE *output)
         }
     }
     blockp = cp;
-    if (*blockp != '\n' || getrefchar() != '\n' || 
+    if (*blockp != '\n' || getrefchar() != '\n' ||
         (!isdigit(getrefchar()) && fileversion >= 12)) {
         postfatal("Internal error: cannot get source line from database");
         /* NOTREACHED */
@@ -913,12 +913,12 @@ putline(FILE *output)
 {
     char    *cp;
     unsigned c;
-    
+
     setmark('\n');
     cp = blockp;
     do {
         while ((c = (unsigned)(*cp)) != '\n') {
-        	
+
         	/* check for a compressed digraph */
         	if (c > '\177') {
         		c &= 0177;
@@ -980,7 +980,7 @@ char *
 scanpast(char c)
 {
     char *cp;
-    
+
     setmark(c);
     cp = blockp;
     do {    /* innermost loop optimized to only one test */
@@ -1003,11 +1003,11 @@ read_block(void)
     /* read the next block */
     blocklen = read(symrefs, block, BUFSIZ);
     blockp = block;
-    
+
     /* add the search character and end-of-block mark */
     block[blocklen] = blockmark;
     block[blocklen + 1] = '\0';
-    
+
     /* return NULL on end-of-file */
     if (blocklen == 0) {
         blockp = NULL;
@@ -1023,7 +1023,7 @@ lcasify(char *s)
 {
     static char ls[PATLEN+1];    /* largest possible match string */
     char *lptr = ls;
-    
+
     while(*s) {
         *lptr = tolower((unsigned char)*s);
         lptr++;
@@ -1049,7 +1049,7 @@ findcalledby(char *pattern)
 
     if (invertedindex == YES) {
         POSTING	*p;
-        
+
         findterm(pattern);
         while ((p = getposting()) != NULL) {
         	switch (p->type) {
@@ -1067,7 +1067,7 @@ findcalledby(char *pattern)
     /* find the function definition(s) */
     while (scanpast('\t') != NULL) {
         switch (*blockp) {
-        	
+
         case NEWFILE:
         	skiprefchar();	/* save file name */
         	fetch_string_from_dbase(file, sizeof(file));
@@ -1118,7 +1118,7 @@ findterm(char *pattern)
     }
     /* if letter case is to be ignored */
     if (caseless == YES) {
-        
+
         /* convert the prefix to upper case because it is lexically
            less than lower case */
         s = prefix;
@@ -1146,7 +1146,7 @@ findterm(char *pattern)
         }
         /* if it matches */
         if (regexec (&regexp, s, (size_t)0, NULL, 0) == 0) {
-    
+
         	/* add its postings to the set */
         	if ((postingp = boolfile(&invcontrol, &npostings, BOOL_OR)) == NULL) {
         		break;
@@ -1154,7 +1154,7 @@ findterm(char *pattern)
         }
         /* if there is a prefix */
         else if (len > 0) {
-        	
+
         	/* if ignoring letter case and the term is out of the
         	   range of possible matches */
         	if (caseless == YES) {
@@ -1172,7 +1172,7 @@ findterm(char *pattern)
         	progress("Symbols matched", searchcount, totalterms);
         }
     } while (invforward(&invcontrol));    /* while didn't wrap around */
-    
+
     /* initialize the progress message for retrieving the references */
     searchcount = 0;
     postingsfound = npostings;
@@ -1235,7 +1235,7 @@ dbseek(long offset)
 {
     long    n;
     int    rc = 0;
-    
+
     if ((n = offset / BUFSIZ) != blocknumber) {
         if ((rc = lseek(symrefs, n * BUFSIZ, 0)) == -1) {
         	myperror("Lseek failed");
@@ -1255,15 +1255,15 @@ findcalledbysub(char *file, BOOL macro)
     /* find the next function call or the end of this function */
     while (scanpast('\t') != NULL) {
         switch (*blockp) {
-        
+
         case DEFINE:		/* #define inside a function */
         	if (fileversion >= 10) {	/* skip it */
         		while (scanpast('\t') != NULL &&
-        		    *blockp != DEFINEEND) 
+        		    *blockp != DEFINEEND)
         			;
         	}
         	break;
-        
+
         case FCNCALL:		/* function call */
 
         	/* output the file name */
@@ -1279,7 +1279,7 @@ findcalledbysub(char *file, BOOL macro)
         	break;
 
         case DEFINEEND:		/* #define end */
-        	
+
         	if (invertedindex == NO) {
         		if (macro == YES) {
         			return;

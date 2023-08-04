@@ -1,7 +1,7 @@
 /*===========================================================================
- Copyright (c) 1998-2000, The Santa Cruz Operation 
+ Copyright (c) 1998-2000, The Santa Cruz Operation
  All rights reserved.
- 
+
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:
 
@@ -14,7 +14,7 @@
 
  *Neither name of The Santa Cruz Operation nor the names of its contributors
  may be used to endorse or promote products derived from this software
- without specific prior written permission. 
+ without specific prior written permission.
 
  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS
  IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
@@ -27,7 +27,7 @@
  HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
  LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
- DAMAGE. 
+ DAMAGE.
  =========================================================================*/
 
 /*    cscope - interactive C symbol cross-reference
@@ -58,30 +58,30 @@ typedef void (*sighandler_t)(int);
 
 #include <fcntl.h>
 
-typedef    enum	{		/* boolean data type */
+typedef    enum    {		/* boolean data type */
     NO,
     YES
 } BOOL;
 
-typedef    enum	{		/* findinit return code */
+typedef    enum    {		/* findinit return code */
     NOERROR,
     NOTSYMBOL,
     REGCMPERROR
 } FINDINIT;
 
-typedef    struct {		/* mouse action */
-    int	button;
-    int	percent;
-    int	x1;
-    int	y1;
-    int	x2;
-    int	y2;
+typedef    struct {    	/* mouse action */
+    int    button;
+    int    percent;
+    int    x1;
+    int    y1;
+    int    x2;
+    int    y2;
 } MOUSE;
 
-struct cmd {    		/* command history struct */
-    struct	cmd *prev, *next;	/* list ptrs */
-    int	field;			/* input field number */
-    char	*text;			/* input field text */
+struct cmd {        	/* command history struct */
+    struct    cmd *prev, *next;	/* list ptrs */
+    int    field;			/* input field number */
+    char    *text;			/* input field text */
 };
 
 enum {
@@ -100,113 +100,113 @@ enum {
 
 
 /* digraph data for text compression */
-extern    char	dichar1[];	/* 16 most frequent first chars */
-extern    char	dichar2[];	/* 8 most frequent second chars 
-    			   using the above as first chars */
-extern    char	dicode1[];	/* digraph first character code */
-extern    char	dicode2[];	/* digraph second character code */
+extern    char    dichar1[];	/* 16 most frequent first chars */
+extern    char    dichar2[];	/* 8 most frequent second chars
+        		   using the above as first chars */
+extern    char    dicode1[];	/* digraph first character code */
+extern    char    dicode2[];	/* digraph second character code */
 
 /* and some macros to help using dicodes: */
 /* Check if a given pair of chars is compressable as a dicode: */
-#define IS_A_DICODE(inchar1, inchar2)    				   \
+#define IS_A_DICODE(inchar1, inchar2)        			   \
   (dicode1[(unsigned char)(inchar1)] && dicode2[(unsigned char)(inchar2)])
 /* Combine the pair into a dicode */
-#define DICODE_COMPRESS(inchar1, inchar2)    	\
+#define DICODE_COMPRESS(inchar1, inchar2)        \
   ((0200 - 2) + dicode1[(unsigned char)(inchar1)]    \
    + dicode2[(unsigned char)(inchar2)])
 
 /* main.c global data */
-extern    char	*editor, *home, *shell, *lineflag;	/* environment variables */
-extern    char	*home;		/* Home directory */
-extern     BOOL	lineflagafterfile;
-extern    char	*argv0;		/* command name */
-extern    BOOL	compress;	/* compress the characters in the crossref */
-extern    BOOL	dbtruncated;	/* database symbols truncated to 8 chars */
-extern    int	dispcomponents;	/* file path components to display */
+extern    char    *editor, *home, *shell, *lineflag;	/* environment variables */
+extern    char    *home;		/* Home directory */
+extern     BOOL    lineflagafterfile;
+extern    char    *argv0;		/* command name */
+extern    BOOL    compress;	/* compress the characters in the crossref */
+extern    BOOL    dbtruncated;	/* database symbols truncated to 8 chars */
+extern    int    dispcomponents;	/* file path components to display */
 #if CCS
-extern    BOOL	displayversion;	/* display the C Compilation System version */
+extern    BOOL    displayversion;	/* display the C Compilation System version */
 #endif
-extern    BOOL	editallprompt;	/* prompt between editing files */
-extern    unsigned int fileargc;	/* file argument count */
-extern    char	**fileargv;	/* file argument values */
-extern    int	fileversion;	/* cross-reference file version */
-extern    BOOL	incurses;	/* in curses */
-extern    BOOL	invertedindex;	/* the database has an inverted index */
-extern    BOOL	isuptodate;	/* consider the crossref up-to-date */
-extern    BOOL	kernelmode;	/* don't use DFLT_INCDIR - bad for kernels */
-extern    BOOL	linemode;	/* use line oriented user interface */
-extern    BOOL	verbosemode;	/* print extra information on line mode */
-extern    BOOL	recurse_dir;	/* recurse dirs when searching for src files */
-extern    char	*namefile;	/* file of file names */
-extern    BOOL	ogs;		/* display OGS book and subsystem names */
-extern    char	*prependpath;	/* prepend path to file names */
-extern    FILE	*refsfound;	/* references found file */
-extern    char	temp1[];	/* temporary file name */
-extern    char	temp2[];	/* temporary file name */
-extern    long	totalterms;	/* total inverted index terms */
-extern    BOOL	trun_syms;	/* truncate symbols to 8 characters */
-extern    char	tempstring[TEMPSTRING_LEN + 1]; /* global dummy string buffer */
-extern    char	*tmpdir;	/* temporary directory */
+extern    BOOL    editallprompt;	/* prompt between editing files */
+extern    unsigned int fileargc;    /* file argument count */
+extern    char    **fileargv;	/* file argument values */
+extern    int    fileversion;	/* cross-reference file version */
+extern    BOOL    incurses;	/* in curses */
+extern    BOOL    invertedindex;	/* the database has an inverted index */
+extern    BOOL    isuptodate;	/* consider the crossref up-to-date */
+extern    BOOL    kernelmode;	/* don't use DFLT_INCDIR - bad for kernels */
+extern    BOOL    linemode;	/* use line oriented user interface */
+extern    BOOL    verbosemode;	/* print extra information on line mode */
+extern    BOOL    recurse_dir;	/* recurse dirs when searching for src files */
+extern    char    *namefile;	/* file of file names */
+extern    BOOL    ogs;		/* display OGS book and subsystem names */
+extern    char    *prependpath;	/* prepend path to file names */
+extern    FILE    *refsfound;	/* references found file */
+extern    char    temp1[];	/* temporary file name */
+extern    char    temp2[];	/* temporary file name */
+extern    long    totalterms;	/* total inverted index terms */
+extern    BOOL    trun_syms;	/* truncate symbols to 8 characters */
+extern    char    tempstring[TEMPSTRING_LEN + 1]; /* global dummy string buffer */
+extern    char    *tmpdir;	/* temporary directory */
 
 /* command.c global data */
-extern    BOOL	caseless;	/* ignore letter case when searching */
-extern    BOOL	*change;	/* change this line */
-extern    BOOL	changing;	/* changing text */
+extern    BOOL    caseless;	/* ignore letter case when searching */
+extern    BOOL    *change;	/* change this line */
+extern    BOOL    changing;	/* changing text */
 extern    unsigned int curdispline;
-extern    char	newpat[];	/* new pattern */
+extern    char    newpat[];	/* new pattern */
 
 /* crossref.c global data */
-extern    long	dboffset;	/* new database offset */
-extern    BOOL	errorsfound;	/* prompt before clearing error messages */
-extern    long	lineoffset;	/* source line database offset */
-extern    long	npostings;	/* number of postings */
-extern    unsigned long symbols;	/* number of symbols */
+extern    long    dboffset;	/* new database offset */
+extern    BOOL    errorsfound;	/* prompt before clearing error messages */
+extern    long    lineoffset;	/* source line database offset */
+extern    long    npostings;	/* number of postings */
+extern    unsigned long symbols;    /* number of symbols */
 
 /* dir.c global data */
-extern    char	currentdir[];	/* current directory */
-extern    char	**incdirs;	/* #include directories */
-extern    char	**srcdirs;	/* source directories */
-extern    char	**srcfiles;	/* source files */
-extern    unsigned long nincdirs;	/* number of #include directories */
-extern    unsigned long nsrcdirs;	/* number of source directories */
+extern    char    currentdir[];	/* current directory */
+extern    char    **incdirs;	/* #include directories */
+extern    char    **srcdirs;	/* source directories */
+extern    char    **srcfiles;	/* source files */
+extern    unsigned long nincdirs;    /* number of #include directories */
+extern    unsigned long nsrcdirs;    /* number of source directories */
 extern    unsigned long nsrcfiles; /* number of source files */
 extern    unsigned long msrcfiles; /* maximum number of source files */
 
 /* display.c global data */
-extern    int subsystemlen;			/* OGS subsystem name display field length */
-extern     int booklen;				/* OGS book name display field length */
-extern    int filelen;				/* file name display field length */
-extern    int fcnlen;					/* function name display field length */
-extern    int numlen;					/* line number display field length */
-extern    int	*displine;				/* screen line of displayed reference */
-extern    unsigned int disprefs;		/* displayed references */
-extern    int	field;					/* input field */
-extern    unsigned fldcolumn;			/* input field column */
-extern    unsigned int mdisprefs;		/* maximum displayed references */
-extern    unsigned int nextline;		/* next line to be shown */
-extern    FILE	*nonglobalrefs;		/* non-global references file */
-extern    unsigned int topline;		/* top line of page */
-extern    long	searchcount;		/* count of files searched */
-extern    unsigned int totallines;	/* total reference lines */
-extern    const char dispchars[];		/* display chars for jumping to lines */
+extern    int subsystemlen;    		/* OGS subsystem name display field length */
+extern     int booklen;    			/* OGS book name display field length */
+extern    int filelen;    			/* file name display field length */
+extern    int fcnlen;    				/* function name display field length */
+extern    int numlen;    				/* line number display field length */
+extern    int    *displine;				/* screen line of displayed reference */
+extern    unsigned int disprefs;    	/* displayed references */
+extern    int    field;					/* input field */
+extern    unsigned fldcolumn;    		/* input field column */
+extern    unsigned int mdisprefs;    	/* maximum displayed references */
+extern    unsigned int nextline;    	/* next line to be shown */
+extern    FILE    *nonglobalrefs;		/* non-global references file */
+extern    unsigned int topline;    	/* top line of page */
+extern    long    searchcount;		/* count of files searched */
+extern    unsigned int totallines;    /* total reference lines */
+extern    const char dispchars[];    	/* display chars for jumping to lines */
 extern    int window_change;
 
 /* find.c global data */
-extern    char	block[];	/* cross-reference file block */
-extern    char	blockmark;	/* mark character to be searched for */
-extern    long	blocknumber;	/* block number */
-extern    char	*blockp;	/* pointer to current character in block */
-extern    int	blocklen;	/* length of disk block read */
+extern    char    block[];	/* cross-reference file block */
+extern    char    blockmark;	/* mark character to be searched for */
+extern    long    blocknumber;	/* block number */
+extern    char    *blockp;	/* pointer to current character in block */
+extern    int    blocklen;	/* length of disk block read */
 
 /* lookup.c global data */
-extern    struct	keystruct {
-    char	*text;
-    char	delim;
-    struct	keystruct *next;
+extern    struct    keystruct {
+    char    *text;
+    char    delim;
+    struct    keystruct *next;
 } keyword[];
 
 /* mouse.c global data */
-extern    BOOL	mouse;		/* mouse interface */
+extern    BOOL    mouse;		/* mouse interface */
 
 /* readline.c global data */
 extern char* rl_line_buffer;
@@ -214,10 +214,10 @@ extern char input_line[PATLEN + 1];
 extern int rl_point;
 
 #if UNIXPC
-extern    BOOL	unixpcmouse;		/* UNIX PC mouse interface */
+extern    BOOL    unixpcmouse;		/* UNIX PC mouse interface */
 #endif
 
-/* cscope functions called from more than one function or between files */ 
+/* cscope functions called from more than one function or between files */
 
 char    *filepath(char *file);
 char    *findcalledby(char *pattern);
@@ -241,8 +241,8 @@ void    error_usage(void);
 void    longusage(void);
 void    usage(void);
 extern BOOL    remove_symfile_onexit;
-extern BOOL    onesearch;		/* one search only in line mode */
-extern char    *reflines;		/* symbol reference lines file */
+extern BOOL    onesearch;    	/* one search only in line mode */
+extern char    *reflines;    	/* symbol reference lines file */
 void verswp_field(void);
 void horswp_field(void);
 BOOL interpret(int c);    // XXX: probably rename

@@ -1,8 +1,8 @@
 %{
 /*===========================================================================
- Copyright (c) 1998-2000, The Santa Cruz Operation 
+ Copyright (c) 1998-2000, The Santa Cruz Operation
  All rights reserved.
- 
+
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:
 
@@ -15,7 +15,7 @@
 
  *Neither name of The Santa Cruz Operation nor the names of its contributors
  may be used to endorse or promote products derived from this software
- without specific prior written permission. 
+ without specific prior written permission.
 
  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS
  IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
@@ -28,7 +28,7 @@
  HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
  LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
- DAMAGE. 
+ DAMAGE.
  =========================================================================*/
 
 /*	cscope - interactive C symbol cross-reference
@@ -57,8 +57,8 @@ int	last;	/* buffer index for last char of symbol */
 int	lineno;	/* symbol line number */
 int	myylineno = 1;
 
-/* HBB 20001007: new variables, emulating yytext in a way that allows 
- * the yymore() simulation, my_yymore(), to be used even in the presence of 
+/* HBB 20001007: new variables, emulating yytext in a way that allows
+ * the yymore() simulation, my_yymore(), to be used even in the presence of
  * yyless(). */
 size_t my_yyleng = 0;
 char *my_yytext = NULL;
@@ -141,7 +141,7 @@ wsnl		[ \t\r\v\f\n]|{comment}
 				first = strlen(my_yytext);
 				if (lex == YES) {
 					(void) strcat(my_yytext, "yylex");
-				} else {	
+				} else {
 					/* yacc: yyparse implicitly calls yylex */
 					char *s = " yylex()";
 					char *cp = s + strlen(s);
@@ -179,7 +179,7 @@ wsnl		[ \t\r\v\f\n]|{comment}
 
 \{		{	/* count unmatched left braces for fcn def detection */
 			++braces;
-			
+
 			/* mark an untagged enum/struct/union so its beginning
 			   can be found */
 			if (tagdef) {
@@ -214,7 +214,7 @@ wsnl		[ \t\r\v\f\n]|{comment}
 		}
 <WAS_ENDIF>\n{wsnl}*#{ws}*if(ndef|def)?{ws}+		{
 			/* attempt to correct erroneous brace count caused by:
-			 * 
+			 *
 			 * #if ...
 			 * 	... {
 			 * #endif
@@ -274,7 +274,7 @@ wsnl		[ \t\r\v\f\n]|{comment}
 <IN_PREPROC>else({ws}.*)?	{ /* #else --- eat up whole line */
 			elseelif = YES;
 			if (iflevel > 0) {
-				
+
 				/* save the maximum brace count for this #if */
 				if (braces > maxifbraces[iflevel - 1]) {
 					maxifbraces[iflevel - 1] = braces;
@@ -290,7 +290,7 @@ wsnl		[ \t\r\v\f\n]|{comment}
 			/* elseelif = YES; --- HBB I doubt this is correct */
 		elif:
 			if (iflevel > 0) {
-				
+
 				/* save the maximum brace count for this #if */
 				if (braces > maxifbraces[iflevel - 1]) {
 					maxifbraces[iflevel - 1] = braces;
@@ -307,7 +307,7 @@ wsnl		[ \t\r\v\f\n]|{comment}
 <IN_PREPROC>include{ws}*<[^>\n]+> 	{ /* #include file */
 			char	*s;
 			char remember = yytext[yyleng-1];
-			
+
 			my_yymore();
 			s = strpbrk(my_yytext, "\"<");
 			if (!s)
@@ -418,7 +418,7 @@ wsnl		[ \t\r\v\f\n]|{comment}
 			/* NOTREACHED */
 		}
 <IN_PREPROC>define{ws}+{identifier}	{
-				
+
 			/* preprocessor macro or constant definition */
 			ppdefine = YES;
 			token = DEFINE;
@@ -484,7 +484,7 @@ class{wsnl}+{identifier}({wsnl}|{identifier}|[():])*\{	{	/* class definition */
 			tagdef = '\0';
 			goto more;
 		}
-({wsnl}+{identifier})?{wsnl}* 	|   
+({wsnl}+{identifier})?{wsnl}* 	|
 .|\n										{   /* e/s/u usage */
 			BEGIN(WAS_IDENTIFIER);
 			goto ident;
@@ -495,7 +495,7 @@ if{wsnl}*\(	{ 	/* ignore 'if' */
 			yyless(2);
 			yy_set_bol(0);
 			goto more;
-}	
+}
 
 {identifier}	{	/* identifier found: do nothing, yet. (!) */
 			BEGIN(WAS_IDENTIFIER);
@@ -504,14 +504,14 @@ if{wsnl}*\(	{ 	/* ignore 'if' */
 			/* NOTREACHED */
 		}
 
-<WAS_IDENTIFIER>{       
+<WAS_IDENTIFIER>{
 {ws}*\(({wsnl}|{identifier}|{number}|[*&[\]=,.:])*\)([()]|{wsnl})*[:a-zA-Z_#{]	{
 			/* a function definition */
-			/* note: "#define a (b) {" and "#if defined(a)\n#" 
+			/* note: "#define a (b) {" and "#if defined(a)\n#"
 			 * are not fcn definitions! */
-			/* warning: "if (...)" must not overflow yytext, 
-			 * so the content of function argument definitions 
-			 * is restricted, in particular parentheses are 
+			/* warning: "if (...)" must not overflow yytext,
+			 * so the content of function argument definitions
+			 * is restricted, in particular parentheses are
 			 * not allowed */
 			/* FIXME HBB 20001003: the above 'not allowed' may well be the
 			 * reason for the parsing bug concerning function pointer usage,
@@ -548,10 +548,10 @@ if{wsnl}*\(	{ 	/* ignore 'if' */
 			char	*s;
 
 			if (global == YES && ppdefine == NO && my_yytext[0] != '#' &&
-			    external == NO && initializer == NO && 
+			    external == NO && initializer == NO &&
 			    arraydimension == NO && structfield == NO &&
 			    template == NO && fcndef == NO) {
-				if (esudef == YES) {	
+				if (esudef == YES) {
 					/* if enum/struct/union */
 					token = MEMBERDEF;
 				} else {
@@ -564,7 +564,7 @@ if{wsnl}*\(	{ 	/* ignore 'if' */
 		fcn:
 			if (YYSTATE == WAS_IDENTIFIER) {
 				/* Position back to the actual identifier: */
-				last = first; 
+				last = first;
 				first = ident_start;
 				yyless(0);
 				/* HBB 20001008: if the anti-backup-pattern above matched,
@@ -583,10 +583,10 @@ if{wsnl}*\(	{ 	/* ignore 'if' */
 			/* if a long line */
 			if (yyleng > STMTMAX) {
 				int	c;
-				
+
 				/* skip to the end of the line */
 				warning("line too long");
-				while ((c = input()) > LEXEOF) { 
+				while ((c = input()) > LEXEOF) {
 					if (c == '\n') {
 						unput(c);
 						break;
@@ -603,7 +603,7 @@ if{wsnl}*\(	{ 	/* ignore 'if' */
 			/* if found word was a keyword: */
 			if ((s = lookup(my_yytext + first)) != NULL) {
 				first = my_yyleng;
-				
+
 				/* if the start of a typedef */
 				if (s == typedeftext) {
 					typedefbraces = braces;
@@ -619,19 +619,19 @@ if{wsnl}*\(	{ 	/* ignore 'if' */
 					externalbraces = braces;
 					external = YES;
 				} else if (templateparens == parens && template == YES) {
-					/* keyword doesn't start a function 
+					/* keyword doesn't start a function
 					 * template */
 					templateparens = -1;
 					template = NO;
-				} else {	
-					/* identifier after typedef was a 
+				} else {
+					/* identifier after typedef was a
 					 * keyword */
 					oldtype = NO;
 				}
-			} else {	
+			} else {
 				/* not a keyword --> found an identifier */
 				/* last = yyleng; */
-				
+
 				/* if a class/enum/struct/union tag definition */
 				/* FIXME HBB 20001001: why reject "class"? */
 				if (tagdef && strnotequal(my_yytext + first, "class")) {
@@ -722,12 +722,12 @@ if{wsnl}*\(	{ 	/* ignore 'if' */
 		}
 
 \'		{	/* character constant */
-			if (sdl == NO) 
+			if (sdl == NO)
 				BEGIN(IN_SQUOTE);
 			goto more;
 			/* NOTREACHED */
 		}
-<IN_SQUOTE>\'	{	
+<IN_SQUOTE>\'	{
 			BEGIN(INITIAL);
 			goto more;
 			/* NOTREACHED */
@@ -737,7 +737,7 @@ if{wsnl}*\(	{ 	/* ignore 'if' */
 			goto more;
 			/* NOTREACHED */
 		}
-<IN_DQUOTE>\"	{	
+<IN_DQUOTE>\"	{
 			BEGIN(INITIAL);
 			goto more;
 			/* NOTREACHED */
@@ -759,10 +759,10 @@ if{wsnl}*\(	{ 	/* ignore 'if' */
 			/* NOTREACHED */
 		}
 }
-	
+
 ^{ws}+		{		/* don't save leading white space */
 		}
-		
+
 {ws}+\n 	{		/* eat whitespace at end of line */
 			unput('\n');
 		}
@@ -794,7 +794,7 @@ if{wsnl}*\(	{ 	/* ignore 'if' */
 			unput(' ');
 			yy_pop_state();
 		}
-}		
+}
 
 "//".*\n?		{
 			/* C++-style one-line comment */
@@ -805,7 +805,7 @@ if{wsnl}*\(	{ 	/* ignore 'if' */
 {number}				|	/* number */
 <SDL>STATE[ \t]+		|   /* ... and other syntax error catchers... */
 .						{	/* punctuation and operators */
-						more:	
+						more:
 							my_yymore();
 							first = my_yyleng;
 						}
@@ -816,7 +816,7 @@ void
 initscanner(char *srcfile)
 {
 	char	*s;
-	
+
 	if (maxifbraces == NULL) {
 		maxifbraces = malloc(miflevel * sizeof(*maxifbraces));
 		preifbraces = malloc(miflevel * sizeof(*preifbraces));
@@ -855,7 +855,7 @@ initscanner(char *srcfile)
 	if (my_yytext)
 		*my_yytext = '\0';
 	my_yyleng = 0;
-	
+
 	BEGIN(INITIAL);
 
 	/* if this is not a C file */
@@ -892,13 +892,13 @@ static void
 my_yymore(void)
 {
 	static size_t yytext_size = 0;
-	
+
 	/* my_yytext is an ever-growing buffer. It will not ever
 	 * shrink, nor will it be freed at end of program, for now */
 	while (my_yyleng + yyleng + 1 >= yytext_size) {
 		my_yytext = realloc(my_yytext, yytext_size += MY_YY_ALLOCSTEP);
 	}
-	
+
 	strncpy (my_yytext + my_yyleng, yytext, yyleng+1);
 	my_yyleng += yyleng;
 }

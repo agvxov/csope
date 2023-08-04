@@ -1,7 +1,7 @@
 /*===========================================================================
- Copyright (c) 1998-2000, The Santa Cruz Operation 
+ Copyright (c) 1998-2000, The Santa Cruz Operation
  All rights reserved.
- 
+
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:
 
@@ -14,7 +14,7 @@
 
  *Neither name of The Santa Cruz Operation nor the names of its contributors
  may be used to endorse or promote products derived from this software
- without specific prior written permission. 
+ without specific prior written permission.
 
  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS
  IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
@@ -27,7 +27,7 @@
  HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
  LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
- DAMAGE. 
+ DAMAGE.
  =========================================================================*/
 
 
@@ -103,7 +103,7 @@ crossref(char *srcfile)
     errorsfound = YES;
     return;
     }
-    
+
     entry_no = 0;
     /* open the source file */
     if ((yyin = myfopen(srcfile, "r")) == NULL) {
@@ -124,7 +124,7 @@ crossref(char *srcfile)
     symbol = malloc(msymbols * sizeof(*symbol));
     }
     for (;;) {
-        
+
     /* get the next token */
     switch (token = yylex()) {
     default:
@@ -149,7 +149,7 @@ crossref(char *srcfile)
         if (length == symbol[i].length
             && strncmp(my_yytext + first,
         	       my_yytext + symbol[i].first,
-        	       length) == 0 
+        	       length) == 0
             && entry_no == symbol[i].fcn_level
             && token == symbol[i].type
             ) {	/* could be a::a() */
@@ -175,10 +175,10 @@ crossref(char *srcfile)
         my_yyleng = 0;
 #endif
         break;
-        	
+
     case LEXERR:    /* Lexer error, abort further parsing of this file */
     case LEXEOF:    /* end of file; last line may not have \n */
-        	
+
         	/* if there were symbols, output them and the source line */
         if (symbols > 0) {
         putcrossref();
@@ -253,7 +253,7 @@ putcrossref(void)
 
     blank = NO;
     for (i = 0; i < my_yyleng; ++i) {
-        
+
     /* change a tab to a blank and compress blanks */
     if ((c = my_yytext[i]) == ' ' || c == '\t') {
         blank = YES;
@@ -266,7 +266,7 @@ putcrossref(void)
         dbputc(' ');
         }
         dbputc('\n');    /* symbols start on a new line */
-        	
+
         /* output any symbol type */
         if ((type = symbol[symput].type) != IDENT) {
         dbputc('\t');
@@ -287,7 +287,7 @@ putcrossref(void)
         i = j - 1;
         ++symput;
     } else {
-        /* HBB: try to save some time by early-out handling of 
+        /* HBB: try to save some time by early-out handling of
          * non-compressed mode */
         if (compress == NO) {
         if (blank == YES) {
@@ -323,11 +323,11 @@ putcrossref(void)
         }
         dbputc((int) c);
         blank = NO;
-        	
+
         /* skip compressed characters */
         if (c < ' ') {
         ++i;
-        		
+
         /* skip blanks before a preprocesor keyword */
         /* note: don't use isspace() because \f and \v
            are used for keywords */
@@ -436,10 +436,10 @@ putposting(char *term, int type)
     do {
         (void) putc(*s, postings);
     } while (*++s != '\0');
-    
+
     /* postings are also sorted by type */
     (void) putc(type, postings);
-    
+
     /* function or macro name offset */
     if (offset > 0) {
         (void) putc(' ', postings);
@@ -462,12 +462,12 @@ writestring(char *s)
 {
     unsigned char c;
     int    i;
-    
+
     if (compress == NO) {
         /* Save some I/O overhead by using puts() instead of putc(): */
         dbfputs(s);
         return;
-    } 
+    }
     /* compress digraphs */
     for (i = 0; (c = s[i]) != '\0'; ++i) {
         if (/* dicode1[c] && dicode2[(unsigned char) s[i + 1]] */
@@ -476,7 +476,7 @@ writestring(char *s)
         	c = DICODE_COMPRESS(c, s[i + 1]);
         	++i;
         }
-        dbputc(c);	
+        dbputc(c);
     }
 }
 
@@ -485,8 +485,8 @@ writestring(char *s)
 void
 warning(char *text)
 {
-    
-    (void) fprintf(stderr, "cscope: \"%s\", line %d: warning: %s\n", filename, 
+
+    (void) fprintf(stderr, "cscope: \"%s\", line %d: warning: %s\n", filename,
         myylineno, text);
     errorsfound = YES;
 }

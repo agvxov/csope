@@ -1,7 +1,7 @@
 /*===========================================================================
- Copyright (c) 1998-2000, The Santa Cruz Operation 
+ Copyright (c) 1998-2000, The Santa Cruz Operation
  All rights reserved.
- 
+
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:
 
@@ -14,7 +14,7 @@
 
  *Neither name of The Santa Cruz Operation nor the names of its contributors
  may be used to endorse or promote products derived from this software
- without specific prior written permission. 
+ without specific prior written permission.
 
  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS
  IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
@@ -27,7 +27,7 @@
  HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
  LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
- DAMAGE. 
+ DAMAGE.
  =========================================================================*/
 
 /*    cscope - interactive C symbol cross-reference
@@ -91,10 +91,10 @@ execute(char *a, ...)    /* note: "exec" is already defined on u370 */
         exitcode = join(p);	/* parent */
     }
 #endif /* MSDOS */
-    
+
     /* the menu and scrollbar may be changed by the command executed */
 #if UNIXPC || !TERMINFO
-# ifndef __DJGPP__ /* leave CRLF handling as is */      
+# ifndef __DJGPP__ /* leave CRLF handling as is */
     nonl();
 # endif
     raw();    /* endwin() turns off cbreak mode so restore it */
@@ -115,7 +115,7 @@ static int
 myexecvp(char *a, char **args)
 {
     char    msg[MSGLEN + 1];
-    
+
     /* modify argv[0] to reference the last component of its path name */
     args[0] = basename(args[0]);
 
@@ -137,14 +137,14 @@ myfork(void)
     pid_t    p;		/* process number */
 
     p = fork();
-    
+
     /* the parent ignores the interrupt, quit, and hangup signals */
     if (p > 0) {
         oldsigquit = signal(SIGQUIT, SIG_IGN);
         oldsighup = signal(SIGHUP, SIG_IGN);
-#ifdef SIGTSTP        
+#ifdef SIGTSTP
         oldsigtstp = signal(SIGTSTP, SIG_DFL);
-#endif        
+#endif
     }
     /* so they can be used to stop the child */
     else if (p == 0) {
@@ -153,7 +153,7 @@ myfork(void)
         signal(SIGHUP, SIG_DFL);
 #ifdef SIGTSTP
         signal(SIGTSTP, SIG_DFL);
-#endif        	
+#endif
     }
     /* check for fork failure */
     if (p == -1) {
@@ -165,9 +165,9 @@ myfork(void)
 /* join is the compliment of fork */
 
 static int
-join(pid_t p) 
+join(pid_t p)
 {
-    int    status = -1;  
+    int    status = -1;
     pid_t    w;
 
     /* wait for the correct child to exit */
@@ -180,7 +180,7 @@ join(pid_t p)
     signal(SIGHUP, oldsighup);
 #ifdef SIGTSTP
     signal(SIGTSTP, oldsigtstp);
-#endif    
+#endif
 
     /* return the child's exit code */
     return(status >> 8);

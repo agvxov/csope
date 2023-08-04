@@ -1,7 +1,7 @@
 /*===========================================================================
- Copyright (c) 1998-2000, The Santa Cruz Operation 
+ Copyright (c) 1998-2000, The Santa Cruz Operation
  All rights reserved.
- 
+
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:
 
@@ -14,7 +14,7 @@
 
  *Neither name of The Santa Cruz Operation nor the names of its contributors
  may be used to endorse or promote products derived from this software
- without specific prior written permission. 
+ without specific prior written permission.
 
  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS
  IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
@@ -27,7 +27,7 @@
  HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
  LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
- DAMAGE. 
+ DAMAGE.
  =========================================================================*/
 
 #include <stdio.h>
@@ -74,7 +74,7 @@ myopen(char *path, int flag, int mode)
     fd = open(path, flag);
 
 #ifdef __DJGPP__        /* FIXME: test feature, not platform */
-    /* HBB 20010312: DOS GCC doesn't have FD_CLOEXEC (yet), so it 
+    /* HBB 20010312: DOS GCC doesn't have FD_CLOEXEC (yet), so it
      * always fails this call. Have to skip that step */
     if(fd != -1)
     return(fd);
@@ -109,9 +109,9 @@ myfopen(char *path, char *mode)
     SETMODE(fileno(fp), O_TEXT);
     }
 #endif /* SETMODE */
-    
+
 #ifdef __DJGPP__ /* FIXME: test feature, not platform */
-    /* HBB 20010312: DOS GCC doesn't have FD_CLOEXEC (yet), so it 
+    /* HBB 20010312: DOS GCC doesn't have FD_CLOEXEC (yet), so it
      * always fails this call. Have to skip that step */
     if(fp)
 #else
@@ -178,7 +178,7 @@ mypopen(char *cmd, char *mode)
 int
 mypclose(FILE *ptr)
 {
-#ifdef __DJGPP__ 
+#ifdef __DJGPP__
     /* HBB 20010705: This system has its own pclose(), which we
      * don't want to replace */
     return (pclose)(ptr);

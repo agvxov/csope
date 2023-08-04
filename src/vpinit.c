@@ -1,7 +1,7 @@
 /*===========================================================================
- Copyright (c) 1998-2000, The Santa Cruz Operation 
+ Copyright (c) 1998-2000, The Santa Cruz Operation
  All rights reserved.
- 
+
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:
 
@@ -14,7 +14,7 @@
 
  *Neither name of The Santa Cruz Operation nor the names of its contributors
  may be used to endorse or promote products derived from this software
- without specific prior written permission. 
+ without specific prior written permission.
 
  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS
  IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
@@ -27,7 +27,7 @@
  HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
  LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
- DAMAGE. 
+ DAMAGE.
  =========================================================================*/
 
 /* vpinit - initialize vpdirs or update vpdirs based on currentdir */
@@ -62,7 +62,7 @@ vpinit(char *current_dir)
     char    *node;		/* view path node */
     char    vpathbuf[MAXVPATH + 1];
 #endif
-    
+
     /* if an existing directory list is to be updated, free it */
     if (current_dir != NULL && vpndirs > 0) {
 #if !NOMALLOC
@@ -107,7 +107,7 @@ vpinit(char *current_dir)
 
     /* don't change VPATH in the environment */
     vpath = strdup(vpath);
-    
+
     /* split the view path into nodes */
     for (i = 0, s = vpath; *s != '\0'; ++i) {
         vpdirs[i] = s;
@@ -136,10 +136,10 @@ vpinit(char *current_dir)
     }
     (void) strcpy(vpathbuf, vpath);
     s = vpathbuf;
-    
+
     /* convert the view path nodes to directories */
     while (*s != '\0') {
-        
+
         /* get the next node */
         node = s;
         while (*s != '\0' && *++s != ':') {
