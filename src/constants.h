@@ -164,29 +164,4 @@
 # define TERMINFO    1
 #endif
 
-
-#if !TERMINFO
-# ifndef KEY_BREAK
-#  define    KEY_BREAK    0400	/* easier to define than to add #if around the use */
-# endif
-# ifndef KEY_ENTER
-#  define    KEY_ENTER    0401
-# endif
-# ifndef KEY_BACKSPACE
-#  define    KEY_BACKSPACE    0402
-# endif
-
-# if !sun
-#  define cbreak()    crmode()    		/* name change */
-# endif
-
-# if UNIXPC
-#  define erasechar() (_tty.c_cc[VERASE])        /* equivalent */
-#  define killchar()  (_tty.c_cc[VKILL])        /* equivalent */
-# else
-#  define erasechar() (_tty.sg_erase)        	/* equivalent */
-#  define killchar()  (_tty.sg_kill)        	/* equivalent */
-# endif /* if UNIXPC */
-#endif    /* if !TERMINFO */
-
 #endif /* CSCOPE_CONSTANTS_H */
