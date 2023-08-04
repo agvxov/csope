@@ -340,21 +340,26 @@ wmode_input(const int c){
         case KEY_RIGHT:
             field = (field + 1) % FIELDS;
             resetcmd();
-            return(NO);
+			break;
         case ctrl('P'):    /* go to previous input field */
         case KEY_UP:
         case KEY_LEFT:
             field = (field + (FIELDS - 1)) % FIELDS;
             resetcmd();
-            return(NO);
+			break;
         case KEY_HOME:    /* go to first input field */
             field = 0;
             resetcmd();
-            return(NO);
+			break;
         case KEY_LL:    /* go to last input field */
             curdispline = disprefs;
-            return(YES);
+			break;
+		default:
+			return 0;
     }
+
+	window_change |= CH_MODE;
+	return 1;
 }
 
 static int
@@ -365,33 +370,38 @@ wresult_input(const int c){
         case '\n':
             editref(curdispline);
             window_change = CH_ALL;
-            return(YES);
+			break;
         case ctrl('N'):
         case KEY_DOWN:
         case KEY_RIGHT:
             if ((curdispline + 1) < disprefs) {
                 ++curdispline;
             }
-            return(NO);
+			break;
         case ctrl('P'):
         case KEY_UP:
         case KEY_LEFT:
             if (curdispline) {
                 --curdispline;
             }
-            return(NO);
+			break;
         case KEY_HOME:
             curdispline = 0;
-            return(NO);
+			break;
         case KEY_LL:
             field = FIELDS - 1;
             resetcmd();
-            return(NO);
+			break;
         default:
             char *e;
             if ((e = strchr(dispchars, c)))
             editref(e - dispchars);
+			goto noredisp;
     }
+
+	window_change |= CH_RESULT;
+	noredisp:
+	return 1;
 }
 
 static int

@@ -399,7 +399,7 @@ static inline    void    linemode_event_loop(void){
 static inline    void    screenmode_event_loop(void){
     for (;;) {
         display();
-        if(handle_input(getch())){ break; }
+        handle_input(getch());
     }
 }
 
