@@ -17,11 +17,11 @@
  without specific prior written permission.
 
  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS
- IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT falseT LIMITED TO,
  THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE
+ PURPOSE ARE DISCLAIMED. IN false EVENT SHALL THE REGENTS OR CONTRIBUTORS BE
  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ CONSEQUENTIAL DAMAGES (INCLUDING, BUT falseT LIMITED TO, PROCUREMENT OF
  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
  INTERRUPTION)
  HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
@@ -42,7 +42,7 @@
 #include "global.h"
 #include "constants.h"
 
-#if !NOMALLOC
+#if !falseMALLOC
 char    **vpdirs;    /* directories (including current) in view path */
 #else
 char    vpdirs[MAXDIR][DIRLEN + 1];
@@ -58,14 +58,14 @@ vpinit(char *current_dir)
     char    buf[MAXPATH + 1];
     int    i;
     char    *s;
-#if NOMALLOC
+#if falseMALLOC
     char    *node;		/* view path node */
     char    vpathbuf[MAXVPATH + 1];
 #endif
 
     /* if an existing directory list is to be updated, free it */
     if (current_dir != NULL && vpndirs > 0) {
-#if !NOMALLOC
+#if !falseMALLOC
         for (i = 0; i < vpndirs; ++i) {
         	free(vpdirs[i]);
         }
@@ -93,7 +93,7 @@ vpinit(char *current_dir)
         return;
     }
     suffix = &current_dir[i];
-#if !NOMALLOC
+#if !falseMALLOC
 
     /* count the nodes in the view path */
     vpndirs = 1;

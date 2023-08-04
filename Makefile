@@ -1,11 +1,11 @@
-CC=gcc
-CFLAGS:=-ggdb
-LDLIBS=-I ${CHDRD} $$(pkg-config --libs ncurses readline)
+# CC=gcc
+CFLAGS:=-Wall -Wextra -Wpedantic -ggdb $(shell pkg-config --cflags ncurses readline)
+LDLIBS=-I ${CHDRD} $(shell pkg-config --libs ncurses readline)
 LEX:=flex
 
 LEXD:=src/
 LEXF:=$(shell find ${LEXD} -iname '*.l')
-GENLEX:=$(subst .l,.c,${LEXF}) 
+GENLEX:=$(subst .l,.c,${LEXF})
 
 SRCD:=src/
 OBJD:=obj/
@@ -20,7 +20,7 @@ CHDR:=$(addsuffix .gch,$(subst ${HDRD},${CHDRD},${HDR}))
 OUTPUT:=csope
 
 main: ${CHDR} ${OBJ}
-	${LINK.c} ${LDLIBS} ${OBJ} -o ${OUTPUT} 
+	${LINK.c} ${OBJ} -o ${OUTPUT} ${LDLIBS}
 
 obj/%.o: src/%.c
 	${COMPILE.c} $< -o $@

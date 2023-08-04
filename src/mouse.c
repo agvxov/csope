@@ -17,11 +17,11 @@
  without specific prior written permission.
 
  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS
- IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT falseT LIMITED TO,
  THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE
+ PURPOSE ARE DISCLAIMED. IN false EVENT SHALL THE REGENTS OR CONTRIBUTORS BE
  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ CONSEQUENTIAL DAMAGES (INCLUDING, BUT falseT LIMITED TO, PROCUREMENT OF
  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
  INTERRUPTION)
  HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
@@ -37,11 +37,11 @@
 
 #include "global.h"
 
-BOOL    mouse = NO;    		/* mouse interface */
+bool    mouse = false;    		/* mouse interface */
 
 #ifdef UNIXPC    /* build command requires #ifdef instead of #if */
 #include <sys/window.h>
-BOOL    unixpcmouse = NO;    /* running with a mouse on the Unix PC? */
+bool    unixpcmouse = false;    /* running with a mouse on the Unix PC? */
 static int uw_hs, uw_vs;    /* character height and width */
 #endif
 
@@ -74,7 +74,7 @@ static    MENU    changemenu[] = {	/* change mode menu */
 };
 
 static    MENU    *loaded;		/* menu loaded */
-static    BOOL    emacsviterm = NO;	/* terminal type */
+static    bool    emacsviterm = false;	/* terminal type */
 
 static    void    loadmenu(MENU *menu);
 static    int    getcoordinate(void);
@@ -91,14 +91,14 @@ mouseinit(void)
     term = mygetenv("TERM", "");
     if (strcmp(term, "emacsterm") == 0 ||
         strcmp(term, "viterm") == 0) {
-        emacsviterm = YES;
-        mouse = YES;
+        emacsviterm = true;
+        mouse = true;
     }
     /* the MOUSE enviroment variable is for 5620 terminal programs that have
        mouse support but the TERM environment variable is the same as a
        terminal without a mouse, such as myx */
     else if (strcmp(mygetenv("MOUSE", ""), "myx") == 0) {
-        mouse = YES;
+        mouse = true;
     }
 #if UNIXPC
     else if (strcmp(term,"s4") == 0 ||
@@ -138,10 +138,10 @@ mouseinit(void)
         	umd.um_flags= MSDOWN+MSUP;
         	ioctl(1,WIOCSETMOUSE,&umd);
         }
-        unixpcmouse = YES;
+        unixpcmouse = true;
     }
 #endif
-    if (mouse == YES) {
+    if (mouse == true) {
         loadmenu(mainmenu);
     }
 }
@@ -151,8 +151,8 @@ mouseinit(void)
 void
 mousemenu(void)
 {
-    if (mouse == YES) {
-        if (changing == YES) {
+    if (mouse == true) {
+        if (changing == true) {
         	loadmenu(changemenu);
         }
         else {
@@ -168,7 +168,7 @@ loadmenu(MENU *menu)
 {
     int    i;
 
-    if (emacsviterm == YES) {
+    if (emacsviterm == true) {
         mousereinit();
         (void) printf("\033V1");	/* display the scrollbar */
         (void) printf("\033M0@%s@%s@", menu[0].text, menu[0].value);
@@ -197,7 +197,7 @@ loadmenu(MENU *menu)
 void
 mousereinit(void)
 {
-    if (emacsviterm == YES) {
+    if (emacsviterm == true) {
 
         /* enable the mouse click and sweep coordinate control sequence */
         /* and switch to menu 2 */
@@ -231,7 +231,7 @@ drawscrollbar(int top, int bot)
 {
     int p1, p2;
 
-    if (emacsviterm == YES) {
+    if (emacsviterm == true) {
         if (bot > top) {
         	p1 = 16 + (top - 1) * 100 / totallines;
         	p2 = 16 + (bot - 1) * 100 / totallines;
@@ -265,7 +265,7 @@ getmouseaction(char leading_char)
 
 #if UNIXPC
 
-    if(unixpcmouse == YES && leading_char == ESC) {
+    if(unixpcmouse == true && leading_char == ESC) {
 
         /* Called if cscope received an ESC character.  See if it is
          * a mouse report and if so, decipher it.  A mouse report
@@ -282,7 +282,7 @@ getmouseaction(char leading_char)
          *
          * In general, the input is read until the mouse report has
          * been completely read in or we have discovered that this
-         * escape sequence is NOT a mouse report.  In the latter case
+         * escape sequence is falseT a mouse report.  In the latter case
          * return the last character read to the input stream with
          * myungetch().
          */
@@ -364,7 +364,7 @@ getmouseaction(char leading_char)
     else
 #endif    /* not UNIXPC */
 
-    if (mouse == YES && leading_char == ctrl('X')) {
+    if (mouse == true && leading_char == ctrl('X')) {
 
         switch (mygetch()) {
         case ctrl('_'):		/* click */

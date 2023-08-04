@@ -17,11 +17,11 @@
  without specific prior written permission.
 
  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS
- IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT falseT LIMITED TO,
  THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE
+ PURPOSE ARE DISCLAIMED. IN false EVENT SHALL THE REGENTS OR CONTRIBUTORS BE
  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ CONSEQUENTIAL DAMAGES (INCLUDING, BUT falseT LIMITED TO, PROCUREMENT OF
  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
  INTERRUPTION)
  HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
@@ -55,7 +55,7 @@ help(void)
     int    ln;
 
     tp = text;
-    if (changing == NO) {
+    if (changing == false) {
         if (mouse) {
         	*tp++ = "Point with the mouse and click button 1 to move to the desired input field,\n";
         	*tp++ = "type the pattern to search for, and then press the RETURN key.  For the first 4\n";
@@ -91,7 +91,7 @@ help(void)
         *tp++ = "^B\t\tRecall previous input field and search pattern.\n";
         *tp++ = "^F\t\tRecall next input field and search pattern.\n";
         if(caseless)
-        	*tp++ = "^C\t\tToggle ignore/use letter case when searching (IGNORE).\n";
+        	*tp++ = "^C\t\tToggle ignore/use letter case when searching (IGfalseRE).\n";
         else
         	*tp++ = "^C\t\tToggle ignore/use letter case when searching (USE).\n";
         *tp++ = "^R\t\tRebuild the cross-reference.\n";

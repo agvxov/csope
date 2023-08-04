@@ -8,8 +8,8 @@
 #include <stdlib.h>    /* atoi */
 #include <getopt.h>
 
-BOOL remove_symfile_onexit = NO;
-BOOL onesearch;        /* one search only in line mode */
+bool remove_symfile_onexit = false;
+bool onesearch;        /* one search only in line mode */
 char *reflines;        /* symbol reference lines file */
 
 char ** parse_options(int *argc, char **argv)
@@ -36,7 +36,7 @@ char ** parse_options(int *argc, char **argv)
         	myexit(1);
         	break;
         case 'X':
-        	remove_symfile_onexit = YES;
+        	remove_symfile_onexit = true;
         	break;
         case '0':
         case '1':
@@ -58,37 +58,37 @@ char ** parse_options(int *argc, char **argv)
         	strcpy(input_line, optarg);
         	break;
         case 'b':	/* only build the cross-reference */
-        	buildonly = YES;
-        	linemode  = YES;
+        	buildonly = true;
+        	linemode  = true;
         	break;
         case 'c':	/* ASCII characters only in crossref */
-        	compress = NO;
+        	compress = false;
         	break;
         case 'C':	/* turn on caseless mode for symbol searches */
-        	caseless = YES;
+        	caseless = true;
         	egrepcaseless(caseless); /* simulate egrep -i flag */
         	break;
         case 'd':	/* consider crossref up-to-date */
-        	isuptodate = YES;
+        	isuptodate = true;
         	break;
         case 'e':	/* suppress ^E prompt between files */
-        	editallprompt = NO;
+        	editallprompt = false;
         	break;
         case 'h':
         	longusage();
         	myexit(1);
         	break;
         case 'k':	/* ignore DFLT_INCDIR */
-        	kernelmode = YES;
+        	kernelmode = true;
         	break;
         case 'L':
-        	onesearch = YES;
+        	onesearch = true;
         	/* FALLTHROUGH */
         case 'l':
-        	linemode = YES;
+        	linemode = true;
         	break;
         case 'v':
-        	verbosemode = YES;
+        	verbosemode = true;
         	break;
         case 'V':
         	fprintf(stderr, "%s: version %d%s\n", argv0,
@@ -96,19 +96,19 @@ char ** parse_options(int *argc, char **argv)
         	myexit(0);
         	break;
         case 'q':	/* quick search */
-        	invertedindex = YES;
+        	invertedindex = true;
         	break;
         case 'T':	/* truncate symbols to 8 characters */
-        	trun_syms = YES;
+        	trun_syms = true;
         	break;
         case 'u':	/* unconditionally build the cross-reference */
-        	unconditional = YES;
+        	unconditional = true;
         	break;
         case 'U':	/* assume some files have changed */
-        	fileschanged = YES;
+        	fileschanged = true;
         	break;
         case 'R':
-        	recurse_dir = YES;
+        	recurse_dir = true;
         	break;
         case 'f':	/* alternate cross-reference file */
         	reffile = optarg;
@@ -116,7 +116,7 @@ char ** parse_options(int *argc, char **argv)
         		postfatal("\
         			cscope: reffile too long, cannot \
         			be > %d characters\n", sizeof(path) - 3);
-        		/* NOTREACHED */
+        		/* falseTREACHED */
         	}
         	strcpy(path, reffile);
 

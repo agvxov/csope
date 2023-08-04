@@ -17,11 +17,11 @@
  without specific prior written permission.
 
  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS
- IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT falseT LIMITED TO,
  THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE
+ PURPOSE ARE DISCLAIMED. IN false EVENT SHALL THE REGENTS OR CONTRIBUTORS BE
  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ CONSEQUENTIAL DAMAGES (INCLUDING, BUT falseT LIMITED TO, PROCUREMENT OF
  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
  INTERRUPTION)
  HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
@@ -72,11 +72,11 @@ static    struct    listitem {	/* source file names without view pathing */
 } *srcnames[HASHMOD];
 
 /* Internal prototypes: */
-static    BOOL    accessible_file(char *file);
-static    BOOL    issrcfile(char *file);
+static    bool    accessible_file(char *file);
+static    bool    issrcfile(char *file);
 static    void    addsrcdir(char *dir);
 static    void    addincdir(char *name, char *path);
-static    void    scan_dir(const char *dirfile, BOOL recurse);
+static    void    scan_dir(const char *dirfile, bool recurse);
 static    void    makevpsrcdirs(void);
 
 
@@ -262,7 +262,7 @@ freeinclist()
 void
 makefilelist(void)
 {
-    static  BOOL    firstbuild = YES;       /* first time through */
+    static  bool    firstbuild = true;       /* first time through */
     FILE    *names;                 /* name file pointer */
     char    dir[PATHLEN + 1];
     char    path[PATHLEN + 1];
@@ -273,19 +273,19 @@ makefilelist(void)
 
     makevpsrcdirs();    /* make the view source directory list */
 
-    /* if -i was NOT given and there are source file arguments */
+    /* if -i was falseT given and there are source file arguments */
     if (namefile == NULL && fileargc > 0) {
 
     /* put them in a list that can be expanded */
     for (i = 0; i < fileargc; ++i) {
         file = fileargv[i];
-        if (infilelist(file) == NO) {
+        if (infilelist(file) == false) {
         if ((s = inviewpath(file)) != NULL) {
             addsrcfile(s);
         } else {
             fprintf(stderr, "cscope: cannot find file %s\n",
         	    file);
-            errorsfound = YES;
+            errorsfound = true;
         }
         }
     }
@@ -320,7 +320,7 @@ makefilelist(void)
     char *point_in_line = line + (strlen(line) - 1);
     size_t length_of_name = 0;
     int unfinished_option = 0;
-    BOOL done = NO;
+    bool done = false;
 
     /* Kill away \n left at end of fgets()'d string: */
     if (*point_in_line == '\n')
@@ -346,16 +346,16 @@ cscope: Syntax error in namelist file %s: unfinished -I or -p option\n",
         i = path[1];
         switch (i) {
         case 'c':	/* ASCII characters only in crossref */
-            compress = NO;
+            compress = false;
             break;
         case 'k':	/* ignore DFLT_INCDIR */
-            kernelmode = YES;
+            kernelmode = true;
             break;
         case 'q':	/* quick search */
-            invertedindex = YES;
+            invertedindex = true;
             break;
         case 'T':	/* truncate symbols to 8 characters */
-            trun_syms = YES;
+            trun_syms = true;
             break;
         case 'I':	/* #include file directory */
         case 'p':	/* file path components to display */
@@ -372,13 +372,13 @@ cscope: Syntax error in namelist file %s: unfinished -I or -p option\n",
 #define HANDLE_OPTION_ARGUMENT(i, s)        			\
             switch (i) {					\
             case 'I':	/* #include file directory */		\
-        	if (firstbuild == YES) {			\
+        	if (firstbuild == true) {			\
         	    /* expand $ and ~ */			\
         	    shellpath(dir, sizeof(dir), (s));		\
         	    includedir(dir);				\
         	}						\
         	unfinished_option = 0;				\
-        	done = YES;					\
+        	done = true;					\
         	break;						\
             case 'p':	/* file path components to display */	\
         	if (*(s) < '0' || *(s) > '9') {			\
@@ -388,10 +388,10 @@ cscope: Syntax error in namelist file %s: unfinished -I or -p option\n",
         	}						\
         	dispcomponents = atoi(s);			\
         	unfinished_option = 0;				\
-        	done = YES;					\
+        	done = true;					\
         	break;						\
             default:						\
-        	done = NO;					\
+        	done = false;					\
             } /* switch(i) */
 
             /* ... and now call it for the first time */
@@ -439,7 +439,7 @@ cscope: Syntax error in namelist file %s: unfinished -I or -p option\n",
             } else {
         	fprintf(stderr, "cscope: cannot find file %s\n",
         		newpath);
-        	errorsfound = YES;
+        	errorsfound = true;
             }
         }
         free(newpath);
@@ -456,7 +456,7 @@ cscope: Syntax error in namelist file %s: unfinished -I or -p option\n",
             } else {
         	fprintf(stderr, "cscope: cannot find file %s\n",
         		path);
-        	errorsfound = YES;
+        	errorsfound = true;
             }
         }
         } /* else(ordinary name) */
@@ -471,14 +471,14 @@ cscope: Syntax error in namelist file %s: unfinished -I or -p option\n",
     clearerr(stdin);
     else
     fclose(names);
-    firstbuild = NO;
+    firstbuild = false;
     return;
 
 }
 
 /* scan a directory (recursively?) for source files */
 static void
-scan_dir(const char *adir, BOOL recurse_dir)
+scan_dir(const char *adir, bool recurse_dir)
 {
     DIR    *dirfile;
     int adir_len = strlen(adir);
@@ -503,7 +503,7 @@ scan_dir(const char *adir, BOOL recurse_dir)
                                             && S_ISDIR(buf.st_mode) ) {
         				scan_dir(path, recurse_dir);
         			} else if (issrcfile(path)
-        				   && infilelist(path) == NO
+        				   && infilelist(path) == false
         				   && access(path, R_OK) == 0) {
         				addsrcfile(path);
         			}
@@ -517,24 +517,24 @@ scan_dir(const char *adir, BOOL recurse_dir)
 
 
 /* see if this is a source file */
-static BOOL
+static bool
 issrcfile(char *path)
 {
     struct    stat	statstruct;
     char    *file = basename(path);
     char    *s = strrchr(file, '.');
-    BOOL looks_like_source = NO;
+    bool looks_like_source = false;
 
     /* ensure there is some file suffix */
     if (s == NULL || *++s == '\0')
-        return NO;
+        return false;
 
     /* if an SCCS or versioned file */
     if (file[1] == '.' && file + 2 != s) { /* 1 character prefix */
         switch (*file) {
         case 's':
         case 'S':
-        	return(NO);
+        	return(false);
         }
     }
 
@@ -548,7 +548,7 @@ issrcfile(char *path)
         case 'G':
         case 'H':
         case 'L':
-        	looks_like_source = YES;
+        	looks_like_source = true;
         }
     } else if ((s[2] == '\0') /* 2 char suffix */
            && ((s[0] == 'b' && s[1] == 'p') /* breakpoint listing */
@@ -557,7 +557,7 @@ issrcfile(char *path)
                || (s[0] == 's' && s[1] == 'd') /* SDL */
                || (s[0] == 'c' && s[1] == 'c') /* C++ source */
                || (s[0] == 'h' && s[1] == 'h'))) { /* C++ header */
-        looks_like_source = YES;
+        looks_like_source = true;
 
     } else if((s[3] == '\0') /* 3 char suffix */
           /* C++ template source */
@@ -568,18 +568,18 @@ issrcfile(char *path)
               || (s[0] == 'h' && s[1] == 'p' && s[2] == 'p' )
               || (s[0] == 'h' && s[1] == 'x' && s[2] == 'x' ))
           ) {
-        looks_like_source = YES;
+        looks_like_source = true;
     }
 
-    if (looks_like_source != YES)
-        return NO;
+    if (looks_like_source != true)
+        return false;
 
     /* make sure it is a file */
     if (lstat(path, &statstruct) == 0 &&
         S_ISREG(statstruct.st_mode)) {
-        return(YES);
+        return(true);
     }
-    return NO;
+    return false;
 }
 
 
@@ -594,7 +594,7 @@ incfile(char *file, char *type)
 
     assert(file != NULL); /* should never happen, but let's make sure anyway */
     /* see if the file is already in the source file list */
-    if (infilelist(file) == YES) {
+    if (infilelist(file) == true) {
     return;
     }
     /* look in current directory if it was #include "file" */
@@ -609,7 +609,7 @@ incfile(char *file, char *type)
         snprintf(name, sizeof(name), "%.*s/%s",
             (int)(PATHLEN - 2 - file_len), incnames[i],
             file);
-        if (infilelist(name) == YES) {
+        if (infilelist(name) == true) {
         break;
         }
         /* make sure it exists and is readable */
@@ -626,7 +626,7 @@ incfile(char *file, char *type)
 
 
 /* see if the file is already in the list */
-BOOL
+bool
 infilelist(char *path)
 {
     struct listitem *p;
@@ -635,16 +635,16 @@ infilelist(char *path)
      p != NULL;
      p = p->next) {
     if (strequal(path, p->text)) {
-        return(YES);
+        return(true);
     }
     }
-    return(NO);
+    return(false);
 }
 
 
 /* check if a file is readable enough to be allowed in the
  * database */
-static BOOL
+static bool
 accessible_file(char *file)
 {
     if (access(compath(file), READ) == 0) {
@@ -652,10 +652,10 @@ accessible_file(char *file)
 
     if (lstat(file, &stats) == 0
         && S_ISREG(stats.st_mode)) {
-        return YES;
+        return true;
     }
     }
-    return NO;
+    return false;
 }
 
 /* search for the file in the view path */
@@ -719,7 +719,7 @@ freefilelist(void)
     int    i;
 
     /* if '-d' option is used a string space block is allocated */
-    if (isuptodate == NO) {
+    if (isuptodate == false) {
         while (nsrcfiles > 0) {
         	free (srcfiles[--nsrcfiles]);
         }

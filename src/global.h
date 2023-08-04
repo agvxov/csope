@@ -17,11 +17,11 @@
  without specific prior written permission.
 
  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS
- IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT falseT LIMITED TO,
  THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE
+ PURPOSE ARE DISCLAIMED. IN false EVENT SHALL THE REGENTS OR CONTRIBUTORS BE
  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ CONSEQUENTIAL DAMAGES (INCLUDING, BUT falseT LIMITED TO, PROCUREMENT OF
  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
  INTERRUPTION)
  HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
@@ -58,14 +58,11 @@ typedef void (*sighandler_t)(int);
 
 #include <fcntl.h>
 
-typedef    enum    {		/* boolean data type */
-    NO,
-    YES
-} BOOL;
+#include <stdbool.h>
 
 typedef    enum    {		/* findinit return code */
-    NOERROR,
-    NOTSYMBOL,
+    falseERROR,
+    falseTSYMBOL,
     REGCMPERROR
 } FINDINIT;
 
@@ -85,19 +82,16 @@ struct cmd {        	/* command history struct */
 };
 
 enum {
-    CH_NONE   = 0x0000,
+    CH_falseNE   = 0x0000,
     CH_RESULT = 0x0001 << 0,
     CH_INPUT  = 0x0001 << 1,
     CH_MODE   = 0x0001 << 2,
     CH_ALL    = CH_RESULT | CH_INPUT | CH_MODE
 };
 
-
-
 #ifndef DFLT_INCDIR
 # define DFLT_INCDIR "/usr/include"
 #endif
-
 
 /* digraph data for text compression */
 extern    char    dichar1[];	/* 16 most frequent first chars */
@@ -118,46 +112,46 @@ extern    char    dicode2[];	/* digraph second character code */
 /* main.c global data */
 extern    char    *editor, *home, *shell, *lineflag;	/* environment variables */
 extern    char    *home;		/* Home directory */
-extern     BOOL    lineflagafterfile;
+extern     bool    lineflagafterfile;
 extern    char    *argv0;		/* command name */
-extern    BOOL    compress;	/* compress the characters in the crossref */
-extern    BOOL    dbtruncated;	/* database symbols truncated to 8 chars */
+extern    bool    compress;	/* compress the characters in the crossref */
+extern    bool    dbtruncated;	/* database symbols truncated to 8 chars */
 extern    int    dispcomponents;	/* file path components to display */
 #if CCS
-extern    BOOL    displayversion;	/* display the C Compilation System version */
+extern    bool    displayversion;	/* display the C Compilation System version */
 #endif
-extern    BOOL    editallprompt;	/* prompt between editing files */
+extern    bool    editallprompt;	/* prompt between editing files */
 extern    unsigned int fileargc;    /* file argument count */
 extern    char    **fileargv;	/* file argument values */
 extern    int    fileversion;	/* cross-reference file version */
-extern    BOOL    incurses;	/* in curses */
-extern    BOOL    invertedindex;	/* the database has an inverted index */
-extern    BOOL    isuptodate;	/* consider the crossref up-to-date */
-extern    BOOL    kernelmode;	/* don't use DFLT_INCDIR - bad for kernels */
-extern    BOOL    linemode;	/* use line oriented user interface */
-extern    BOOL    verbosemode;	/* print extra information on line mode */
-extern    BOOL    recurse_dir;	/* recurse dirs when searching for src files */
+extern    bool    incurses;	/* in curses */
+extern    bool    invertedindex;	/* the database has an inverted index */
+extern    bool    isuptodate;	/* consider the crossref up-to-date */
+extern    bool    kernelmode;	/* don't use DFLT_INCDIR - bad for kernels */
+extern    bool    linemode;	/* use line oriented user interface */
+extern    bool    verbosemode;	/* print extra information on line mode */
+extern    bool    recurse_dir;	/* recurse dirs when searching for src files */
 extern    char    *namefile;	/* file of file names */
-extern    BOOL    ogs;		/* display OGS book and subsystem names */
+extern    bool    ogs;		/* display OGS book and subsystem names */
 extern    char    *prependpath;	/* prepend path to file names */
 extern    FILE    *refsfound;	/* references found file */
 extern    char    temp1[];	/* temporary file name */
 extern    char    temp2[];	/* temporary file name */
 extern    long    totalterms;	/* total inverted index terms */
-extern    BOOL    trun_syms;	/* truncate symbols to 8 characters */
+extern    bool    trun_syms;	/* truncate symbols to 8 characters */
 extern    char    tempstring[TEMPSTRING_LEN + 1]; /* global dummy string buffer */
 extern    char    *tmpdir;	/* temporary directory */
 
 /* command.c global data */
-extern    BOOL    caseless;	/* ignore letter case when searching */
-extern    BOOL    *change;	/* change this line */
-extern    BOOL    changing;	/* changing text */
+extern    bool    caseless;	/* ignore letter case when searching */
+extern    bool    *change;	/* change this line */
+extern    bool    changing;	/* changing text */
 extern    unsigned int curdispline;
 extern    char    newpat[];	/* new pattern */
 
 /* crossref.c global data */
 extern    long    dboffset;	/* new database offset */
-extern    BOOL    errorsfound;	/* prompt before clearing error messages */
+extern    bool    errorsfound;	/* prompt before clearing error messages */
 extern    long    lineoffset;	/* source line database offset */
 extern    long    npostings;	/* number of postings */
 extern    unsigned long symbols;    /* number of symbols */
@@ -206,7 +200,7 @@ extern    struct    keystruct {
 } keyword[];
 
 /* mouse.c global data */
-extern    BOOL    mouse;		/* mouse interface */
+extern    bool    mouse;		/* mouse interface */
 
 /* readline.c global data */
 extern char* rl_line_buffer;
@@ -214,7 +208,7 @@ extern char input_line[PATLEN + 1];
 extern int rl_point;
 
 #if UNIXPC
-extern    BOOL    unixpcmouse;		/* UNIX PC mouse interface */
+extern    bool    unixpcmouse;		/* UNIX PC mouse interface */
 #endif
 
 /* cscope functions called from more than one function or between files */
@@ -240,12 +234,12 @@ char ** parse_options(int *argc, char **argv);
 void    error_usage(void);
 void    longusage(void);
 void    usage(void);
-extern BOOL    remove_symfile_onexit;
-extern BOOL    onesearch;    	/* one search only in line mode */
+extern bool    remove_symfile_onexit;
+extern bool    onesearch;    	/* one search only in line mode */
 extern char    *reflines;    	/* symbol reference lines file */
 void verswp_field(void);
 void horswp_field(void);
-BOOL interpret(int c);    // XXX: probably rename
+bool interpret(int c);    // XXX: probably rename
 int handle_input(const char c);
 
 void    rlinit(void);
@@ -301,10 +295,10 @@ void    myungetch(int c);
 void    warning(char *text);
 void    writestring(char *s);
 
-BOOL    infilelist(char *file);
-BOOL    readrefs(char *filename);
-BOOL    search(void);
-BOOL    writerefsfound(void);
+bool    infilelist(char *file);
+bool    readrefs(char *filename);
+bool    search(void);
+bool    writerefsfound(void);
 
 FINDINIT findinit(char *pattern);
 MOUSE    *getmouseaction(char leading_char);
@@ -313,7 +307,7 @@ struct    cmd *prevcmd(void);
 struct    cmd *nextcmd(void);
 
 int    egrep(char *file, FILE *output, char *format);
-int    mygetline(char p[], char s[], unsigned size, int firstchar, BOOL iscaseless);
+int    mygetline(char p[], char s[], unsigned size, int firstchar, bool iscaseless);
 int    mygetch(void);
 int    hash(char *ss);
 int    execute(char *a, ...);

@@ -17,11 +17,11 @@
  without specific prior written permission.
 
  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS
- IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT falseT LIMITED TO,
  THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE
+ PURPOSE ARE DISCLAIMED. IN false EVENT SHALL THE REGENTS OR CONTRIBUTORS BE
  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ CONSEQUENTIAL DAMAGES (INCLUDING, BUT falseT LIMITED TO, PROCUREMENT OF
  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
  INTERRUPTION)
  HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
@@ -67,34 +67,34 @@ char    dicode2[256];    	/* digraph second character code */
 
 char    *editor, *shell, *lineflag;    /* environment variables */
 char    *home;    		/* Home directory */
-BOOL    lineflagafterfile;
+bool    lineflagafterfile;
 char    *argv0;    		/* command name */
-BOOL    compress = YES;    	/* compress the characters in the crossref */
-BOOL    dbtruncated;    	/* database symbols are truncated to 8 chars */
+bool    compress = true;    	/* compress the characters in the crossref */
+bool    dbtruncated;    	/* database symbols are truncated to 8 chars */
 int    dispcomponents = 1;    /* file path components to display */
 #if CCS
-BOOL    displayversion;    	/* display the C Compilation System version */
+bool    displayversion;    	/* display the C Compilation System version */
 #endif
-BOOL    editallprompt = YES;    /* prompt between editing files */
+bool    editallprompt = true;    /* prompt between editing files */
 unsigned int fileargc;        /* file argument count */
 char    **fileargv;    	/* file argument values */
 int    fileversion;    	/* cross-reference file version */
-BOOL    incurses = NO;    	/* in curses */
-BOOL    invertedindex;    	/* the database has an inverted index */
-BOOL    isuptodate;    	/* consider the crossref up-to-date */
-BOOL    kernelmode;    	/* don't use DFLT_INCDIR - bad for kernels */
-BOOL    linemode = NO;    	/* use line oriented user interface */
-BOOL    verbosemode = NO;    /* print extra information on line mode */
-BOOL    recurse_dir = NO;    /* recurse dirs when searching for src files */
+bool    incurses = false;    	/* in curses */
+bool    invertedindex;    	/* the database has an inverted index */
+bool    isuptodate;    	/* consider the crossref up-to-date */
+bool    kernelmode;    	/* don't use DFLT_INCDIR - bad for kernels */
+bool    linemode = false;    	/* use line oriented user interface */
+bool    verbosemode = false;    /* print extra information on line mode */
+bool    recurse_dir = false;    /* recurse dirs when searching for src files */
 char    *namefile;    	/* file of file names */
-BOOL    ogs = NO;    		/* display OGS book and subsystem names */
+bool    ogs = false;    		/* display OGS book and subsystem names */
 char    *prependpath;    	/* prepend path to file names */
 FILE    *refsfound;    	/* references found file */
 char    temp1[PATHLEN + 1];    /* temporary file name */
 char    temp2[PATHLEN + 1];    /* temporary file name */
 char    tempdirpv[PATHLEN + 1];    /* private temp directory */
 long    totalterms;    	/* total inverted index terms */
-BOOL    trun_syms;    	/* truncate symbols to 8 characters */
+bool    trun_syms;    	/* truncate symbols to 8 characters */
 char    tempstring[TEMPSTRING_LEN + 1]; /* use this as a buffer, instead of 'yytext',
         		 * which had better be left alone */
 char    *tmpdir;    	/* temporary directory */
@@ -112,7 +112,7 @@ static inline    void    screenmode_event_loop(void);
 void
 sigwinch_handler(int sig, siginfo_t *info, void *unused)
 {
-    if(incurses == YES){
+    if(incurses == true){
         ungetch(KEY_RESIZE);
     }
 }
@@ -140,7 +140,7 @@ siginit(void){
      */
     signal(SIGPIPE, SIG_IGN);
 
-    if (linemode == NO) {
+    if (linemode == false) {
     signal(SIGINT, SIG_IGN);    /* ignore interrupts */
 #if defined(KEY_RESIZE) && !defined(__DJGPP__)
     struct sigaction winch_action;
@@ -180,7 +180,7 @@ initcompress(void)
 {
     int    i;
 
-    if (compress == YES) {
+    if (compress == true) {
     for (i = 0; i < 16; ++i) {
         dicode1[(unsigned char) (dichar1[i])] = i * 8 + 1;
     }
@@ -199,12 +199,12 @@ skiplist(FILE *oldrefs)
 
     if (fscanf(oldrefs, "%d", &i) != 1) {
     postfatal("cscope: cannot read list size from file %s\n", reffile);
-    /* NOTREACHED */
+    /* falseTREACHED */
     }
     while (--i >= 0) {
     if (fscanf(oldrefs, "%*s") != 0) {
         postfatal("cscope: cannot read list name from file %s\n", reffile);
-        /* NOTREACHED */
+        /* falseTREACHED */
     }
     }
 }
@@ -214,7 +214,7 @@ skiplist(FILE *oldrefs)
 void
 entercurses(void)
 {
-    incurses = YES;
+    incurses = true;
 #ifndef __MSDOS__ /* HBB 20010313 */
     nonl();            /* don't translate an output \n to \n\r */
 #endif
@@ -237,7 +237,7 @@ exitcurses(void)
 
     /* exit curses and restore the terminal modes */
     endwin();
-    incurses = NO;
+    incurses = false;
 
     /* restore the mouse */
     mousecleanup();
@@ -260,7 +260,7 @@ myexit(int sig)
         rmdir(tempdirpv);
     }
     /* restore the terminal to its original mode */
-    if (incurses == YES) {
+    if (incurses == true) {
         exitcurses();
     }
     /* dump core for debugging on the quit signal */
@@ -274,7 +274,7 @@ myexit(int sig)
     freecrossref();
     free_newbuildfiles();
 
-    if( remove_symfile_onexit == YES ) {
+    if( remove_symfile_onexit == true ) {
         unlink( reffile );
         unlink( invname );
         unlink( invpost );
@@ -298,10 +298,10 @@ static inline    void    linemode_event_loop(void){
     int c;
 
     if (*input_line != '\0') {    	/* do any optional search */
-        if (search() == YES) {
+        if (search() == true) {
         /* print the total number of lines in
          * verbose mode */
-        if (verbosemode == YES)
+        if (verbosemode == true)
             printf("cscope: %d lines\n",
         	   totallines);
 
@@ -309,9 +309,9 @@ static inline    void    linemode_event_loop(void){
             putchar(c);
         }
     }
-    if (onesearch == YES) {
+    if (onesearch == true) {
         myexit(0);
-        /* NOTREACHED */
+        /* falseTREACHED */
     }
 
     for (char *s;;) {
@@ -339,7 +339,7 @@ static inline    void    linemode_event_loop(void){
         case '9':    /* samuel only */
         field = *buf - '0';
         strcpy(input_line, buf + 1);
-        if (search() == NO) {
+        if (search() == false) {
         	printf("Unable to search database\n");
         } else {
         	printf("cscope: %d lines\n", totallines);
@@ -351,10 +351,10 @@ static inline    void    linemode_event_loop(void){
 
         case 'c':    /* toggle caseless mode */
         case ctrl('C'):
-        if (caseless == NO) {
-            caseless = YES;
+        if (caseless == false) {
+            caseless = true;
         } else {
-            caseless = NO;
+            caseless = false;
         }
         egrepcaseless(caseless);
         break;
@@ -377,7 +377,7 @@ static inline    void    linemode_event_loop(void){
 
         case 'F':    /* add a file name */
         strcpy(path, buf + 1);
-        if (infilelist(path) == NO &&
+        if (infilelist(path) == false &&
             (s = inviewpath(path)) != NULL) {
             addsrcfile(s);
         }
@@ -429,7 +429,7 @@ main(int argc, char **argv)
     /* XXX remove if/when clearerr() in dir.c does the right thing. */
     if (namefile && strcmp(namefile, "-") == 0 && !buildonly) {
     postfatal("cscope: Must use -b if file list comes from stdin\n");
-    /* NOTREACHED */
+    /* falseTREACHED */
     }
 
     /* make sure that tmpdir exists */
@@ -468,7 +468,7 @@ main(int argc, char **argv)
      * the home directory
      */
     snprintf(path, sizeof(path), "%s/%s", home, reffile);
-    if (isuptodate == NO || access(path, READ) == 0) {
+    if (isuptodate == false || access(path, READ) == 0) {
         reffile = strdup(path);
         snprintf(path, sizeof(path), "%s/%s", home, invname);
         invname = strdup(path);
@@ -479,7 +479,7 @@ main(int argc, char **argv)
 
     siginit();
 
-    if (linemode == NO) {
+    if (linemode == false) {
         dispinit();	/* initialize display parameters */
         clearmsg();	/* clear any build progress message */
         display();	/* display the version number and input fields */
@@ -487,22 +487,22 @@ main(int argc, char **argv)
 
 
     /* if the cross-reference is to be considered up-to-date */
-    if (isuptodate == YES) {
+    if (isuptodate == true) {
     if ((oldrefs = vpfopen(reffile, "rb")) == NULL) {
         postfatal("cscope: cannot open file %s\n", reffile);
-        /* NOTREACHED */
+        /* falseTREACHED */
     }
     /* get the crossref file version but skip the current directory */
     if (fscanf(oldrefs, "cscope %d %*s", &fileversion) != 1) {
         postfatal("cscope: cannot read file version from file %s\n",
               reffile);
-        /* NOTREACHED */
+        /* falseTREACHED */
     }
     if (fileversion >= 8) {
 
         /* override these command line options */
-        compress = YES;
-        invertedindex = NO;
+        compress = true;
+        invertedindex = false;
 
         /* see if there are options in the database */
         for (int c;;) {
@@ -513,15 +513,15 @@ main(int argc, char **argv)
         }
         switch (getc(oldrefs)) {
         case 'c':	/* ASCII characters only */
-            compress = NO;
+            compress = false;
             break;
         case 'q':	/* quick search */
-            invertedindex = YES;
+            invertedindex = true;
             fscanf(oldrefs, "%ld", &totalterms);
             break;
         case 'T':	/* truncate symbols to 8 characters */
-            dbtruncated = YES;
-            trun_syms = YES;
+            dbtruncated = true;
+            trun_syms = true;
             break;
         }
         }
@@ -537,7 +537,7 @@ main(int argc, char **argv)
         postfatal(
         	"cscope: cannot read source file size from file %s\n",
         	reffile);
-        /* NOTREACHED */
+        /* falseTREACHED */
     }
     /* get the source file list */
     srcfiles = malloc(nsrcfiles * sizeof(*srcfiles));
@@ -548,7 +548,7 @@ main(int argc, char **argv)
         postfatal(
         	"cscope: cannot read string space size from file %s\n",
         	reffile);
-        /* NOTREACHED */
+        /* falseTREACHED */
         }
         s = malloc(oldnum);
         getc(oldrefs);    /* skip the newline */
@@ -558,7 +558,7 @@ main(int argc, char **argv)
         postfatal(
         	"cscope: cannot read source file names from file %s\n",
         	reffile);
-        /* NOTREACHED */
+        /* falseTREACHED */
         }
         /* change newlines to nulls */
         for (i = 0; i < nsrcfiles; ++i) {
@@ -598,7 +598,7 @@ main(int argc, char **argv)
             postfatal(
         		"cscope: cannot read source file name from file %s\n",
         	      reffile);
-            /* NOTREACHED */
+            /* falseTREACHED */
         }
         srcfiles[i] = strdup(path);
         }
@@ -618,7 +618,7 @@ main(int argc, char **argv)
     makefilelist();
     if (nsrcfiles == 0) {
         postfatal("cscope: no source files found\n");
-        /* NOTREACHED */
+        /* falseTREACHED */
     }
     /* get include directories from the environment */
     if ((s = getenv("INCLUDEDIRS")) != NULL) {
@@ -626,7 +626,7 @@ main(int argc, char **argv)
     }
     /* add /usr/include to the #include directory list,
        but not in kernelmode... kernels tend not to use it. */
-    if (kernelmode == NO) {
+    if (kernelmode == false) {
         if (NULL != (s = getenv("INCDIR"))) {
         includedir(s);
         } else {
@@ -642,28 +642,28 @@ main(int argc, char **argv)
 
     /* build the cross-reference */
     initcompress();
-    if (linemode == NO || verbosemode == YES) {    /* display if verbose as well */
+    if (linemode == false || verbosemode == true) {    /* display if verbose as well */
         postmsg("Building cross-reference...");
     }
     build();
-    if (linemode == NO ) {
+    if (linemode == false ) {
         clearmsg();    /* clear any build progress message */
     }
-    if (buildonly == YES) {
+    if (buildonly == true) {
         myexit(0);
-        /* NOTREACHED */
+        /* falseTREACHED */
     }
     }
     opendatabase();
 
     /* if using the line oriented user interface so cscope can be a
        subprocess to emacs or samuel */
-    if (linemode == YES) {
+    if (linemode == true) {
         linemode_event_loop();
     }
     /* pause before clearing the screen if there have been error messages */
-    if (errorsfound == YES) {
-    errorsfound = NO;
+    if (errorsfound == true) {
+    errorsfound = false;
     askforreturn();
     }
     /* do any optional search */
@@ -677,6 +677,6 @@ main(int argc, char **argv)
     screenmode_event_loop();
     /* cleanup and exit */
     myexit(0);
-    /* NOTREACHED */
+    /* falseTREACHED */
     return 0;        /* avoid warning... */
 }

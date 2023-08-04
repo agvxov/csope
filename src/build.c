@@ -17,11 +17,11 @@
  without specific prior written permission.
 
  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS
- IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT falseT LIMITED TO,
  THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE
+ PURPOSE ARE DISCLAIMED. IN false EVENT SHALL THE REGENTS OR CONTRIBUTORS BE
  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ CONSEQUENTIAL DAMAGES (INCLUDING, BUT falseT LIMITED TO, PROCUREMENT OF
  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
  INTERRUPTION)
  HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
@@ -54,9 +54,9 @@
 
 /* Exported variables: */
 
-BOOL    buildonly = NO;    	/* only build the database */
-BOOL    unconditional = NO;    /* unconditionally build database */
-BOOL    fileschanged;    	/* assume some files changed */
+bool    buildonly = false;    	/* only build the database */
+bool    unconditional = false;    /* unconditionally build database */
+bool    fileschanged;    	/* assume some files changed */
 
 /* variable copies of the master strings... */
 char    invname_buf[] = INVNAME;
@@ -90,7 +90,7 @@ static    void    movefile(char *new, char *old);
 static    void    putheader(char *dir);
 static    void    fetch_include_from_dbase(char *, size_t);
 static    void    putlist(char **names, int count);
-static    BOOL    samelist(FILE *oldrefs, char **names, int count);
+static    bool    samelist(FILE *oldrefs, char **names, int count);
 
 
 /* Error handling routine if inverted index creation fails */
@@ -99,8 +99,8 @@ cannotindex(void)
 {
     fprintf(stderr, "\
 cscope: cannot create inverted index; ignoring -q option\n");
-    invertedindex = NO;
-    errorsfound = YES;
+    invertedindex = false;
+    errorsfound = true;
     fprintf(stderr, "\
 cscope: removed files %s and %s\n",
         newinvname, newinvpost);
@@ -110,7 +110,7 @@ cscope: removed files %s and %s\n",
 
 
 /* see if the name list is the same in the cross-reference file */
-static BOOL
+static bool
 samelist(FILE *oldrefs, char **names, int count)
 {
     char    oldname[PATHLEN + 1];   /* name in old cross-reference */
@@ -120,16 +120,16 @@ samelist(FILE *oldrefs, char **names, int count)
     /* see if the number of names is the same */
     if (fscanf(oldrefs, "%d", &oldcount) != 1 ||
     oldcount != count) {
-    return(NO);
+    return(false);
     }
     /* see if the name list is the same */
     for (i = 0; i < count; ++i) {
     if ((1 != fscanf(oldrefs," %[^\n]",oldname)) ||
         strnotequal(oldname, names[i])) {
-        return(NO);
+        return(false);
     }
     }
-    return(YES);
+    return(true);
 }
 
 
@@ -167,10 +167,10 @@ opendatabase(void)
     blocknumber = -1;    /* force next seek to read the first block */
 
     /* open any inverted index */
-    if (invertedindex == YES &&
+    if (invertedindex == true &&
     invopen(&invcontrol, invname, invpost, INVAVAIL) == -1) {
     askforreturn();    	/* so user sees message */
-    invertedindex = NO;
+    invertedindex = false;
     }
 }
 
@@ -180,7 +180,7 @@ void
 rebuild(void)
 {
     close(symrefs);
-    if (invertedindex == YES) {
+    if (invertedindex == true) {
     invclose(&invcontrol);
     nsrcoffset = 0;
     npostings = 0;
@@ -215,7 +215,7 @@ build(void)
     int     built = 0;        /* built crossref for these files */
     int     copied = 0;        /* copied crossref for these files */
     unsigned long fileindex;        /* source file name index */
-    BOOL    interactive = YES;    /* output progress messages */
+    bool    interactive = true;    /* output progress messages */
 
     /* normalize the current directory relative to the home directory so
        the cross-reference is not rebuilt when the user's login is moved */
@@ -231,7 +231,7 @@ build(void)
     /* if there is an old cross-reference and its current directory matches */
     /* or this is an unconditional build */
     if ((oldrefs = vpfopen(reffile, "rb")) != NULL
-    && unconditional == NO
+    && unconditional == false
     && fscanf(oldrefs, "cscope %d %" PATHLEN_STR "s", &fileversion, olddir) == 2
     && (strcmp(olddir, currentdir) == 0 /* remain compatible */
         || strcmp(olddir, newdir) == 0)) {
@@ -239,9 +239,9 @@ build(void)
     fstat(fileno(oldrefs), &statstruct);
     reftime = statstruct.st_mtime;
     if (fileversion >= 8) {
-        BOOL    oldcompress = YES;
-        BOOL    oldinvertedindex = NO;
-        BOOL    oldtruncate = NO;
+        bool    oldcompress = true;
+        bool    oldinvertedindex = false;
+        bool    oldtruncate = false;
         int    c;
 
         /* see if there are options in the database */
@@ -254,14 +254,14 @@ build(void)
         }
         switch (getc(oldrefs)) {
         case 'c':	/* ASCII characters only */
-            oldcompress = NO;
+            oldcompress = false;
             break;
         case 'q':	/* quick search */
-            oldinvertedindex = YES;
+            oldinvertedindex = true;
             fscanf(oldrefs, "%ld", &totalterms);
             break;
         case 'T':	/* truncate symbols to 8 characters */
-            oldtruncate = YES;
+            oldtruncate = true;
             break;
         }
         }
@@ -274,7 +274,7 @@ cscope: -c or -T option mismatch between command line and old symbol database\n"
         if (oldinvertedindex != invertedindex) {
         posterr("\
 cscope: -q option mismatch between command line and old symbol database\n");
-        if (invertedindex == NO) {
+        if (invertedindex == false) {
             posterr("cscope: removed files %s and %s\n",
         	    invname, invpost);
             unlink(invname);
@@ -290,12 +290,12 @@ cscope: -q option mismatch between command line and old symbol database\n");
         }
     }
     /* if assuming that some files have changed */
-    if (fileschanged == YES) {
+    if (fileschanged == true) {
         goto outofdate;
     }
     /* see if the directory lists are the same */
-    if (samelist(oldrefs, srcdirs, nsrcdirs) == NO
-        || samelist(oldrefs, incdirs, nincdirs) == NO
+    if (samelist(oldrefs, srcdirs, nsrcdirs) == false
+        || samelist(oldrefs, incdirs, nincdirs) == false
         /* get the old number of files */
         || fscanf(oldrefs, "%lu", &oldnum) != 1
         /* skip the string space size */
@@ -331,7 +331,7 @@ cscope: converting to new symbol database file format\n");
     /* reopen the old cross-reference file for fast scanning */
     if ((symrefs = vpopen(reffile, O_BINARY | O_RDONLY)) == -1) {
         postfatal("cscope: cannot open file %s\n", reffile);
-        /* NOTREACHED */
+        /* falseTREACHED */
     }
     /* get the first file name in the old cross-reference */
     blocknumber = -1;
@@ -346,16 +346,16 @@ cscope: converting to new symbol database file format\n");
     /* open the new cross-reference file */
     if ((newrefs = myfopen(newreffile, "wb")) == NULL) {
     postfatal("cscope: cannot open file %s\n", reffile);
-    /* NOTREACHED */
+    /* falseTREACHED */
     }
-    if (invertedindex == YES && (postings = myfopen(temp1, "wb")) == NULL) {
+    if (invertedindex == true && (postings = myfopen(temp1, "wb")) == NULL) {
     cannotwrite(temp1);
     cannotindex();
     }
     putheader(newdir);
     fileversion = FILEVERSION;
-    if (buildonly == YES && verbosemode != YES && !isatty(0)) {
-    interactive = NO;
+    if (buildonly == true && verbosemode != true && !isatty(0)) {
+    interactive = false;
     } else {
     searchcount = 0;
     }
@@ -366,20 +366,20 @@ cscope: converting to new symbol database file format\n");
        included files is processed */
     firstfile = 0;
     lastfile = nsrcfiles;
-    if (invertedindex == YES) {
+    if (invertedindex == true) {
     srcoffset = malloc((nsrcfiles + 1u) * sizeof(*srcoffset));
     }
     for (;;) {
     progress("Building symbol database", (long)built,
          (long)lastfile);
-    if (linemode == NO)
+    if (linemode == false)
         refresh();
 
     /* get the next source file name */
     for (fileindex = firstfile; fileindex < lastfile; ++fileindex) {
 
         /* display the progress about every three seconds */
-        if (interactive == YES && fileindex % 10 == 0) {
+        if (interactive == true && fileindex % 10 == 0) {
         progress("Building symbol database", fileindex, lastfile);
         }
         /* if the old file has been deleted get the next one */
@@ -406,7 +406,7 @@ cscope: converting to new symbol database file format\n");
         } else {
         /* copy its cross-reference */
         putfilename(file);
-        if (invertedindex == YES) {
+        if (invertedindex == true) {
             copyinverted();
         } else {
             copydata();
@@ -421,7 +421,7 @@ cscope: converting to new symbol database file format\n");
     }
     firstfile = lastfile;
     lastfile = nsrcfiles;
-    if (invertedindex == YES) {
+    if (invertedindex == true) {
         srcoffset = realloc(srcoffset, (nsrcfiles + 1) * sizeof(*srcoffset));
     }
     /* sort the included file names */
@@ -441,16 +441,16 @@ cscope: converting to new symbol database file format\n");
     if (fflush(newrefs) == EOF) {
     /* rewind doesn't check for write failure */
     cannotwrite(newreffile);
-    /* NOTREACHED */
+    /* falseTREACHED */
     }
 
     /* create the inverted index if requested */
-    if (invertedindex == YES) {
+    if (invertedindex == true) {
     char    sortcommand[PATHLEN + 1];
 
     if (fflush(postings) == EOF) {
         cannotwrite(temp1);
-        /* NOTREACHED */
+        /* falseTREACHED */
     }
     fstat(fileno(postings), &statstruct);
     fclose(postings);
@@ -504,11 +504,11 @@ seek_to_trailer(FILE *f)
 {
     if (fscanf(f, "%ld", &traileroffset) != 1) {
     postfatal("cscope: cannot read trailer offset from file %s\n", reffile);
-    /* NOTREACHED */
+    /* falseTREACHED */
     }
     if (fseek(f, traileroffset, SEEK_SET) == -1) {
     postfatal("cscope: cannot seek to trailer in file %s\n", reffile);
-    /* NOTREACHED */
+    /* falseTREACHED */
     }
 }
 
@@ -550,10 +550,10 @@ static void
 putheader(char *dir)
 {
     dboffset = fprintf(newrefs, "cscope %d %s", FILEVERSION, dir);
-    if (compress == NO) {
+    if (compress == false) {
     dboffset += fprintf(newrefs, " -c");
     }
-    if (invertedindex == YES) {
+    if (invertedindex == true) {
     dboffset += fprintf(newrefs, " -q %.10ld", totalterms);
     } else {
     /* leave space so if the header is overwritten without -q
@@ -561,7 +561,7 @@ putheader(char *dir)
      * is the same length */
     dboffset += fprintf(newrefs, "              ");
     }
-    if (trun_syms == YES) {
+    if (trun_syms == true) {
     dboffset += fprintf(newrefs, " -T");
     }
 
@@ -591,7 +591,7 @@ putlist(char **names, int count)
     if (fputs(names[i], newrefs) == EOF ||
         putc('\n', newrefs) == EOF) {
         cannotwrite(newreffile);
-        /* NOTREACHED */
+        /* falseTREACHED */
     }
     }
 }
@@ -721,7 +721,7 @@ movefile(char *new, char *old)
     myperror("cscope");
     postfatal("cscope: cannot rename file %s to file %s\n",
           new, old);
-    /* NOTREACHED */
+    /* falseTREACHED */
     }
 }
 

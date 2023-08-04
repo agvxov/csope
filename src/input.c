@@ -17,11 +17,11 @@
  without specific prior written permission.
 
  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS
- IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT falseT LIMITED TO,
  THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE
+ PURPOSE ARE DISCLAIMED. IN false EVENT SHALL THE REGENTS OR CONTRIBUTORS BE
  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ CONSEQUENTIAL DAMAGES (INCLUDING, BUT falseT LIMITED TO, PROCUREMENT OF
  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
  INTERRUPTION)
  HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
@@ -104,7 +104,7 @@ mygetch(void)
 
 /* get a line from the terminal in non-canonical mode */
 int
-mygetline(char p[], char s[], unsigned size, int firstchar, BOOL iscaseless)
+mygetline(char p[], char s[], unsigned size, int firstchar, bool iscaseless)
 {
     int    c;
     unsigned int i = 0, j;
@@ -126,7 +126,7 @@ mygetline(char p[], char s[], unsigned size, int firstchar, BOOL iscaseless)
     i += strlen(p);
     /* if a character already has been typed */
     if (firstchar != '\0') {
-    if(iscaseless == YES) {
+    if(iscaseless == true) {
         firstchar = tolower(firstchar);
     }
     addch(firstchar);    /* display it */
@@ -193,7 +193,7 @@ mygetline(char p[], char s[], unsigned size, int firstchar, BOOL iscaseless)
         i = 0;
     } else if (isprint(c) || c == '\t') {
         /* printable */
-        if(iscaseless == YES) {
+        if(iscaseless == true) {
         c = tolower(c);
         }
         /* if it will fit on the line */
@@ -207,10 +207,10 @@ mygetline(char p[], char s[], unsigned size, int firstchar, BOOL iscaseless)
         }
         }
 #if UNIXPC
-    } else if (unixpcmouse == YES && c == ESC) {    /* mouse */
+    } else if (unixpcmouse == true && c == ESC) {    /* mouse */
         getmouseaction(ESC);    /* ignore it */
 #endif
-    } else if (mouse == YES && c == ctrl('X')) {
+    } else if (mouse == true && c == ctrl('X')) {
         getmouseaction(ctrl('X'));    /* ignore it */
     } else if (c == EOF) {    			/* end-of-file */
         break;
@@ -251,7 +251,7 @@ askforreturn(void)
     fprintf(stderr, "Press the RETURN key to continue: ");
     getchar();
     /* HBB 20060419: message probably messed up the screen --- redraw */
-    if (incurses == YES) {
+    if (incurses == true) {
     redrawwin(curscr);
     }
 }
@@ -340,20 +340,20 @@ wmode_input(const int c){
         case KEY_RIGHT:
         	field = (field + 1) % FIELDS;
         	resetcmd();
-        	return(NO);
+        	return(false);
         case ctrl('P'):	/* go to previous input field */
         case KEY_UP:
         case KEY_LEFT:
         	field = (field + (FIELDS - 1)) % FIELDS;
         	resetcmd();
-        	return(NO);
+        	return(false);
         case KEY_HOME:    /* go to first input field */
         	field = 0;
         	resetcmd();
-        	return(NO);
+        	return(false);
         case KEY_LL:    /* go to last input field */
         	curdispline = disprefs;
-        	return(YES);
+        	return(true);
     }
 }
 
@@ -365,28 +365,28 @@ wresult_input(const int c){
         case '\n':
         	editref(curdispline);
         	window_change = CH_ALL;
-            return(YES);
+            return(true);
         case ctrl('N'):
         case KEY_DOWN:
         case KEY_RIGHT:
         	if ((curdispline + 1) < disprefs) {
         		++curdispline;
         	}
-        	return(NO);
+        	return(false);
         case ctrl('P'):
         case KEY_UP:
         case KEY_LEFT:
         	if (curdispline) {
         		--curdispline;
         	}
-        	return(NO);
+        	return(false);
         case KEY_HOME:
             curdispline = 0;
-        	return(NO);
+        	return(false);
         case KEY_LL:
         	field = FIELDS - 1;
         	resetcmd();
-        	return(NO);
+        	return(false);
         default:
         	char *e;
         	if ((e = strchr(dispchars, c)))
@@ -401,9 +401,9 @@ global_input(const int c){
         case '+':
         case ctrl('V'):
         case KEY_NPAGE:
-        	if (totallines == 0) { return(NO); } /* don't redisplay if there are no lines */
+        	if (totallines == 0) { return(false); } /* don't redisplay if there are no lines */
         	/* XXX: figure out whether this comment is useful or not */
-        	/* NOTE: seekline() is not used to move to the next
+        	/* falseTE: seekline() is not used to move to the next
         	 * page because display() leaves the file pointer at
         	 * the next page to optimize paging forward
         	 */
@@ -412,7 +412,7 @@ global_input(const int c){
         case ctrl('H'):	/* display previous page */
         case '-':
         case KEY_PPAGE:
-        	if (totallines == 0) { return(NO); } /* don't redisplay if there are no lines */
+        	if (totallines == 0) { return(false); } /* don't redisplay if there are no lines */
         	curdispline = 0;
         	/* if there are only two pages, just go to the other one */
         	if (totallines <= 2 * mdisprefs) {
@@ -441,7 +441,7 @@ global_input(const int c){
         	//FILE* file;
         	//if (totallines == 0) {
         	//	postmsg("There are no lines to write to a file");
-        	//	return(NO);
+        	//	return(false);
         	//}
         	//move(PRLINE, 0);
         	////addstr("Write to file: ");		// XXX
@@ -452,7 +452,7 @@ global_input(const int c){
         	////ch = '\0';
         	////s = "a";
         	////}
-        	////if (ch != '\r' && mygetline("", newpat, COLS - sizeof(appendprompt), c, NO) > 0) {
+        	////if (ch != '\r' && mygetline("", newpat, COLS - sizeof(appendprompt), c, false) > 0) {
         	////	shellpath(filename, sizeof(filename), newpat);
         	////	if ((file = myfopen(filename, s)) == NULL) {
         	////		cannotopen(filename);
@@ -466,36 +466,36 @@ global_input(const int c){
         	////	}
         	////}
         	////clearprompt();
-        	return(NO);	/* return to the previous field */
+        	return(false);	/* return to the previous field */
         case '<':	/* read lines from a file */
         	break;					// XXX
         	move(PRLINE, 0);
         	//addstr(readprompt); // XXX fix
-        	//if (mygetline("", newpat, COLS - sizeof(readprompt), '\0', NO) > 0) {
+        	//if (mygetline("", newpat, COLS - sizeof(readprompt), '\0', false) > 0) {
         	//	clearprompt();
         	//	shellpath(filename, sizeof(filename), newpat);
-        	//	if (readrefs(filename) == NO) {
+        	//	if (readrefs(filename) == false) {
         	//		postmsg2("Ignoring an empty file");
-        	//		return(NO);
+        	//		return(false);
         	//	}
         	//	window_change |= CH_INPUT;
-        	//	return(YES);
+        	//	return(true);
         	//}
         	//clearprompt();
-        	return(NO);
+        	return(false);
         case '|':	/* pipe the lines to a shell command */
         case '^':
         	break;		// XXX fix
         	if (totallines == 0) {
         		postmsg("There are no lines to pipe to a shell command");
-        		return(NO);
+        		return(false);
         	}
         	/* get the shell command */
         	move(PRLINE, 0);
         	//addstr(pipeprompt);
-        	//if (mygetline("", newpat, COLS - sizeof(pipeprompt), '\0', NO) == 0) {
+        	//if (mygetline("", newpat, COLS - sizeof(pipeprompt), '\0', false) == 0) {
         	//	clearprompt();
-        	//	return(NO);
+        	//	return(false);
         	//}
         	///* if the ^ command, redirect output to a temp file */
         	//if (commandc == '^') {
@@ -519,7 +519,7 @@ global_input(const int c){
         	//	mypclose(file);
         	//}
         	//if (commandc == '^') {
-        	//	if (readrefs(temp2) == NO) {
+        	//	if (readrefs(temp2) == false) {
         	//	postmsg("Ignoring empty output of ^ command");
         	//	}
         	//}
@@ -536,7 +536,7 @@ global_input(const int c){
         case ctrl('L'):	/* redraw screen */
         case KEY_CLEAR:
         	window_change = CH_ALL;
-        	return(NO);
+        	return(false);
         case '?':	/* help */
         	clear();
         	help();

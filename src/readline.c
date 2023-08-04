@@ -9,9 +9,9 @@ static int input_available = 0;
 static char input_char;
 char input_line[PATLEN + 1];
 
-BOOL do_terminate = NO;
+bool do_terminate = false;
 
-BOOL interpret(int c){
+bool interpret(int c){
     input_char = c;
     input_available = 1;
     rl_callback_read_char();
@@ -46,7 +46,7 @@ static int verswp_field_proxy(int i, int h){
 }
 
 static int interpret_break(){
-    do_terminate = YES;
+    do_terminate = true;
 }
 
 static int ctrl_z(){
@@ -54,27 +54,27 @@ static int ctrl_z(){
 }
 
 static int toggle_caseless(){
-    if (caseless == NO) {
-        caseless = YES;
+    if (caseless == false) {
+        caseless = true;
         postmsg2("Caseless mode is now ON");
     } else {
-        caseless = NO;
+        caseless = false;
         postmsg2("Caseless mode is now OFF");
     }
     egrepcaseless(caseless);    /* turn on/off -i flag */
 }
 
 static int rebuild_reference(){
-    if (isuptodate == YES) {
+    if (isuptodate == true) {
         postmsg("The -d option prevents rebuilding the symbol database");
-        return(NO);
+        return(false);
     }
     exitcurses();
     freefilelist();    	/* remake the source file list */
     makefilelist();
     rebuild();
-    if (errorsfound == YES) {
-        errorsfound = NO;
+    if (errorsfound == true) {
+        errorsfound = false;
         askforreturn();
     }
     entercurses();
@@ -82,23 +82,23 @@ static int rebuild_reference(){
     totallines = 0;
     disprefs = 0;
     topline = nextline = 1;
-    return(YES);
+    return(true);
 }
 
 static int process_mouse(){
     int i;
     MOUSE* p;
     if ((p = getmouseaction(DUMMYCHAR)) == NULL) {
-        return(NO);    /* unknown control sequence */
+        return(false);    /* unknown control sequence */
     }
     /* if the button number is a scrollbar tag */
     if (p->button == '0') {
         //scrollbar(p);    // XXX
-        return(NO);
+        return(false);
     }
     /* ignore a sweep */
     if (p->x2 >= 0) {
-        return(NO);
+        return(false);
     }
     /* if this is a line selection */
     if (p->y1 > FLDLINE) {
@@ -107,7 +107,7 @@ static int process_mouse(){
         /* note: the selection is forced into range */
         for (i = disprefs - 1; i > 0; --i) {
         if (p->y1 >= displine[i]) {
-            return(NO);
+            return(false);
         }
         }
         /* display it in the file with the editor */
@@ -119,7 +119,7 @@ static int process_mouse(){
         field = FIELDS - 1;
         }
         resetcmd();
-        return(NO);
+        return(false);
     }
 }
 
