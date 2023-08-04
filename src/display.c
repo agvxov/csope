@@ -203,7 +203,13 @@ static inline void display_frame(){
 
 static inline void display_mode(){
     for(int i = 0; i < FIELDS; ++i){
-        mvwprintw(wmode, i, 0, "%s %s", fields[i].text1, fields[i].text2);
+		if(i == field){
+			wattron(wmode, A_REVERSE);
+			mvwprintw(wmode, i, 0, "%s %s", fields[i].text1, fields[i].text2);
+			wattroff(wmode, A_REVERSE);
+		}else{
+			mvwprintw(wmode, i, 0, "%s %s", fields[i].text1, fields[i].text2);
+		}
     }
 }
 
