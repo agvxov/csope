@@ -124,9 +124,9 @@ void
 siginit(void){
     /* if running in the foreground */
     if (signal(SIGINT, SIG_IGN) != SIG_IGN) {
-    /* cleanup on the interrupt and quit signals */
-    signal(SIGINT, myexit);
-    signal(SIGQUIT, myexit);
+		/* cleanup on the interrupt and quit signals */
+		signal(SIGINT, myexit);
+		signal(SIGQUIT, myexit);
     }
     /* cleanup on the hangup signal */
     signal(SIGHUP, myexit);
@@ -141,15 +141,7 @@ siginit(void){
     signal(SIGPIPE, SIG_IGN);
 
     if (linemode == false) {
-    signal(SIGINT, SIG_IGN);    /* ignore interrupts */
-#if defined(KEY_RESIZE) && !defined(__DJGPP__)
-    struct sigaction winch_action;
-
-    winch_action.sa_sigaction = sigwinch_handler;
-    sigemptyset(&winch_action.sa_mask);
-    winch_action.sa_flags = SA_SIGINFO;
-    sigaction(SIGWINCH,&winch_action,NULL);
-#endif
+    	signal(SIGWINCH, sigwinch_handler);
     }
 }
 

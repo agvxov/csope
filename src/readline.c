@@ -118,6 +118,8 @@ static int process_mouse(){
         resetcmd();
         return(false);
     }
+
+	return false;
 }
 
 void rlinit(){
