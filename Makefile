@@ -1,4 +1,6 @@
-# CC=gcc
+DEBUG:=1
+
+CC=gcc
 CFLAGS:=-Wall -Wextra -Wpedantic
 CPPFLAGS:=${shell pkg-config --cflags ncurses readline}
 LDLIBS=-I ${CHDRD} ${shell pkg-config --libs ncurses readline}
@@ -21,7 +23,7 @@ CHDR:=$(addsuffix .gch,$(subst ${HDRD},${CHDRD},${HDR}))
 OUTPUT:=csope
 
 ifeq (${DEBUG},1)
-	CFLAGS += -Og -ggdb
+	CFLAGS += -O0 -ggdb
 else
 	CFLAGS += -O3 -flto=auto -fomit-frame-pointer
 endif

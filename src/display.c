@@ -80,6 +80,7 @@ unsigned int curdispline = 0;
 WINDOW* winput;
 WINDOW* wmode;
 WINDOW* wresult;
+WINDOW* whelp;
 WINDOW** current_window;
 static WINDOW** last_window;
 
@@ -132,11 +133,6 @@ dispinit(void)
     /* initialize the curses display package */
     initscr();    /* initialize the screen */
     entercurses();
-    keypad(stdscr, TRUE);    /* enable the keypad */
-    //fixkeypad();    /* fix for getch() intermittently returning garbage */
-    standend();    /* turn off reverse video */
-    curs_set(0);
-    noecho();
 
     /* Calculate section sizes */
     result_window_height = LINES - 2;
@@ -164,9 +160,19 @@ dispinit(void)
     winput = newwin(input_window_height, first_col_width, 1, 1);
     wmode = newwin(mode_window_height, first_col_width, input_window_height+1 + 1, 1);
     wresult = newwin(result_window_height, second_col_width, 1, first_col_width + 1 + 1);
+    whelp = newwin(LINES-2, COLS-2, 1, 1);
     refresh();
 
     current_window = &winput;
+}
+
+static inline void display_help(){
+	werase(whelp);
+	wmove(whelp, 0, 0);
+	waddstr(whelp, help());
+	wrefresh(whelp);
+	do_press_any_key = true;
+	window_change = CH_ALL;
 }
 
 static inline void display_frame(){
@@ -452,6 +458,13 @@ display(void)
     //drawscrollbar(topline, nextline);    /* display the scrollbar */
 
     if(window_change){
+		if(window_change == CH_HELP){
+			display_help();
+			/* Do not display over the help msg and */
+			/*  rely on display_help() setting CH_ALL */
+			return;
+		}
+		/**/
         if(window_change == CH_ALL){
             display_frame();
         }
@@ -476,7 +489,7 @@ display(void)
         wrefresh(wresult);
     }
 
-    window_change = CH_falseNE;
+    window_change = CH_NONE;
 }
 
 void

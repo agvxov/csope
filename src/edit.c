@@ -85,7 +85,7 @@ editall(void)
         edit(file, linenum);	/* edit it */
         if (editallprompt == true) {
         	addstr("Type ^D to stop editing all lines, or any other character to continue: ");
-        	if ((c = mygetch()) == EOF || c == ctrl('D') || c == ctrl('Z')) {
+        	if ((c = getch()) == EOF || c == ctrl('D') || c == ctrl('Z')) {
         		break;
         	}
         }

@@ -34,16 +34,19 @@ static void redisplay_function(){
 }
 
 static void callback_handler(char* line){
+	if(!line){ return; }
     strncpy(input_line, line, PATLEN);
     search();
 }
 
 static int interpret_break(){
     do_terminate = true;
+	return 0;
 }
 
 static int ctrl_z(){
     kill(0, SIGTSTP);
+	return 0;
 }
 
 static int toggle_caseless(){
@@ -55,6 +58,7 @@ static int toggle_caseless(){
         postmsg2("Caseless mode is now OFF");
     }
     egrepcaseless(caseless);    /* turn on/off -i flag */
+	return 0;
 }
 
 static int rebuild_reference(){
@@ -132,7 +136,6 @@ void rlinit(){
     rl_bind_key(KEY_BACKSPACE, rl_rubout);
 
     rl_bind_key(EOF, exit);
-    rl_bind_key(ctrl('D'), interpret_break);    //XXX: why the fuck does it not work if its the first char?
     rl_bind_key(ctrl('Z'), ctrl_z);
     rl_bind_key(ctrl('Z'), toggle_caseless);
     rl_bind_key(ctrl('R'), rebuild_reference);

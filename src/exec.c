@@ -43,11 +43,7 @@
 #ifdef __DJGPP__
 #include <process.h>
 #endif
-#if defined(USE_NCURSES) && !defined(RENAMED_NCURSES)
 #include <ncurses.h>
-#else
-#include <curses.h>
-#endif
 
 static    sighandler_t oldsigquit; /* old value of quit signal */
 static    sighandler_t oldsighup; /* old value of hangup signal */
@@ -97,7 +93,7 @@ execute(char *a, ...)    /* note: "exec" is already defined on u370 */
 # ifndef __DJGPP__ /* leave CRLF handling as is */
     nonl();
 # endif
-    raw();    /* endwin() turns off cbreak mode so restore it */
+    cbreak();    /* endwin() turns off cbreak mode so restore it */
     noecho();
 #endif
     mousemenu();

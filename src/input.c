@@ -48,6 +48,8 @@
 #include <sys/termios.h>
 #endif
 
+bool do_press_any_key = false;
+
 static    jmp_buf    env;        /* setjmp/longjmp buffer */
 static    int    prevchar;    /* previous, ungotten character */
 
@@ -69,38 +71,6 @@ myungetch(int c)
 {
     prevchar = c;
 }
-
-/* get a character from the terminal */
-int
-mygetch(void)
-{
-    sighandler_t savesig = 0; /* old value of signal */
-    int c;
-
-    /* change an interrupt signal to a break key character */
-    if (setjmp(env) == 0) {
-    savesig = signal(SIGINT, catchint);
-    refresh();    /* update the display */
-    mousereinit();    /* curses can change the menu number */
-    if(prevchar) {
-        c = prevchar;
-        prevchar = 0;
-    } else {
-        c = -1;
-        while (c == -1) {
-        /* get a character from the terminal */
-        c = getch();
-        if ((c == -1) && (errno != EINTR))
-            break;
-        }
-    }
-    } else {    /* longjmp to here from signal handler */
-    c = KEY_BREAK;
-    }
-    signal(SIGINT, savesig);
-    return(c);
-}
-
 
 /* get a line from the terminal in non-canonical mode */
 int
@@ -133,7 +103,7 @@ mygetline(char p[], char s[], unsigned size, int firstchar, bool iscaseless)
     s[i++] = firstchar;    /* save it */
     }
     /* until the end of the line is reached */
-    while ((c = mygetch()) != '\r' && c != '\n' && c != KEY_ENTER) {
+    while ((c = getch()) != '\r' && c != '\n' && c != KEY_ENTER) {
     if (c == KEY_LEFT || c == ctrl('B')) {    /* left */
         if (i > 0) {
         addch('\b');
@@ -240,7 +210,7 @@ void
 askforchar(void)
 {
     addstr("Type any character to continue: ");
-    mygetch();
+    getch();
 }
 
 /* ask user to press the RETURN key after reading the message */
@@ -462,7 +432,7 @@ global_input(const int c){
             //move(PRLINE, 0);
             ////addstr("Write to file: ");        // XXX
             //s = "w";
-            //if ((ch = mygetch()) == '>') {
+            //if ((ch = getch()) == '>') {
             //move(PRLINE, 0);
             ////addstr(appendprompt);    // XXX fix
             ////ch = '\0';
@@ -554,10 +524,7 @@ global_input(const int c){
             window_change = CH_ALL;
             break;
         case '?':    /* help */
-            clear();
-            help();
-            clear();
-            seekline(topline);
+			window_change = CH_HELP;
             break;
         case ctrl('E'):    /* edit all lines */
             editall();
@@ -576,6 +543,11 @@ extern const void const* const* current_window;
 
 int
 handle_input(const char c){
+	/* - was wating for any input - */
+	if(do_press_any_key){
+		do_press_any_key = false;
+		return 0;
+	}
     /* --- global --- */
     const int r = global_input(c);
     if(r){ return 0; }

@@ -215,14 +215,17 @@ void
 entercurses(void)
 {
     incurses = true;
-#ifndef __MSDOS__ /* HBB 20010313 */
-    nonl();            /* don't translate an output \n to \n\r */
-#endif
-    raw();        	/* single character input */
+
+    nonl();             /* don't translate an output \n to \n\r */
+    cbreak();  	     	/* single character input */
     noecho();        	/* don't echo input characters */
+    curs_set(0);
     clear();        	/* clear the screen */
     mouseinit();        /* initialize any mouse interface */
     drawscrollbar(topline, nextline);
+    keypad(stdscr, TRUE);    /* enable the keypad */
+    //fixkeypad();    /* fix for getch() intermittently returning garbage */
+    standend();    /* turn off reverse video */
 }
 
 

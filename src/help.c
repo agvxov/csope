@@ -48,104 +48,91 @@
 */
 #define MAXHELP    50    /* maximum number of help strings */
 
-void
+static char help_msg[] = 
+        "Press the RETURN key repeatedly to move to the desired input field, type the\n"
+        "pattern to search for, and then press the RETURN key.  For the first 4 and\n"
+        "last 2 input fields, the pattern can be a regcomp(3) regular expression.\n"
+        "If the search is successful, you can use these single-character commands:\n\n"
+        "0-9a-zA-Z\tEdit the file containing the displayed line.\n"
+        "space bar\tDisplay next set of matching lines.\n"
+        "+\t\tDisplay next set of matching lines.\n"
+        "^V\t\tDisplay next set of matching lines.\n"
+        "-\t\tDisplay previous set of matching lines.\n"
+        "^E\t\tEdit all lines.\n"
+        ">\t\tWrite the list of lines being displayed to a file.\n"
+        ">>\t\tAppend the list of lines being displayed to a file.\n"
+        "<\t\tRead lines from a file.\n"
+        "^\t\tFilter all lines through a shell command.\n"
+        "|\t\tPipe all lines to a shell command.\n"
+        "\nAt any time you can use these single-character commands:\n\n"
+        "TAB\t\tSwap positions between input and output areas.\n"
+        "RETURN\t\tMove to the next input field.\n"
+        "^N\t\tMove to the next input field.\n"
+        "^P\t\tMove to the previous input field.\n"
+        "^Y / ^A\t\tSearch with the last pattern typed.\n"
+        "^B\t\tRecall previous input field and search pattern.\n"
+        "^F\t\tRecall next input field and search pattern.\n"
+        "^C\t\tToggle ignore/use letter case when searching.\n"
+        "^R\t\tRebuild the cross-reference.\n"
+        "!\t\tStart an interactive shell (type ^D to return to cscope).\n"
+        "^L\t\tRedraw the screen.\n"
+        "?\t\tDisplay this list of commands.\n"
+        "^D\t\tExit cscope.\n"
+        "\nNote: If the first character of the pattern you want to search for matches\n"
+        "a command, type a \\ character first.\n"
+        "Note: Some ctrl keys may be occupied by your terminal configuration.\n"
+;
+
+static char changeing_help_msg[] = 
+        "When changing text, you can use these single-character commands:\n\n"
+        "0-9a-zA-Z\tMark or unmark the line to be changed.\n"
+        "*\t\tMark or unmark all displayed lines to be changed.\n"
+        "space bar\tDisplay next set of lines.\n"
+        "+\t\tDisplay next set of lines.\n"
+        "-\t\tDisplay previous set of lines.\n"
+        "^A\t\tMark or unmark all lines to be changed.\n"
+        "^D\t\tChange the marked lines and exit.\n"
+        "ESC\t\tExit without changing the marked lines.\n"
+        "!\t\tStart an interactive shell (type ^D to return to cscope).\n"
+        "^L\t\tRedraw the screen.\n"
+        "?\t\tDisplay this list of commands.\n"
+;
+
+const char*
 help(void)
 {
-    char    **ep, *s, **tp, *text[MAXHELP];
-    int    ln;
+    //char    **ep, *s, **tp, *text[MAXHELP];
+    //int    ln;
 
-    tp = text;
+    //tp = text;
     if (changing == false) {
-        if (mouse) {
-        	*tp++ = "Point with the mouse and click button 1 to move to the desired input field,\n";
-        	*tp++ = "type the pattern to search for, and then press the RETURN key.  For the first 4\n";
-        	*tp++ = "and last 2 input fields, the pattern can be a regcomp(3) regular expression.\n";
-        	*tp++ = "If the search is successful, you can edit the file containing a displayed line\n";
-        	*tp++ = "by pointing with the mouse and clicking button 1.\n";
-        	*tp++ = "\nYou can either use the button 2 menu or these single-character commands:\n\n";
-        } else {
-        	*tp++ = "Press the RETURN key repeatedly to move to the desired input field, type the\n";
-        	*tp++ = "pattern to search for, and then press the RETURN key.  For the first 4 and\n";
-        	*tp++ = "last 2 input fields, the pattern can be a regcomp(3) regular expression.\n";
-        	*tp++ = "If the search is successful, you can use these single-character commands:\n\n";
-        	*tp++ = "0-9a-zA-Z\tEdit the file containing the displayed line.\n";
-        }
-        *tp++ = "space bar\tDisplay next set of matching lines.\n";
-        *tp++ = "+\t\tDisplay next set of matching lines.\n";
-        *tp++ = "^V\t\tDisplay next set of matching lines.\n";
-        *tp++ = "-\t\tDisplay previous set of matching lines.\n";
-        *tp++ = "^E\t\tEdit all lines.\n";
-        *tp++ = ">\t\tWrite the list of lines being displayed to a file.\n";
-        *tp++ = ">>\t\tAppend the list of lines being displayed to a file.\n";
-        *tp++ = "<\t\tRead lines from a file.\n";
-        *tp++ = "^\t\tFilter all lines through a shell command.\n";
-        *tp++ = "|\t\tPipe all lines to a shell command.\n";
-        if (!mouse) {
-        	*tp++ = "\nAt any time you can use these single-character commands:\n\n";
-        	*tp++ = "TAB\t\tSwap positions between input and output areas.\n";
-        	*tp++ = "RETURN\t\tMove to the next input field.\n";
-        	*tp++ = "^N\t\tMove to the next input field.\n";
-        	*tp++ = "^P\t\tMove to the previous input field.\n";
-        }
-        *tp++ = "^Y / ^A\t\tSearch with the last pattern typed.\n";
-        *tp++ = "^B\t\tRecall previous input field and search pattern.\n";
-        *tp++ = "^F\t\tRecall next input field and search pattern.\n";
-        if(caseless)
-        	*tp++ = "^C\t\tToggle ignore/use letter case when searching (IGfalseRE).\n";
-        else
-        	*tp++ = "^C\t\tToggle ignore/use letter case when searching (USE).\n";
-        *tp++ = "^R\t\tRebuild the cross-reference.\n";
-        *tp++ = "!\t\tStart an interactive shell (type ^D to return to cscope).\n";
-        *tp++ = "^L\t\tRedraw the screen.\n";
-        *tp++ = "?\t\tDisplay this list of commands.\n";
-        *tp++ = "^D\t\tExit cscope.\n";
-        *tp++ = "\nNote: If the first character of the pattern you want to search for matches\n";
-        *tp++ = "a command, type a \\ character first.\n";
-        *tp++ = "Note: Some ctrl keys may be occupied by your terminal configuration.\n";
+		return help_msg;
     } else {
-        if (mouse) {
-        	*tp++ = "Point with the mouse and click button 1 to mark or unmark the line to be\n";
-        	*tp++ = "changed.  You can also use the button 2 menu or these single-character\n";
-        	*tp++ = "commands:\n\n";
-        }
-        else {
-        	*tp++ = "When changing text, you can use these single-character commands:\n\n";
-        	*tp++ = "0-9a-zA-Z\tMark or unmark the line to be changed.\n";
-        }
-        *tp++ = "*\t\tMark or unmark all displayed lines to be changed.\n";
-        *tp++ = "space bar\tDisplay next set of lines.\n";
-        *tp++ = "+\t\tDisplay next set of lines.\n";
-        *tp++ = "-\t\tDisplay previous set of lines.\n";
-        *tp++ = "^A\t\tMark or unmark all lines to be changed.\n";
-        *tp++ = "^D\t\tChange the marked lines and exit.\n";
-        *tp++ = "ESC\t\tExit without changing the marked lines.\n";
-        *tp++ = "!\t\tStart an interactive shell (type ^D to return to cscope).\n";
-        *tp++ = "^L\t\tRedraw the screen.\n";
-        *tp++ = "?\t\tDisplay this list of commands.\n";
+		return changeing_help_msg;
     }
-    /* print help, a screen at a time */
-    ep = tp;
-    ln = 0;
-    for (tp = text; tp < ep; ) {
-        if (ln < LINES - 1) {
-        	for (s = *tp; *s != '\0'; ++s) {
-        		if (*s == '\n') {
-        			++ln;
-        		}
-        	}
-        	(void) addstr(*tp++);
-        }
-        else {
-        	(void) addstr("\n");
-        	askforchar();
-        	(void) clear();
-        	ln = 0;
-        }
-    }
-    if (ln) {
-        (void) addstr("\n");
-        askforchar();
-    }
+    ///* print help, a screen at a time */
+    //ep = tp;
+    //ln = 0;
+    //for (tp = text; tp < ep; ) {
+    //    if (ln < LINES - 1) {
+    //    	for (s = *tp; *s != '\0'; ++s) {
+    //    		if (*s == '\n') {
+    //    			++ln;
+    //    		}
+    //    	}
+    //    	(void) addstr(*tp++);
+    //    }
+    //    else {
+    //    	(void) addstr("\n");
+    //    	askforchar();
+    //    	(void) clear();
+    //    	ln = 0;
+    //    }
+    //}
+    //if (ln) {
+    //    (void) addstr("\n");
+    //    askforchar();
+    //}
 }
 
 /* error exit including short usage information */

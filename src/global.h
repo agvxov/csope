@@ -82,10 +82,11 @@ struct cmd {        	/* command history struct */
 };
 
 enum {
-    CH_falseNE   = 0x0000,
+    CH_NONE   = 0x0000,
     CH_RESULT = 0x0001 << 0,
     CH_INPUT  = 0x0001 << 1,
     CH_MODE   = 0x0001 << 2,
+    CH_HELP   = 0x0001 << 3, /* do NOT add to CH_ALL */
     CH_ALL    = CH_RESULT | CH_INPUT | CH_MODE
 };
 
@@ -235,8 +236,9 @@ void    error_usage(void);
 void    longusage(void);
 void    usage(void);
 extern bool    remove_symfile_onexit;
-extern bool    onesearch;    	/* one search only in line mode */
-extern char    *reflines;    	/* symbol reference lines file */
+extern bool    onesearch;    	 /* one search only in line mode */
+extern char    *reflines;    	 /* symbol reference lines file */
+extern bool	   do_press_any_key; /* wait for any key to continue */
 void verswp_field(void);
 void horswp_field(void);
 bool interpret(int c);    // XXX: probably rename
@@ -267,7 +269,7 @@ void    freesrclist(void);
 void    freeinclist(void);
 void    freecrossref(void);
 void    freefilelist(void);
-void    help(void);
+const char* help(void);
 void    incfile(char *file, char *type);
 void    includedir(char *_dirname);
 void    initsymtab(void);
@@ -308,7 +310,6 @@ struct    cmd *nextcmd(void);
 
 int    egrep(char *file, FILE *output, char *format);
 int    mygetline(char p[], char s[], unsigned size, int firstchar, bool iscaseless);
-int    mygetch(void);
 int    hash(char *ss);
 int    execute(char *a, ...);
 long    dbseek(long offset);

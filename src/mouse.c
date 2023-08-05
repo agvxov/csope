@@ -288,13 +288,13 @@ getmouseaction(char leading_char)
          */
 
         /* Check for "[?" being next 2 chars */
-        if(((i = mygetch()) != '[') || ((i = mygetch()) != '?')) {
+        if(((i = getch()) != '[') || ((i = getch()) != '?')) {
         	myungetch(i);
         	return(NULL);
         }
 
         /* Grab the X position (in pixels) */
-        while(isdigit(i = mygetch())) {
+        while(isdigit(i = getch())) {
         	x = (x*10) + (i - '0');
         }
         if(i != ';') {
@@ -303,7 +303,7 @@ getmouseaction(char leading_char)
         }
 
         /* Grab the Y position (in pixels) */
-        while(isdigit(i = mygetch())) {
+        while(isdigit(i = getch())) {
         	y = (y*10) + (i - '0');
         }
         if(i != ';') {
@@ -312,23 +312,23 @@ getmouseaction(char leading_char)
         }
 
         /* Get which button */
-        if((button = mygetch()) > '4') {
+        if((button = getch()) > '4') {
         	myungetch(button);
         	return(NULL);
         }
-        if((i = mygetch()) != ';') {
+        if((i = getch()) != ';') {
         	myungetch(i);
         	return(NULL);
         }
 
         /* Get the reason for this mouse report */
-        if((reason = mygetch()) > '8') {
+        if((reason = getch()) > '8') {
         	myungetch(reason);
         	return(NULL);
         }
 
         /* sequence should terminate with an 'M' */
-        if((i = mygetch()) != 'M') {
+        if((i = getch()) != 'M') {
         	myungetch(i);
         	return(NULL);
         }
@@ -366,9 +366,9 @@ getmouseaction(char leading_char)
 
     if (mouse == true && leading_char == ctrl('X')) {
 
-        switch (mygetch()) {
+        switch (getch()) {
         case ctrl('_'):		/* click */
-        	if ((m.button = mygetch()) == '0') {	/* if scrollbar */
+        	if ((m.button = getch()) == '0') {	/* if scrollbar */
         		m.percent = getpercent();
         	}
         	else {
@@ -379,7 +379,7 @@ getmouseaction(char leading_char)
         	break;
 
         case ctrl(']'):		/* sweep */
-        	m.button = mygetch();
+        	m.button = getch();
         	m.x1 = getcoordinate();
         	m.y1 = getcoordinate();
         	m.x2 = getcoordinate();
@@ -401,11 +401,11 @@ getcoordinate(void)
 {
     int  c, next;
 
-    c = mygetch();
+    c = getch();
     next = 0;
     if (c == ctrl('A')) {
         next = 95;
-        c = mygetch();
+        c = getch();
     }
     if (c < ' ') {
         return (0);
@@ -420,7 +420,7 @@ getpercent(void)
 {
     int c;
 
-    c = mygetch();
+    c = getch();
     if (c < 16) {
         return(0);
     }
