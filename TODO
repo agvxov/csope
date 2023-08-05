@@ -9,3 +9,4 @@
 
 # Misc
  + recursive macro function to assign KEY_* default values; look for a new and shiny preprocessor?
+ + sort out constants.h

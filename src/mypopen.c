@@ -17,7 +17,7 @@
  without specific prior written permission.
 
  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS
- IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT falseT LIMITED TO,
+ IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
  THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
  PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE
  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
@@ -61,9 +61,9 @@ myopen(char *path, int flag, int mode)
     /* opens a file descriptor and then sets close-on-exec for the file */
     int fd;
 
-    /* 20020103: if file is not explicitly in Binary mode, make
-     * sure we override silly Cygwin behaviour of automatic binary
-     * mode for files in "binary mounted" paths */
+    /* If file is not explicitly in Binary mode, make
+     *  sure we override silly Cygwin behaviour of automatic binary
+     *  mode for files in "binary mounted" paths */
 #if O_BINARY != O_TEXT
     if (! (flag | O_BINARY))
     flag |= O_TEXT;
@@ -73,12 +73,6 @@ myopen(char *path, int flag, int mode)
     else
     fd = open(path, flag);
 
-#ifdef __DJGPP__        /* FIXME: test feature, not platform */
-    /* HBB 20010312: DOS GCC doesn't have FD_CLOEXEC (yet), so it
-     * always fails this call. Have to skip that step */
-    if(fd != -1)
-    return(fd);
-#endif
     if(fd != -1 && (fcntl(fd, F_SETFD, CLOSE_ON_EXEC) != -1))
     return(fd);
 
@@ -110,13 +104,7 @@ myfopen(char *path, char *mode)
     }
 #endif /* SETMODE */
 
-#ifdef __DJGPP__ /* FIXME: test feature, not platform */
-    /* HBB 20010312: DOS GCC doesn't have FD_CLOEXEC (yet), so it
-     * always fails this call. Have to skip that step */
-    if(fp)
-#else
     if(fp && (fcntl(fileno(fp), F_SETFD, CLOSE_ON_EXEC) != -1))
-#endif
         return(fp);
 
     else {
@@ -129,11 +117,6 @@ myfopen(char *path, char *mode)
 FILE *
 mypopen(char *cmd, char *mode)
 {
-#ifdef __DJGPP__
-    /* HBB 20010312: Has its own implementation of popen(), which
-     * is better suited to the platform than cscope's */
-    return (popen)(cmd, mode);
-#else
     int    p[2];
     pid_t *poptr;
     int myside, yourside;
@@ -155,11 +138,7 @@ mypopen(char *cmd, char *mode)
         stdio = tst(0, 1);
         close(myside);
         close(stdio);
-#if V9
-        dup2(yourside, stdio);
-#else
         fcntl(yourside, F_DUPFD, stdio);
-#endif
         close(yourside);
         execlp(shell, basename(shell), "-c", cmd, (void *)0);
         _exit(1);
@@ -170,7 +149,6 @@ mypopen(char *cmd, char *mode)
     popen_pid[myside] = pid;
     (void) close(yourside);
     return(fdopen(myside, mode));
-#endif /* DJGPP */
 }
 
 /* HBB 20010705: renamed from 'pclose', which would collide with
@@ -178,11 +156,6 @@ mypopen(char *cmd, char *mode)
 int
 mypclose(FILE *ptr)
 {
-#ifdef __DJGPP__
-    /* HBB 20010705: This system has its own pclose(), which we
-     * don't want to replace */
-    return (pclose)(ptr);
-#else
     int f;
     pid_t r;
     int status = -1;
@@ -204,5 +177,4 @@ mypclose(FILE *ptr)
     /* mark this pipe closed */
     popen_pid[f] = 0;
     return(status);
-#endif /* DJGPP */
 }

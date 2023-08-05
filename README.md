@@ -1,6 +1,6 @@
 # Csope
 Fork of Cscope, with various improvements, because cscope is good and shall not be forgotten.
-While the originals mainentence seems abandoned and as far as I can tell you need a PhD in autoconf to compile the latest version,
+While the original's mainentence seems abandoned and as far as I can tell you need a PhD in autoconf to compile the latest version,
 Csope is alive and well.
 
 # Usacases
@@ -13,6 +13,9 @@ An example of its excelence is this project. The Cscope codebase used to be a to
 fixing it would have been a lost cause, if not for Cscope itself. Well, Csope now.
 
 # Demo
+ TODO: fill in
+
+# Before/After
  TODO: fill in
 
 # Interface
@@ -43,6 +46,16 @@ fixing it would have been a lost cause, if not for Cscope itself. Well, Csope no
 + removed random commets giving tips for and refering to specific issues
 + use stdbool instead of YES/NO macros
 + saved kilobytes by stripping trailing whitespace
+
+# Project structure	/*probably move to documentation*/
+| Component | Purpose |
+| :-------: | :-----: |
+| main.c | generic init functions, main() and primary event loops (and junk)
+| display.c | all functions directly dealing with NCurses |
+| input.c | top layer of functions dealing with user input; migth dispatch to readline |
+| globals.h | an inherited curse; global var/prototype hell |
+| readline.c | all functions directly dealing with GNU Readline; responsible for line editing in *input mode* |
+| help.c | all functions dealing with help messages |
 
 # Future features / contributor wishlist
 + providing support for other languages by integrating new lexers (e.g. ctag's)

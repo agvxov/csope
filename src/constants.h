@@ -157,11 +157,4 @@
 # define KEY_RESIZE KEY_UNDEF_BASE-11
 #endif
 
-/**/
-#if (BSD || V9) && !__NetBSD__ && !__FreeBSD__ && !__APPLE__
-# define TERMINFO    0    /* no terminfo curses */
-#else
-# define TERMINFO    1
-#endif
-
 #endif /* CSCOPE_CONSTANTS_H */

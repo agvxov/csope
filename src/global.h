@@ -243,6 +243,7 @@ void verswp_field(void);
 void horswp_field(void);
 bool interpret(int c);    // XXX: probably rename
 int handle_input(const char c);
+void set_do_turn(void);			/* initiate turning to the next result page */
 
 void    rlinit(void);
 

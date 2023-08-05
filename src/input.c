@@ -388,22 +388,15 @@ global_input(const int c){
         case ctrl('V'):
         case KEY_NPAGE:
             if (totallines == 0) { return 0; } /* don't redisplay if there are no lines */
-            /* XXX: figure out whether this comment is useful or not */
-            /* NOTE: seekline() is not used to move to the next 
-             * page because display() leaves the file pointer at
-             * the next page to optimize paging forward
-             */
             curdispline = 0;
+			set_do_turn();
+			window_change |= CH_RESULT;
             break;
         case ctrl('H'):    /* display previous page */
         case '-':
         case KEY_PPAGE:
             if (totallines == 0) { return 0; } /* don't redisplay if there are no lines */
             curdispline = 0;
-            /* if there are only two pages, just go to the other one */
-            if (totallines <= 2 * mdisprefs) {
-                break;
-            }
             /* if on first page but not at beginning, go to beginning */
             nextline -= mdisprefs;    /* already at next page */
             if (nextline > 1 && nextline <= mdisprefs) {

@@ -76,6 +76,10 @@ long    searchcount;        /* count of files searched */
 unsigned int totallines;    /* total reference lines */
 unsigned fldcolumn;        /* input field column */
 unsigned int curdispline = 0;
+static bool do_turn = false;
+void set_do_turn(){
+	do_turn = true;
+}
 
 WINDOW* winput;
 WINDOW* wmode;
@@ -225,15 +229,18 @@ static inline void display_command_field(){
 }
 
 static inline void display_results(){
+	static long	prev_cursor = 0;	/* signals where to possibly rewind page_cursor to */
+	static long	page_cursor = 0;	/* signals where to output from */
+    int     screenline;             /* screen line number */
+    int     srctxtw;                /* source line display width */
+    int     i;
+    char    *s;
+	/* column headings */
     char    *subsystem;             /* OGS subsystem name */
     char    *book;                  /* OGS book name */
     char    file[PATHLEN + 1];      /* file name */
     char    function[PATLEN + 1];   /* function name */
     char    linenum[NUMLEN + 1];    /* line number */
-    int     screenline;             /* screen line number */
-    int     srctxtw;                /* source line display width */
-    int     i;
-    char    *s;
 
     werase(wresult);
 
@@ -242,17 +249,18 @@ static inline void display_results(){
         /* redisplay the last message */
         waddstr(wresult, lastmsg);
         return;
-        /* falseTREACHED */
+        /* NOTREACHED */
     }
 
-    /* display the pattern */
+
+    /* --- Display the pattern --- */
     if (changing == true) {
         wprintw(wresult, "Change \"%s\" to \"%s\"", input_line, newpat);
     } else {
         wprintw(wresult, "%c%s: %s", toupper((unsigned char)fields[field].text2[0]),
            fields[field].text2 + 1, input_line);
     }
-    /* display the column headings */
+    /* --- Display the column headings --- */
     wmove(wresult, 2, 2);
     if (ogs == true && field != FILENAME) {
         wprintw(wresult, "%-*s ", subsystemlen, "Subsystem");
@@ -268,10 +276,11 @@ static inline void display_results(){
         waddstr(wresult, "Line");
     }
 
+	/* --- Display table entries --- */
     wmove(wresult, WRESULT_TABLE_BODY_START, 0);
 
     /* calculate the source text column */
-    /* falseTE: the +1s are column gaps */
+    /* NOTE: the +1s are column gaps */
     srctxtw = second_col_width;
     srctxtw -= 1+1; // dispchars
     if (ogs == true) {
@@ -284,6 +293,9 @@ static inline void display_results(){
         srctxtw -= fcnlen+1;
     }
     srctxtw -= numlen+1;
+
+	/* decide where to list from */
+	do_turn ? (page_cursor = ftell(refsfound)) : fseek(refsfound, page_cursor, SEEK_SET) ;
 
     /* until the max references have been displayed or
        there is no more room */
@@ -387,7 +399,7 @@ static inline void display_results(){
 
             /* if this is the first displayed line,
                display what will fit on the screen */
-            if (topline == nextline -1) {
+            if (topline == nextline-1) {
             disprefs++;
             /* break out of two loops */
             goto endrefs;
@@ -426,9 +438,11 @@ endrefs:
         wprintw(wresult, "* Lines %d-%d of %d, %d more - press the space bar to display more *", topline, bottomline, totallines, i);
     }
     /* if this is the last page of references */
-    else{ //if (topline > 1 && nextline > totallines) {    //XXX: i dont see how this condition is ever userful, but i might be wrong
+    else{if (topline > 1 && nextline > totallines) {
         waddstr(wresult, "* Press the space bar to display the first lines again *");
     }
+
+	do_turn = false;
 }
 
 void display_cursor(void){
@@ -474,7 +488,7 @@ display(void)
         }
         if(window_change & CH_RESULT){
             werase(wresult);
-            display_results();
+            display_results(do_turn);
         }
         if(window_change & CH_MODE){
             werase(wmode);

@@ -101,38 +101,11 @@ static char changeing_help_msg[] =
 const char*
 help(void)
 {
-    //char    **ep, *s, **tp, *text[MAXHELP];
-    //int    ln;
-
-    //tp = text;
     if (changing == false) {
 		return help_msg;
     } else {
 		return changeing_help_msg;
     }
-    ///* print help, a screen at a time */
-    //ep = tp;
-    //ln = 0;
-    //for (tp = text; tp < ep; ) {
-    //    if (ln < LINES - 1) {
-    //    	for (s = *tp; *s != '\0'; ++s) {
-    //    		if (*s == '\n') {
-    //    			++ln;
-    //    		}
-    //    	}
-    //    	(void) addstr(*tp++);
-    //    }
-    //    else {
-    //    	(void) addstr("\n");
-    //    	askforchar();
-    //    	(void) clear();
-    //    	ln = 0;
-    //    }
-    //}
-    //if (ln) {
-    //    (void) addstr("\n");
-    //    askforchar();
-    //}
 }
 
 /* error exit including short usage information */
@@ -140,7 +113,7 @@ void
 error_usage(void)
 {
     usage();
-    fprintf(stderr, "Try the -h option for more information.\n");
+    fputs("Try the -h option for more information.\n", stderr);
     myexit(1);
 }
 
@@ -148,8 +121,11 @@ error_usage(void)
 void
 usage(void)
 {
-    fprintf(stderr, "Usage: cscope [-bcCdehklLqRTuUvV] [-f file] [-F file] [-i file] [-I dir] [-s dir]\n");
-    fprintf(stderr, "              [-p number] [-P path] [-[0-8] pattern] [source files]\n");
+    fputs(
+		"Usage: cscope [-bcCdehklLqRTuUvV] [-f file] [-F file] [-i file] [-I dir] [-s dir]\n"
+    	"              [-p number] [-P path] [-[0-8] pattern] [source files]\n",
+		stderr
+	);
 }
 
 
