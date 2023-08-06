@@ -61,10 +61,10 @@ static    pid_t    myfork(void);
 
 /*VARARGS1*/
 int
-execute(char *a, ...)    /* note: "exec" is already defined on u370 */
+execute(char *a, ...)    /* NOTE: "exec" is already defined on u370 */
 {
     va_list    ap;
-    int    exitcode = -1;	/* initialize, to avoid warning */
+    int    exitcode = -1;
     char    *argv[BUFSIZ];
     pid_t    p;
 
@@ -73,8 +73,9 @@ execute(char *a, ...)    /* note: "exec" is already defined on u370 */
     mousecleanup();
     fflush(stdout);
     va_start(ap, a);
-    for (p = 0; (argv[p] = va_arg(ap, char *)) != 0; p++)
-        ;
+
+    for (p = 0; (argv[p] = va_arg(ap, char *)) != 0; p++){}
+
 #ifdef __MSDOS__
     /* HBB 20010313: in MSDOG, everything is completely different.
      * No fork()/exec()/wait(), but rather a single libc call: */
@@ -88,16 +89,8 @@ execute(char *a, ...)    /* note: "exec" is already defined on u370 */
     }
 #endif /* MSDOS */
 
-    /* the menu and scrollbar may be changed by the command executed */
-#if UNIXPC || !TERMINFO
-# ifndef __DJGPP__ /* leave CRLF handling as is */
-    nonl();
-# endif
-    cbreak();    /* endwin() turns off cbreak mode so restore it */
-    noecho();
-#endif
-    mousemenu();
-    drawscrollbar(topline, nextline);
+	entercurses();
+
     va_end(ap);
     return(exitcode);
 }

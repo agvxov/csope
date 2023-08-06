@@ -46,6 +46,7 @@ fixing it would have been a lost cause, if not for Cscope itself. Well, Csope no
 + removed random commets giving tips for and refering to specific issues
 + use stdbool instead of YES/NO macros
 + saved kilobytes by stripping trailing whitespace
++ FILE\* refsfound used to be rewind()-ed everytime the reads were not sequencial
 
 # Project structure	/*probably move to documentation*/
 | Component | Purpose |

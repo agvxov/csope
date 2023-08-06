@@ -96,7 +96,7 @@ static int mode_window_height;
 
 #define WRESULT_TABLE_BODY_START 4
 
-int window_change = CH_ALL;
+int window_change;
 
 const char    dispchars[] = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMfalsePQRSTUVWXYZ";
 
@@ -170,6 +170,43 @@ dispinit(void)
     current_window = &winput;
 }
 
+/* enter curses mode */
+void
+entercurses(void)
+{
+    incurses = true;
+	window_change = CH_ALL;
+
+    nonl();             /* don't translate an output \n to \n\r */
+    cbreak();  	     	/* single character input */
+    noecho();        	/* don't echo input characters */
+    curs_set(0);
+    clear();        	/* clear the screen */
+    mouseinit();        /* initialize any mouse interface */
+    drawscrollbar(topline, nextline);
+    keypad(stdscr, TRUE);    /* enable the keypad */
+    //fixkeypad();    /* fix for getch() intermittently returning garbage */
+    standend();    /* turn off reverse video */
+}
+
+/* exit curses mode */
+void
+exitcurses(void)
+{
+    /* clear the bottom line */
+    move(LINES - 1, 0);
+    clrtoeol();
+    refresh();
+
+    /* exit curses and restore the terminal modes */
+    endwin();
+    incurses = false;
+
+    /* restore the mouse */
+    mousecleanup();
+    fflush(stdout);
+}
+
 static inline void display_help(){
 	werase(whelp);
 	wmove(whelp, 0, 0);
@@ -229,8 +266,8 @@ static inline void display_command_field(){
 }
 
 static inline void display_results(){
-	static long	prev_cursor = 0;	/* signals where to possibly rewind page_cursor to */
 	static long	page_cursor = 0;	/* signals where to output from */
+	static long next_page_cursor = 0;
     int     screenline;             /* screen line number */
     int     srctxtw;                /* source line display width */
     int     i;
@@ -295,7 +332,9 @@ static inline void display_results(){
     srctxtw -= numlen+1;
 
 	/* decide where to list from */
-	do_turn ? (page_cursor = ftell(refsfound)) : fseek(refsfound, page_cursor, SEEK_SET) ;
+	if(do_turn){
+		page_cursor = next_page_cursor;
+	}
 
     /* until the max references have been displayed or
        there is no more room */
@@ -314,10 +353,7 @@ static inline void display_results(){
                     )
                 <
                     4
-            )
-        {
-            break;
-        }
+            ){ break; }
         ++nextline;
         displine[disprefs] = screenline;
 
@@ -423,7 +459,10 @@ static inline void display_results(){
     } /* for(reference output lines) */
 
 endrefs:
-    /* position the cursor for the message */
+	/* reset file cursor */
+	next_page_cursor = ftell(refsfound);
+	fseek(refsfound, page_cursor, SEEK_SET);
+    /* position the screen cursor for the message */
     i = result_window_height - 1;
     if (screenline < i) {
         waddch(wresult, '\n');
@@ -438,7 +477,7 @@ endrefs:
         wprintw(wresult, "* Lines %d-%d of %d, %d more - press the space bar to display more *", topline, bottomline, totallines, i);
     }
     /* if this is the last page of references */
-    else{if (topline > 1 && nextline > totallines) {
+    else if (topline > 1 && nextline > totallines) {
         waddstr(wresult, "* Press the space bar to display the first lines again *");
     }
 
@@ -792,14 +831,25 @@ postfatal(const char *msg, ...)
 void
 seekline(unsigned int line)
 {
-    int    c;
-
     /* verify that there is a references found file */
     if (refsfound == NULL) {
         return;
     }
     /* go to the beginning of the file */
     rewind(refsfound);
+	/**/
+	seekrelline(line);
+}
+
+/* XXX: this is just dodging the problem */
+void
+seekrelline(unsigned int line){
+    int    c;
+
+    /* verify that there is a references found file */
+    if (refsfound == NULL) {
+        return;
+    }
 
     /* find the requested line */
     nextline = 1;

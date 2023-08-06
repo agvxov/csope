@@ -55,11 +55,11 @@ editref(int i)
         return;
     }
     /* get the selected line */
-    seekline(i + topline);
+    seekrelline(i);
 
     /* get the file name and line number */
     if (fscanf(refsfound, "%" PATHLEN_STR "s%*s%" NUMLEN_STR "s", file, linenum) == 2) {
-        edit(file, linenum);	/* edit it */
+        edit(file, linenum);
     }
     seekline(topline);    /* restore the line pointer */
 }
@@ -94,31 +94,43 @@ editall(void)
 }
 
 /* call the editor */
-
 void
 edit(char *file, char *linenum)
 {
+	const char	*const editor_basename = basename(editor);
     char    msg[MSGLEN + 1];	/* message */
     char    plusnum[NUMLEN + 20];	/* line number option: allow space for wordy line# flag */
-    char    *s;
 
     file = filepath(file);
-    (void) snprintf(msg, sizeof(msg), "%s +%s %s", basename(editor), linenum, file);
+    snprintf(msg, sizeof(msg), "%s +%s %s", basename(editor), linenum, file);
     postmsg(msg);
-    (void) snprintf(plusnum, sizeof(plusnum), lineflag, linenum);
-    /* if this is the more or page commands */
-    if (strcmp(s = basename(editor), "more") == 0 || strcmp(s, "page") == 0) {
+    snprintf(plusnum, sizeof(plusnum), lineflag, linenum);
 
-        /* get it to pause after displaying a file smaller than the screen
-           length */
-        (void) execute(editor, editor, plusnum, file, "/dev/null", NULL);
-    }
-    else if (lineflagafterfile) {
-        (void) execute(editor, editor, file, plusnum, NULL);
+	/* Some pagers will not start paging, unless the input
+	 *  file has more lines thant the screen does.
+	 *  The way to get them to pause, is to pass in /dev/null too,
+	 *  imatating endless blank lines.
+	 */
+	const char* const shit_pagers[] = {
+		"page",
+		"more",
+		NULL
+	};
+	for(const char	*const *sp = shit_pagers; *sp != NULL; sp++){
+		if(!strcmp(editor_basename, *sp)){
+        	execute(editor, editor, plusnum, file, "/dev/null", NULL);
+			goto end;
+		}
+	}
+
+    if (lineflagafterfile) {
+        execute(editor, editor, file, plusnum, NULL);
     }
     else {
-        (void) execute(editor, editor, plusnum, file, NULL);
+        execute(editor, editor, plusnum, file, NULL);
     }
+
+	end:
     clear();    /* redisplay screen */
 }
 

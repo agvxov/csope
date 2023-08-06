@@ -1,12 +1,12 @@
+# TODO
+ + recursive macro function to assign KEY_* default values; look for a new and shiny preprocessor?
+ + sort out constants.h
+ + scrollbar() uses magic int literals?
+ + Handle unused parameters gracefully (#define UNUSED(x) (void)(x))
+ + Ordering function declarations in global.h by alpha order is not smart
+ + lineflagafterfile is stupid
+
 # BUGS
  + Changing text double frees:
  	free(): double free detected in tcache 2
  	Aborted
- + Ordering function declarations in global.h by alpha order is not smart
- + Handle unused parameters gracefully (#define UNUSED(x) (void)(x))
- + scrollbar() uses int literals?
- + tab scrolls the results
-
-# Misc
- + recursive macro function to assign KEY_* default values; look for a new and shiny preprocessor?
- + sort out constants.h

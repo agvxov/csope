@@ -292,6 +292,7 @@ void    putposting(char *term, int type);
 void    fetch_string_from_dbase(char *, size_t);
 void    resetcmd(void);
 void    seekline(unsigned int line);
+void    seekrelline(unsigned int line);
 void    shellpath(char *out, int limit, char *in);
 void    sourcedir(char *dirlist);
 void    myungetch(int c);

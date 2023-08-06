@@ -201,44 +201,6 @@ skiplist(FILE *oldrefs)
     }
 }
 
-
-/* enter curses mode */
-void
-entercurses(void)
-{
-    incurses = true;
-
-    nonl();             /* don't translate an output \n to \n\r */
-    cbreak();  	     	/* single character input */
-    noecho();        	/* don't echo input characters */
-    curs_set(0);
-    clear();        	/* clear the screen */
-    mouseinit();        /* initialize any mouse interface */
-    drawscrollbar(topline, nextline);
-    keypad(stdscr, TRUE);    /* enable the keypad */
-    //fixkeypad();    /* fix for getch() intermittently returning garbage */
-    standend();    /* turn off reverse video */
-}
-
-
-/* exit curses mode */
-void
-exitcurses(void)
-{
-    /* clear the bottom line */
-    move(LINES - 1, 0);
-    clrtoeol();
-    refresh();
-
-    /* exit curses and restore the terminal modes */
-    endwin();
-    incurses = false;
-
-    /* restore the mouse */
-    mousecleanup();
-    fflush(stdout);
-}
-
 /* cleanup and exit */
 void
 myexit(int sig)
