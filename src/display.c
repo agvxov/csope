@@ -265,9 +265,9 @@ static inline void display_command_field(){
     waddstr(winput, rl_line_buffer);
 }
 
-static inline void display_results(){
 	static long	page_cursor = 0;	/* signals where to output from */
 	static long next_page_cursor = 0;
+static inline void display_results(){
     int     screenline;             /* screen line number */
     int     srctxtw;                /* source line display width */
     int     i;
@@ -527,7 +527,7 @@ display(void)
         }
         if(window_change & CH_RESULT){
             werase(wresult);
-            display_results(do_turn);
+            display_results();
         }
         if(window_change & CH_MODE){
             werase(wmode);
