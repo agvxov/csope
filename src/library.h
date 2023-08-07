@@ -39,7 +39,7 @@
 char    *compath(char *pathname);
 char    *egrepinit(char *egreppat);
 char    *logdir(char *name);
-char    *basename(char *path);
+const char    *basename(char *path);
 FILE    *myfopen(char *path, char *mode);
 char    *mygetenv(char *variable, char *deflt);
 int    myopen(char *path, int flag, int mode);

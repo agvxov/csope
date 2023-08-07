@@ -34,7 +34,7 @@
 
 #include "global.h"
 
-char *
+const char *
 basename(char *path)
 {
     char    *s;
