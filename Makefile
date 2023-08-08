@@ -1,10 +1,21 @@
 DEBUG:=1
+GCC:=0
 
 CC=gcc
 CFLAGS:=-Wall -Wextra -Wpedantic
 CPPFLAGS:=${shell pkg-config --cflags ncurses readline}
 LDLIBS=-I ${CHDRD} ${shell pkg-config --libs ncurses readline}
 LEX:=flex
+
+ifeq (${DEBUG},1)
+	CFLAGS += -O0 -ggdb
+else
+	CFLAGS += -O3 -flto=auto -fomit-frame-pointer
+endif
+
+ifdef SAN
+	CFLAGS += -fsanitize=${SAN}
+endif
 
 LEXD:=src/
 LEXF:=$(shell find ${LEXD} -iname '*.l')
@@ -21,16 +32,6 @@ HDR:=$(shell find ${HDRD} -iname '*.h')
 CHDR:=$(addsuffix .gch,$(subst ${HDRD},${CHDRD},${HDR}))
 
 OUTPUT:=csope
-
-ifeq (${DEBUG},1)
-	CFLAGS += -O0 -ggdb
-else
-	CFLAGS += -O3 -flto=auto -fomit-frame-pointer
-endif
-
-ifdef SAN
-	CFLAGS += -fsanitize=${SAN}
-endif
 
 main: ${CHDR} ${OBJ}
 	${LINK.c} ${OBJ} -o ${OUTPUT} ${LDLIBS}

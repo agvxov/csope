@@ -18,6 +18,7 @@ long seekpage(size_t i){
 	while(PCS_top < i){
 		const char c = getc(*hto_page);
 		if(c == '\n'){ ++lc; }
+		if(c == EOF){ return -1; }
 		if(lc == mdisprefs){
 			PCS_pos[++PCS_top] = ftell(*hto_page);
 		}

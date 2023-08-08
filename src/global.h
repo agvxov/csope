@@ -244,7 +244,7 @@ extern int     current_page;
 void	verswp_field(void);
 void	horswp_field(void);
 bool	interpret(int c);    // XXX: probably rename
-int		handle_input(const char c);
+int		handle_input(const int c);
 int		dispchar2int(const char c);
 
 long	seekpage(size_t i);

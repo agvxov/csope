@@ -284,8 +284,6 @@ static inline void display_results(){
     char    function[PATLEN + 1];   /* function name */
     char    linenum[NUMLEN + 1];    /* line number */
 
-    werase(wresult);
-
     if (totallines == 0) {
         /* if no references were found */
         /* redisplay the last message */
@@ -337,7 +335,11 @@ static inline void display_results(){
     srctxtw -= numlen+1;
 
 	/* decide where to list from */
-	fseek(refsfound, seekpage(current_page), SEEK_SET);
+	/* XXX: this error handling migth be redundant*/
+	int seekerr;
+	do{
+		seekerr = seekpage(current_page);
+	}while(seekerr == -1 && current_page--);
 
     /* until the max references have been displayed or
        there is no more room */
@@ -510,6 +512,7 @@ display(void)
 
     if(window_change){
 		if(window_change == CH_HELP){
+			werase(whelp);
 			display_help();
 			/* Do not display over the help msg and */
 			/*  rely on display_help() setting CH_ALL */

@@ -356,7 +356,7 @@ static inline    void    linemode_event_loop(void){
 static inline    void    screenmode_event_loop(void){
     for (;;) {
         display();
-        handle_input(getch());
+        handle_input(wgetch(stdscr)); // NOTE: getch() does not return key codes
     }
 }
 

@@ -36,7 +36,12 @@ static void redisplay_function(){
 static void callback_handler(char* line){
 	if(!line){ return; }
     strncpy(input_line, line, PATLEN);
+
     search();
+
+	curdispline = 0;
+	PCS_reset();
+	current_page = 0;
 }
 
 static int interpret_break(){

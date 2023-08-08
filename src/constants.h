@@ -57,9 +57,6 @@
    this macro will always be in a statement by itself */
 #define    skiprefchar()    if (*(++blockp + 1) == '\0') (void) read_block()
 
-#ifndef ESC
-# define    ESC    '\033'		/* escape character */
-#endif
 #define    DEL    '\177'		/* delete character */
 #define    DUMMYCHAR    ' '	/* use space as a dummy character */
 #define    MSGLEN    ((PATLEN) + 80)	/* displayed message length */
@@ -115,46 +112,5 @@
 #define O_TEXT 0x00
 #define O_BINARY 0x00
 
-/* Key macros */
-/* These macros are not guaranteed to be defined,
- *  however we wish to test for these anyways while
- *  interpretting user commands.
- * Input values are guaranteed to be postive,
- *  so setting them to -1 means the test always just silently fail,
- *  but compile when the they are not supported means of input.
- */
-#ifndef KEY_DOWN
-# define KEY_DOWN KEY_UNDEF_BASE-1
-#endif
-#ifndef KEY_UP
-# define KEY_UP KEY_UNDEF_BASE-2
-#endif
-#ifndef KEY_LEFT
-# define KEY_LEFT KEY_UNDEF_BASE-3
-#endif
-#ifndef KEY_RIGHT
-# define KEY_RIGHT KEY_UNDEF_BASE-4
-#endif
-#ifndef KEY_HOME
-# define KEY_HOME _KEY_UNDEF_BASE-5
-#endif
-#ifndef KEY_LL
-# define KEY_LL    KEY_UNDEF_BASE-6
-#endif
-#ifndef KEY_PPAGE
-# define KEY_PPAGE KEY_UNDEF_BASE-7
-#endif
-#ifndef KEY_NPAGE
-# define KEY_NPAGE KEY_UNDEF_BASE-8
-#endif
-#ifdef KEY_ENTER
-# define KEY_ENTER KEY_UNDEF_BASE-9
-#endif
-#ifndef KEY_CLEAR
-# define KEY_CLEAR KEY_UNDEF_BASE-10
-#endif
-#ifndef KEY_RESIZE
-# define KEY_RESIZE KEY_UNDEF_BASE-11
-#endif
 
 #endif /* CSCOPE_CONSTANTS_H */

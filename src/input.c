@@ -36,17 +36,15 @@
  */
 
 #include "global.h"
-#if defined(USE_NCURSES) && !defined(RENAMED_NCURSES)
 #include <ncurses.h>
-#else
-#include <curses.h>
-#endif
 #include <setjmp.h>    /* jmp_buf */
 #include <stdlib.h>
 #include <errno.h>
 #if HAVE_SYS_TERMIOS_H
-#include <sys/termios.h>
+# include <sys/termios.h>
 #endif
+
+#include "keys.h"
 
 bool do_press_any_key = false;
 
@@ -536,7 +534,7 @@ extern const void const* wresult;
 extern const void const* const* current_window;
 
 int
-handle_input(const char c){
+handle_input(const int c){
 	/* - was wating for any input - */
 	if(do_press_any_key){
 		do_press_any_key = false;

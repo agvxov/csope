@@ -39,8 +39,9 @@ fixing it would have been a lost cause, if not for Cscope itself. Well, Csope no
 + GNU Readline integration (ie. VI/EMACS mode, command history) /*pending*/
 ## To the code
 + nuked autoconf, replaced with single Makefile
-+ removed "scanner.l" which seems to be an anchient version (and redundant copy) of "fscanner.l" forgotten by all
++ reorganized main()
 + encapsulated changes to the TUI into display.c
++ removed "scanner.l" which seems to be an anchient version (and redundant copy) of "fscanner.l" forgotten by all
 + removed macro hell put in place to allow compiling on a dead badger
 + replaced repeated inline #ifdef KEY_\*-s with guaranteed definitions
 + removed random commets giving tips for and refering to specific issues
@@ -66,6 +67,18 @@ fixing it would have been a lost cause, if not for Cscope itself. Well, Csope no
  + Ordering function declarations in global.h by alpha order is not smart
  + lineflagafterfile is stupid
  + library.h...; "private library", in a program using 90 globals; ffs
+## Original
++ Display the current case mode (^C) onscreen
++ emacs like key bindings
+    ^S for searching (^Y)
+    Up/dwn Arrow support Next/Prev field. ??
+    Inline editing on Input fields ( ??^B/^F )
+    ^X^C to quit ( ^Q ??)
+    Pagdwn/PageUp/+/- 
++ Same capabilities as interactive in non interactive (one shot) mode
++ Provide some how-do-I-use-this-thing doc.
++ Replace invlib.[ch] by real database.  Failing that, at least sanitize it.
+
 
 # BUGS
  + Changing text double frees:
