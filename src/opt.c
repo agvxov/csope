@@ -3,7 +3,6 @@
 #include "build.h"
 #include "vp.h"
 #include "version.h"    /* FILEVERSION and FIXVERSION */
-#include "scanner.h"
 
 #include <stdlib.h>    /* atoi */
 #include <getopt.h>

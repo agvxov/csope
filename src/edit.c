@@ -61,7 +61,6 @@ editref(int i)
     if (fscanf(refsfound, "%" PATHLEN_STR "s%*s%" NUMLEN_STR "s", file, linenum) == 2) {
         edit(file, linenum);
     }
-    seekline(topline);    /* restore the line pointer */
 }
 
 /* edit all references */
@@ -78,7 +77,7 @@ editall(void)
         return;
     }
     /* get the first line */
-    seekline(1);
+	fseek(refsfound, 0, SEEK_SET);
 
     /* get each file name and line number */
     while (fscanf(refsfound, "%" PATHLEN_STR "s%*s%" NUMLEN_STR "s%*[^\n]", file, linenum) == 2) {
@@ -90,7 +89,6 @@ editall(void)
         	}
         }
     }
-    seekline(topline);
 }
 
 /* call the editor */

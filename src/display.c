@@ -76,10 +76,7 @@ long    searchcount;        /* count of files searched */
 unsigned int totallines;    /* total reference lines */
 unsigned fldcolumn;        /* input field column */
 unsigned int curdispline = 0;
-static bool do_turn = false;
-void set_do_turn(){
-	do_turn = true;
-}
+int current_page = 0;
 
 WINDOW* winput;
 WINDOW* wmode;
@@ -98,9 +95,20 @@ static int mode_window_height;
 
 int window_change;
 
-const char    dispchars[] = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMfalsePQRSTUVWXYZ";
+/* NOTE: It's declared like this because we dont need a terminating '\00'. */
+static const char dispchars[] = {
+	'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+	'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
+	'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'
+};
+int dispchar2int(const char c){
+	const char fst = dispchars[0];
+	const char lst = dispchars[sizeof(dispchars)-1];
+	int r = c - fst;
+	if(r < 0 || lst < r){ return -1; }
+	return r;
+}
 
-static    int    fldline;        /* input field line */
 static    sigjmp_buf    env;        /* setjmp/longjmp buffer */
 static    char    lastmsg[MSGLEN + 1];    /* last message displayed */
 static    const char    helpstring[] = "Press the ? key for help";
@@ -148,10 +156,10 @@ dispinit(void)
 
     if (mdisprefs <= 0) {
         postfatal("%s: screen too small\n", argv0);
-        /* falseTREACHED */
+        /* NOTREACHED */
     }
-    if(mdisprefs > strlen(dispchars)){
-        mdisprefs = strlen(dispchars);
+    if(mdisprefs > sizeof(dispchars)){
+        mdisprefs = sizeof(dispchars);
     }
 
     /* allocate the displayed line array */
@@ -264,14 +272,11 @@ static inline void display_command_field(){
     mvwaddstr(winput, 0, 0, inputprompt);
     waddstr(winput, rl_line_buffer);
 }
-
-	static long	page_cursor = 0;	/* signals where to output from */
-	static long next_page_cursor = 0;
 static inline void display_results(){
-    int     screenline;             /* screen line number */
-    int     srctxtw;                /* source line display width */
     int     i;
     char    *s;
+    int     screenline;             /* screen line number */
+    int     srctxtw;                /* source line display width */
 	/* column headings */
     char    *subsystem;             /* OGS subsystem name */
     char    *book;                  /* OGS book name */
@@ -332,9 +337,7 @@ static inline void display_results(){
     srctxtw -= numlen+1;
 
 	/* decide where to list from */
-	if(do_turn){
-		page_cursor = next_page_cursor;
-	}
+	fseek(refsfound, seekpage(current_page), SEEK_SET);
 
     /* until the max references have been displayed or
        there is no more room */
@@ -450,7 +453,7 @@ static inline void display_results(){
 
             /* go back to the beginning of this reference */
             --nextline;
-            seekline(nextline);
+			fseek(refsfound, 0, SEEK_SET);
             goto endrefs;
         }
         /* indent the continued source line */
@@ -459,9 +462,6 @@ static inline void display_results(){
     } /* for(reference output lines) */
 
 endrefs:
-	/* reset file cursor */
-	next_page_cursor = ftell(refsfound);
-	fseek(refsfound, page_cursor, SEEK_SET);
     /* position the screen cursor for the message */
     i = result_window_height - 1;
     if (screenline < i) {
@@ -480,8 +480,6 @@ endrefs:
     else if (topline > 1 && nextline > totallines) {
         waddstr(wresult, "* Press the space bar to display the first lines again *");
     }
-
-	do_turn = false;
 }
 
 void display_cursor(void){
@@ -825,39 +823,6 @@ postfatal(const char *msg, ...)
 
     /* shut down */
     myexit(1);
-}
-
-/* position references found file at specified line */
-void
-seekline(unsigned int line)
-{
-    /* verify that there is a references found file */
-    if (refsfound == NULL) {
-        return;
-    }
-    /* go to the beginning of the file */
-    rewind(refsfound);
-	/**/
-	seekrelline(line);
-}
-
-/* XXX: this is just dodging the problem */
-void
-seekrelline(unsigned int line){
-    int    c;
-
-    /* verify that there is a references found file */
-    if (refsfound == NULL) {
-        return;
-    }
-
-    /* find the requested line */
-    nextline = 1;
-    while (nextline < line && (c = getc(refsfound)) != EOF) {
-        if (c == '\n') {
-            nextline++;
-        }
-    }
 }
 
 /* get the OGS subsystem and book names */

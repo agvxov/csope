@@ -41,6 +41,7 @@
 //#include "config.h"
 #include <unistd.h>
 #include <sys/types.h>
+#include <assert.h>
 #include <ctype.h>    /* isalpha, isdigit, etc. */
 #include <signal.h>    /* SIGINT and SIGQUIT */
 #include <stdio.h>    /* standard I/O package */
@@ -51,6 +52,7 @@
 #include "constants.h"    /* misc. constants */
 #include "invlib.h"    /* inverted index library */
 #include "library.h"    /* library function return values */
+#include "stddef.h"    /* size_t */
 
 typedef void (*sighandler_t)(int);
 
@@ -183,7 +185,6 @@ extern    FILE    *nonglobalrefs;		/* non-global references file */
 extern    unsigned int topline;    	/* top line of page */
 extern    long    searchcount;		/* count of files searched */
 extern    unsigned int totallines;    /* total reference lines */
-extern    const char dispchars[];    	/* display chars for jumping to lines */
 extern    int window_change;
 
 /* find.c global data */
@@ -238,12 +239,17 @@ void    usage(void);
 extern bool    remove_symfile_onexit;
 extern bool    onesearch;    	 /* one search only in line mode */
 extern char    *reflines;    	 /* symbol reference lines file */
-extern bool	   do_press_any_key; /* wait for any key to continue */
-void verswp_field(void);
-void horswp_field(void);
-bool interpret(int c);    // XXX: probably rename
-int handle_input(const char c);
-void set_do_turn(void);			/* initiate turning to the next result page */
+extern bool    do_press_any_key; /* wait for any key to continue */
+extern int     current_page;
+void	verswp_field(void);
+void	horswp_field(void);
+bool	interpret(int c);    // XXX: probably rename
+int		handle_input(const char c);
+int		dispchar2int(const char c);
+
+long	seekpage(size_t i);
+long	seekrelline(unsigned i);
+void	PCS_reset(void);
 
 void    rlinit(void);
 
@@ -291,8 +297,6 @@ void    postfatal(const char *msg,...);
 void    putposting(char *term, int type);
 void    fetch_string_from_dbase(char *, size_t);
 void    resetcmd(void);
-void    seekline(unsigned int line);
-void    seekrelline(unsigned int line);
 void    shellpath(char *out, int limit, char *in);
 void    sourcedir(char *dirlist);
 void    myungetch(int c);

@@ -71,6 +71,7 @@ fixing it would have been a lost cause, if not for Cscope itself. Well, Csope no
  + Changing text double frees:
  	free(): double free detected in tcache 2
  	Aborted
+ + Changing text can crash without replacing text and leaving the console ncursed
 
 # Future features / contributor wishlist
 + providing support for other languages by integrating new lexers (e.g. ctag's)

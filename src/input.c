@@ -363,9 +363,9 @@ wresult_input(const int c){
             resetcmd();
 			break;
         default:
-            char *e;
-            if ((e = strchr(dispchars, c)))
-            editref(e - dispchars);
+			if(c > mdisprefs){ goto noredisp; }
+            const int pos = dispchar2int(c);
+            if(pos > -1){ editref(pos); }
 			goto noredisp;
     }
 
@@ -389,7 +389,7 @@ global_input(const int c){
         case KEY_NPAGE:
             if (totallines == 0) { return 0; } /* don't redisplay if there are no lines */
             curdispline = 0;
-			set_do_turn();
+			++current_page;
 			window_change |= CH_RESULT;
             break;
         case ctrl('H'):    /* display previous page */
@@ -397,20 +397,21 @@ global_input(const int c){
         case KEY_PPAGE:
             if (totallines == 0) { return 0; } /* don't redisplay if there are no lines */
             curdispline = 0;
-            /* if on first page but not at beginning, go to beginning */
-            nextline -= mdisprefs;    /* already at next page */
-            if (nextline > 1 && nextline <= mdisprefs) {
-                nextline = 1;
-            } else {
-                nextline -= mdisprefs;
-                if (nextline < 1) {
-                    nextline = totallines - mdisprefs + 1;
-                    if (nextline < 1) {
-                        nextline = 1;
-                    }
-                }
-            }
-            seekline(nextline);
+			--current_page;
+            ///* if on first page but not at beginning, go to beginning */
+            //nextline -= mdisprefs;    /* already at next page */
+            //if (nextline > 1 && nextline <= mdisprefs) {
+            //    nextline = 1;
+            //} else {
+            //    nextline -= mdisprefs;
+            //    if (nextline < 1) {
+            //        nextline = totallines - mdisprefs + 1;
+            //        if (nextline < 1) {
+            //            nextline = 1;
+            //        }
+            //    }
+            //}
+            //seekline(nextline);
             break;
         case '>':    /* write or append the lines to a file */
             break;                    // XXX
@@ -507,7 +508,7 @@ global_input(const int c){
             break;
         case '!':    /* shell escape */
             execute(shell, shell, NULL);
-            seekline(topline);
+			current_page = 0;
             break;
         case KEY_RESIZE:
             /* XXX: fill in*/

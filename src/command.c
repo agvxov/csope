@@ -170,7 +170,7 @@ scrollbar(MOUSE *p)
     default:
     nextline = p->percent * totallines / 100;
     }
-    seekline(nextline);
+    //seekline(nextline);
 }
 
 
