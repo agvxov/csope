@@ -19,7 +19,7 @@ fixing it would have been a lost cause, if not for Cscope itself. Well, Csope no
  TODO: fill in
 
 # Features
-### Search for
+#### Search for
  + C symbol
  + global definition
  + assignments to specified symbol
@@ -29,9 +29,9 @@ fixing it would have been a lost cause, if not for Cscope itself. Well, Csope no
  + egrep pattern
  + file
  + files #including specified file
-### ...and open with your editor.
-### Batch change search results **interactively**.
-### Save/load/pipe results.
+#### ...and open with your editor.
+#### Batch change search results **interactively**.
+#### Save/load/pipe results.
 
 # Interface
 	            <-- Tab -->
