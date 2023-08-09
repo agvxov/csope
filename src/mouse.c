@@ -35,6 +35,10 @@
  *    mouse functions
  */
 
+extern int LINES;
+
+#define    FLDLINE    (LINES - FIELDS - 1 - 1)	/* first input field line */
+
 #include "global.h"
 
 bool    mouse = false;    		/* mouse interface */
@@ -428,4 +432,44 @@ getpercent(void)
         return(100);
     }
     return(c - 16);
+}
+
+int process_mouse(){
+    int i;
+    MOUSE* p;
+    if ((p = getmouseaction(DUMMYCHAR)) == NULL) {
+        return(false);    /* unknown control sequence */
+    }
+    /* if the button number is a scrollbar tag */
+    if (p->button == '0') {
+        //scrollbar(p);    // XXX
+        return(false);
+    }
+    /* ignore a sweep */
+    if (p->x2 >= 0) {
+        return(false);
+    }
+    /* if this is a line selection */
+    if (p->y1 > FLDLINE) {
+
+        /* find the selected line */
+        /* note: the selection is forced into range */
+        for (i = disprefs - 1; i > 0; --i) {
+        if (p->y1 >= displine[i]) {
+            return(false);
+        }
+        }
+        /* display it in the file with the editor */
+        editref(i);
+    } else {    /* this is an input field selection */
+        field = p->y1 - FLDLINE;
+        /* force it into range */
+        if (field >= FIELDS) {
+        field = FIELDS - 1;
+        }
+        resetcmd();
+        return(false);
+    }
+
+	return false;
 }

@@ -112,6 +112,10 @@ static inline    void    screenmode_event_loop(void);
 void
 sigwinch_handler(int sig, siginfo_t *info, void *unused)
 {
+	UNUSED(sig);
+	UNUSED(info);
+	UNUSED(unused);
+
     if(incurses == true){
         ungetch(KEY_RESIZE);
     }
@@ -438,7 +442,7 @@ main(int argc, char **argv)
 
     if (linemode == false) {
         dispinit();	/* initialize display parameters */
-        clearmsg();	/* clear any build progress message */
+        postmsg("");	/* clear any build progress message */
         display();	/* display the version number and input fields */
     }
 
@@ -604,7 +608,7 @@ main(int argc, char **argv)
     }
     build();
     if (linemode == false ) {
-        clearmsg();    /* clear any build progress message */
+        postmsg("");    /* clear any build progress message */
     }
     if (buildonly == true) {
         myexit(0);

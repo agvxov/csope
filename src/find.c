@@ -41,12 +41,9 @@
 #include "scanner.h"        /* for token definitions */
 
 #include <assert.h>
-#if defined(USE_NCURSES) && !defined(RENAMED_NCURSES)
 #include <ncurses.h>
-#else
-#include <curses.h>
-#endif
 #include <regex.h>
+#include <setjmp.h>    /* jmp_buf */
 
 /* most of these functions have been optimized so their innermost loops have
  * only one test for the desired character by putting the char and
@@ -83,15 +80,49 @@ static    void    putpostingref(POSTING *p, char *pat);
 static    void    putref(int seemore, char *file, char *func);
 static    void    putsource(int seemore, FILE *output);
 
-/* find the symbol in the cross-reference */
+static    sigjmp_buf    env;        /* setjmp/longjmp buffer */
 
+typedef char * (*FP)(char *);    /* pointer to function returning a character pointer */
+/* Paralel array to "fields", indexed by "field" */
+FP field_searchers[FIELDS + 1] = {
+	findsymbol,
+	finddef,
+	findcalledby,
+	findcalling,
+	findstring,
+	findstring,
+	findregexp,
+	findfile,
+	findinclude,
+	findassign,
+	findallfcns    /* samuel only */
+};
+
+/**/
+struct TI {
+    char    *text1;
+    char    *text2;
+};
+extern struct TI fields[FIELDS + 1];
+
+/* Internal prototypes: */
+static    void    jumpback(int sig);
+static void
+jumpback(int sig)
+{
+    signal(sig, jumpback);
+    siglongjmp(env, 1);
+}
+
+
+/* find the symbol in the cross-reference */
 char *
 findsymbol(char *pattern)
 {
     return find_symbol_or_assignment(pattern, false);
 }
 
-/* find the symbol in the cross-reference, and look for assignments */
+/* find the symbol in the cross-reference, and look for assignments */
 char *
 findassign(char *pattern)
 {
@@ -1298,4 +1329,122 @@ findcalledbysub(char *file, bool macro)
         	return;
         }
     }
+}
+
+/* open the references found file for writing */
+bool
+writerefsfound(void)
+{
+    if (refsfound == NULL) {
+        if ((refsfound = myfopen(temp1, "wb")) == NULL) {
+        	cannotopen(temp1);
+        	return(false);
+        }
+    } else {
+        (void) fclose(refsfound);
+        if ( (refsfound = myfopen(temp1, "wb")) == NULL) {
+        	postmsg("Cannot reopen temporary file");
+        	return(false);
+        }
+    }
+    return(true);
+}
+
+/* Perform token search based on "field" */
+bool
+search(void)
+{
+	char	msg[MSGLEN+1];
+    char    *findresult = NULL;	/* find function output */
+    bool    funcexist = true;		/* find "function" error */
+    FINDINIT rc = falseERROR;    	/* findinit return code */
+    sighandler_t savesig;    	/* old value of signal */
+    FP    f;			/* searching function */
+    int    c;
+
+    /* open the references found file for writing */
+    if (writerefsfound() == false) {
+        return(false);
+    }
+    /* find the pattern - stop on an interrupt */
+    if (linemode == false) {
+        postmsg("Searching");
+    }
+    searchcount = 0;
+    savesig = signal(SIGINT, jumpback);
+    if (sigsetjmp(env, 1) == 0) {
+        f = field_searchers[field];
+        if (f == findregexp || f == findstring) {
+            findresult = (*f)(input_line);
+        } else {
+        	if ((nonglobalrefs = myfopen(temp2, "wb")) == NULL) {
+        		cannotopen(temp2);
+        		return(false);
+        	}
+        	if ((rc = findinit(input_line)) == falseERROR) {
+        		(void) dbseek(0L); /* read the first block */
+        		findresult = (*f)(input_line);
+        		if (f == findcalledby)
+        			funcexist = (*findresult == 'y');
+        		findcleanup();
+
+        		/* append the non-global references */
+        		(void) fclose(nonglobalrefs);
+        		if ((nonglobalrefs = myfopen(temp2, "rb"))
+        		     == NULL) {
+        			cannotopen(temp2);
+        			return(false);
+        		}
+        		while ((c = getc(nonglobalrefs)) != EOF) {
+        			(void) putc(c, refsfound);
+        		}
+        	}
+        	(void) fclose(nonglobalrefs);
+        }
+    }
+    signal(SIGINT, savesig);
+
+    /* rewind the cross-reference file */
+    (void) lseek(symrefs, (long) 0, 0);
+
+    /* reopen the references found file for reading */
+    (void) fclose(refsfound);
+    if ((refsfound = myfopen(temp1, "rb")) == NULL) {
+        cannotopen(temp1);
+        return(false);
+    }
+    nextline = 1;
+    totallines = 0;
+    disprefs = 0;
+
+    /* see if it is empty */
+    if ((c = getc(refsfound)) == EOF) {
+        if (findresult != NULL) {
+        	(void) snprintf(msg, sizeof(msg), "Egrep %s in this pattern: %s",
+        		       findresult, input_line);
+        } else if (rc == falseTSYMBOL) {
+        	(void) snprintf(msg, sizeof(msg), "This is not a C symbol: %s",
+        		       input_line);
+        } else if (rc == REGCMPERROR) {
+            (void) snprintf(msg, sizeof(msg), "Error in this regcomp(3) regular expression: %s",
+                       input_line);
+
+        } else if (funcexist == false) {
+        	(void) snprintf(msg, sizeof(msg), "Function definition does not exist: %s",
+        		       input_line);
+        } else {
+            (void) snprintf(msg, sizeof(msg), "Could not find the %s: %s",
+                       fields[field].text2, input_line);
+        }
+		postmsg(msg);
+        return(false);
+    }
+    /* put back the character read */
+    (void) ungetc(c, refsfound);
+
+    countrefs();
+
+    window_change |= CH_RESULT;
+
+    return(true);
 }

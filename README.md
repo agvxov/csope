@@ -63,7 +63,6 @@ fixing it would have been a lost cause, if not for Cscope itself. Well, Csope no
  + recursive macro function to assign KEY_\* default values; look for a new and shiny preprocessor?
  + sort out constants.h
  + scrollbar() uses magic int literals?
- + Handle unused parameters gracefully (#define UNUSED(x) (void)(x))
  + Ordering function declarations in global.h by alpha order is not smart
  + lineflagafterfile is stupid
  + library.h...; "private library", in a program using 90 globals; ffs

@@ -44,3 +44,22 @@ basename(char *path)
     }
     return(path);
 }
+
+/* get the requested path components */
+char *
+pathcomponents(char *path, int components)
+{
+    int    i;
+    char    *s;
+
+    s = path + strlen(path) - 1;
+    for (i = 0; i < components; ++i) {
+        while (s > path && *--s != '/') {
+            ;
+        }
+    }
+    if (s > path && *s == '/') {
+        ++s;
+    }
+    return(s);
+}

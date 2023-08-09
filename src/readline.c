@@ -4,23 +4,21 @@
 #include "build.h"
 #include <ncurses.h>
 
-extern int LINES;    // XXX
-
 static int input_available = 0;
 static char input_char;
 char input_line[PATLEN + 1];
-
-bool do_terminate = false;
 
 bool interpret(int c){
     input_char = c;
     input_available = 1;
     rl_callback_read_char();
 
-    return do_terminate;
+    return 0;
 }
 
 static int getc_function(FILE* ignore){
+	UNUSED(ignore);
+
     input_available = 0;
     return (int)input_char;
 }
@@ -37,16 +35,13 @@ static void callback_handler(char* line){
 	if(!line){ return; }
     strncpy(input_line, line, PATLEN);
 
-    search();
+    if(!search()){
+
+	}
 
 	curdispline = 0;
 	PCS_reset();
 	current_page = 0;
-}
-
-static int interpret_break(){
-    do_terminate = true;
-	return 0;
 }
 
 static int ctrl_z(){
@@ -80,51 +75,11 @@ static int rebuild_reference(){
         askforreturn();
     }
     entercurses();
-    clearmsg();        /* clear any previous message */
+    postmsg("");        /* clear any previous message */
     totallines = 0;
     disprefs = 0;
     topline = nextline = 1;
     return(true);
-}
-
-static int process_mouse(){
-    int i;
-    MOUSE* p;
-    if ((p = getmouseaction(DUMMYCHAR)) == NULL) {
-        return(false);    /* unknown control sequence */
-    }
-    /* if the button number is a scrollbar tag */
-    if (p->button == '0') {
-        //scrollbar(p);    // XXX
-        return(false);
-    }
-    /* ignore a sweep */
-    if (p->x2 >= 0) {
-        return(false);
-    }
-    /* if this is a line selection */
-    if (p->y1 > FLDLINE) {
-
-        /* find the selected line */
-        /* note: the selection is forced into range */
-        for (i = disprefs - 1; i > 0; --i) {
-        if (p->y1 >= displine[i]) {
-            return(false);
-        }
-        }
-        /* display it in the file with the editor */
-        editref(i);
-    } else {    /* this is an input field selection */
-        field = p->y1 - FLDLINE;
-        /* force it into range */
-        if (field >= FIELDS) {
-        field = FIELDS - 1;
-        }
-        resetcmd();
-        return(false);
-    }
-
-	return false;
 }
 
 void rlinit(){

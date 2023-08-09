@@ -57,7 +57,6 @@
    this macro will always be in a statement by itself */
 #define    skiprefchar()    if (*(++blockp + 1) == '\0') (void) read_block()
 
-#define    DEL    '\177'		/* delete character */
 #define    DUMMYCHAR    ' '	/* use space as a dummy character */
 #define    MSGLEN    ((PATLEN) + 80)	/* displayed message length */
 #define    NUMLEN    10		/* line number length */
@@ -81,8 +80,6 @@
 #define TEMPSTRING_LEN_STR STRINGIZE(TEMPSTRING_LEN)
 
 /* screen lines */
-#define    FLDLINE    (LINES - FIELDS - 1 - 1)	/* first input field line */
-#define    MSGLINE    0			/* message line */
 #define    PRLINE    (LINES - 1)		/* input prompt line */
 
 /* input fields (value matches field order on screen) */

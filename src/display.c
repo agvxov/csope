@@ -45,12 +45,15 @@
 #endif
 
 #include <ncurses.h>
-#include <setjmp.h>    /* jmp_buf */
 #include <stdarg.h>    /* va_list stuff */
 #include <time.h>
 #include <errno.h>
 #include <stdarg.h>
 #include <assert.h>
+
+/* XXX */
+#define    MSGLINE    0			/* message line */
+#define    MSGCOL    0			/* message column */
 
 static    const char    appendprompt[] = "Append to file: ";
 static    const char    pipeprompt[] = "Pipe to shell command: ";
@@ -78,10 +81,12 @@ unsigned fldcolumn;        /* input field column */
 unsigned int curdispline = 0;
 int current_page = 0;
 
+/* Selectable windows */
 WINDOW* winput;
 WINDOW* wmode;
 WINDOW* wresult;
 WINDOW* whelp;
+/* Selected window pointer */
 WINDOW** current_window;
 static WINDOW** last_window;
 
@@ -109,19 +114,16 @@ int dispchar2int(const char c){
 	return r;
 }
 
-static    sigjmp_buf    env;        /* setjmp/longjmp buffer */
-static    char    lastmsg[MSGLEN + 1];    /* last message displayed */
+char    lastmsg[MSGLEN + 1];    /* last message displayed */
 static    const char    helpstring[] = "Press the ? key for help";
 static    const char    selprompt[] =
     "Select lines to change (press the ? key for help): ";
 
-typedef char * (*FP)(char *);    /* pointer to function returning a character pointer */
-
-static    struct    {        /* text of input fields */
+struct    {        /* text of input fields */
     char    *text1;
     char    *text2;
-    FP    findfcn;
-} fields[FIELDS + 1] = {    /* samuel has a search that is not part of the cscope display */
+} /* Paralel array to "field_searchers", indexed by "field" */
+fields[FIELDS + 1] = {    /* samuel has a search that is not part of the cscope display */
     {"Find this", "C symbol",            findsymbol},
     {"Find this", "global definition",        finddef},
     {"Find", "functions called by this function",    findcalledby},
@@ -134,9 +136,6 @@ static    struct    {        /* text of input fields */
     {"Find", "assignments to this symbol",         findassign},
     {"Find all", "function definitions",        findallfcns},    /* samuel only */
 };
-
-/* Internal prototypes: */
-static    void    jumpback(int sig);
 
 /* initialize display parameters */
 void
@@ -257,6 +256,8 @@ static inline void display_frame(){
 }
 
 static inline void display_mode(){
+	werase(wmode);
+
     for(int i = 0; i < FIELDS; ++i){
 		if(i == field){
 			wattron(wmode, A_REVERSE);
@@ -284,22 +285,23 @@ static inline void display_results(){
     char    function[PATLEN + 1];   /* function name */
     char    linenum[NUMLEN + 1];    /* line number */
 
-    if (totallines == 0) {
-        /* if no references were found */
-        /* redisplay the last message */
+	werase(wresult);
+
+	/* --- Display the message --- */
+    if (totallines == 0) { // Its a real message
+    	wmove(wresult, MSGLINE, 0);
+    	wclrtoeol(wresult);
         waddstr(wresult, lastmsg);
         return;
-        /* NOTREACHED */
     }
-
-
-    /* --- Display the pattern --- */
-    if (changing == true) {
-        wprintw(wresult, "Change \"%s\" to \"%s\"", input_line, newpat);
+    if (changing == true) { // Its a pattern
+		snprintf(lastmsg, MSGLEN, "Change \"%s\" to \"%s\"", input_line, newpat);
     } else {
-        wprintw(wresult, "%c%s: %s", toupper((unsigned char)fields[field].text2[0]),
+		snprintf(lastmsg, MSGLEN, "%c%s: %s", toupper((unsigned char)fields[field].text2[0]),
            fields[field].text2 + 1, input_line);
     }
+    waddstr(wresult, lastmsg);
+
     /* --- Display the column headings --- */
     wmove(wresult, 2, 2);
     if (ogs == true && field != FILENAME) {
@@ -527,11 +529,9 @@ display(void)
             display_command_field();
         }
         if(window_change & CH_RESULT){
-            werase(wresult);
             display_results();
         }
         if(window_change & CH_MODE){
-            werase(wmode);
             display_mode();
         }
 
@@ -569,117 +569,12 @@ verswp_field(void){
     window_change |= CH_INPUT | CH_MODE;
 }
 
-/*ARGSUSED*/
-static void
-jumpback(int sig)
-{
-    signal(sig, jumpback);
-    siglongjmp(env, 1);
-}
-
-bool
-search(void)
-{
-    char    *findresult = NULL;	/* find function output */
-    bool    funcexist = true;		/* find "function" error */
-    FINDINIT rc = falseERROR;    	/* findinit return code */
-    sighandler_t savesig;    	/* old value of signal */
-    FP    f;			/* searching function */
-    int    c;
-
-    /* open the references found file for writing */
-    if (writerefsfound() == false) {
-        return(false);
-    }
-    /* find the pattern - stop on an interrupt */
-    if (linemode == false) {
-        postmsg("Searching");
-    }
-    searchcount = 0;
-    savesig = signal(SIGINT, jumpback);
-    if (sigsetjmp(env, 1) == 0) {
-        f = fields[field].findfcn;
-        if (f == findregexp || f == findstring) {
-            findresult = (*f)(input_line);
-        } else {
-        	if ((nonglobalrefs = myfopen(temp2, "wb")) == NULL) {
-        		cannotopen(temp2);
-        		return(false);
-        	}
-        	if ((rc = findinit(input_line)) == falseERROR) {
-        		(void) dbseek(0L); /* read the first block */
-        		findresult = (*f)(input_line);
-        		if (f == findcalledby)
-        			funcexist = (*findresult == 'y');
-        		findcleanup();
-
-        		/* append the non-global references */
-        		(void) fclose(nonglobalrefs);
-        		if ((nonglobalrefs = myfopen(temp2, "rb"))
-        		     == NULL) {
-        			cannotopen(temp2);
-        			return(false);
-        		}
-        		while ((c = getc(nonglobalrefs)) != EOF) {
-        			(void) putc(c, refsfound);
-        		}
-        	}
-        	(void) fclose(nonglobalrefs);
-        }
-    }
-    signal(SIGINT, savesig);
-
-    /* rewind the cross-reference file */
-    (void) lseek(symrefs, (long) 0, 0);
-
-    /* reopen the references found file for reading */
-    (void) fclose(refsfound);
-    if ((refsfound = myfopen(temp1, "rb")) == NULL) {
-        cannotopen(temp1);
-        return(false);
-    }
-    nextline = 1;
-    totallines = 0;
-    disprefs = 0;
-
-    /* see if it is empty */
-    if ((c = getc(refsfound)) == EOF) {
-        if (findresult != NULL) {
-        	(void) snprintf(lastmsg, sizeof(lastmsg), "Egrep %s in this pattern: %s",
-        		       findresult, input_line);
-        } else if (rc == falseTSYMBOL) {
-        	(void) snprintf(lastmsg, sizeof(lastmsg), "This is not a C symbol: %s",
-        		       input_line);
-        } else if (rc == REGCMPERROR) {
-            (void) snprintf(lastmsg, sizeof(lastmsg), "Error in this regcomp(3) regular expression: %s",
-                       input_line);
-
-        } else if (funcexist == false) {
-        	(void) snprintf(lastmsg, sizeof(lastmsg), "Function definition does not exist: %s",
-        		       input_line);
-        } else {
-            (void) snprintf(lastmsg, sizeof(lastmsg), "Could not find the %s: %s",
-                       fields[field].text2, input_line);
-        }
-        return(false);
-    }
-    /* put back the character read */
-    (void) ungetc(c, refsfound);
-
-    countrefs();
-
-    window_change |= CH_RESULT;
-
-    return(true);
-}
-
 /* display search progress with default custom format */
 void
 progress(char *what, long current, long max)
 {
     static    long    start;
     long    now;
-    char    msg[MSGLEN + 1];
     int    i;
 
     /* save the start time */
@@ -690,26 +585,26 @@ progress(char *what, long current, long max)
     {
         if (linemode == false)
         {
-            wmove(wresult, MSGLINE, 0);
+            wmove(wresult, MSGLINE, MSGCOL);
             wclrtoeol(wresult);
             waddstr(wresult, what);
-            snprintf(msg, sizeof(msg), "%ld", current);
-            wmove(wresult, MSGLINE, (COLS / 2) - (strlen(msg) / 2));
-            waddstr(wresult, msg);
-            snprintf(msg, sizeof(msg), "%ld", max);
-            wmove(wresult, MSGLINE, COLS - strlen(msg));
-            waddstr(wresult, msg);
+            snprintf(lastmsg, sizeof(lastmsg), "%ld", current);
+            wmove(wresult, MSGLINE, (COLS / 2) - (strlen(lastmsg) / 2));
+            waddstr(wresult, lastmsg);
+            snprintf(lastmsg, sizeof(lastmsg), "%ld", max);
+            wmove(wresult, MSGLINE, COLS - strlen(lastmsg));
+            waddstr(wresult, lastmsg);
             refresh();
         }
         else if (verbosemode == true)
         {
-            snprintf(msg, sizeof(msg), "> %s %ld of %ld", what, current, max);
+            snprintf(lastmsg, sizeof(lastmsg), "> %s %ld of %ld", what, current, max);
         }
 
         start = now;
         if ((linemode == false) && (incurses == true))
         {
-            wmove(wresult, MSGLINE, 0);
+            wmove(wresult, MSGLINE, MSGCOL);
             i = (float)COLS * (float)current / (float)max;
 
             standout();
@@ -719,8 +614,9 @@ progress(char *what, long current, long max)
             refresh();
         }
         else
-        	if (linemode == false || verbosemode == true)
-        		postmsg(msg);
+        	if(linemode == false || verbosemode == true){
+        		postmsg(lastmsg);
+			}
     }
     ++searchcount;
 }
@@ -729,13 +625,12 @@ progress(char *what, long current, long max)
 void
 myperror(char *text)
 {
-    char    msg[MSGLEN + 1];    /* message */
     char    *s;
 
     s = strerror(errno);
 
-    (void) snprintf(msg, sizeof(msg), "%s: %s", text, s);
-    postmsg(msg);
+    (void) snprintf(lastmsg, sizeof(lastmsg), "%s: %s", text, s);
+    postmsg(lastmsg);
 }
 
 /* postmsg clears the message line and prints the message */
@@ -744,24 +639,13 @@ void
 postmsg(char *msg)
 {
     if (linemode == true || incurses == false) {
-        (void) printf("%s\n", msg);
+        printf("%s\n", msg);
         fflush(stdout);
     }
     else {
-        clearmsg();
-        waddstr(wresult, msg);
-        wrefresh(wresult);
+		window_change |= CH_RESULT;
     }
-    (void) strncpy(lastmsg, msg, sizeof(lastmsg) - 1);
-}
-
-/* clearmsg clears the first message line */
-
-void
-clearmsg(void)
-{
-    wmove(wresult, MSGLINE, 0);
-    wclrtoeol(wresult);
+    UNUSED(strncpy(lastmsg, msg, sizeof(lastmsg) - 1));
 }
 
 /* clearmsg2 clears the second message line */
@@ -854,42 +738,4 @@ ogsnames(char *file, char **subsystem, char **book)
         }
         s = slash + 1;
     }
-}
-
-/* get the requested path components */
-char *
-pathcomponents(char *path, int components)
-{
-    int    i;
-    char    *s;
-
-    s = path + strlen(path) - 1;
-    for (i = 0; i < components; ++i) {
-        while (s > path && *--s != '/') {
-            ;
-        }
-    }
-    if (s > path && *s == '/') {
-        ++s;
-    }
-    return(s);
-}
-
-/* open the references found file for writing */
-bool
-writerefsfound(void)
-{
-    if (refsfound == NULL) {
-        if ((refsfound = myfopen(temp1, "wb")) == NULL) {
-        	cannotopen(temp1);
-        	return(false);
-        }
-    } else {
-        (void) fclose(refsfound);
-        if ( (refsfound = myfopen(temp1, "wb")) == NULL) {
-        	postmsg("Cannot reopen temporary file");
-        	return(false);
-        }
-    }
-    return(true);
 }

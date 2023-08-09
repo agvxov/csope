@@ -45,9 +45,13 @@
 # define KEY_RESIZE KEY_UNDEF_BASE-11
 #endif
 
-/* Always define ESC */
+/* Always define these keys */
 #ifndef ESC
 # define    ESC    '\033'		/* escape character */
 #endif
+#ifndef DEL
+# define    DEL    '\177'		/* delete character */
+#endif
+
 
 #endif /* KEYS_H*/

@@ -38,6 +38,8 @@
 #ifndef CSCOPE_GLOBAL_H
 #define CSCOPE_GLOBAL_H
 
+#define UNUSED(x) (void)(x)
+
 //#include "config.h"
 #include <unistd.h>
 #include <sys/types.h>
@@ -246,6 +248,7 @@ void	horswp_field(void);
 bool	interpret(int c);    // XXX: probably rename
 int		handle_input(const int c);
 int		dispchar2int(const char c);
+int process_mouse();
 
 long	seekpage(size_t i);
 long	seekrelline(unsigned i);

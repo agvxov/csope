@@ -59,6 +59,8 @@ static void catchint(int sig);
 static void
 catchint(int sig)
 {
+	UNUSED(sig);
+
     signal(SIGINT, catchint);
     longjmp(env, 1);
 }
