@@ -18,6 +18,21 @@ fixing it would have been a lost cause, if not for Cscope itself. Well, Csope no
 # Before/After
  TODO: fill in
 
+# Features
+### Search for
+ + C symbol
+ + global definition
+ + assignments to specified symbol
+ + functions called by specified function
+ + functions calling specified function
+ + text string
+ + egrep pattern
+ + file
+ + files #including specified file
+### ...and open with your editor.
+### Batch change search results **interactively**.
+### Save/load/pipe results.
+
 # Interface
 	            <-- Tab -->
 	  +------------Message-------------+           +--------------------------------+
@@ -41,6 +56,7 @@ fixing it would have been a lost cause, if not for Cscope itself. Well, Csope no
 + nuked autoconf, replaced with single Makefile
 + reorganized main()
 + encapsulated changes to the TUI into display.c
++ encapsulated searching into find.c
 + removed "scanner.l" which seems to be an anchient version (and redundant copy) of "fscanner.l" forgotten by all
 + removed macro hell put in place to allow compiling on a dead badger
 + replaced repeated inline #ifdef KEY_\*-s with guaranteed definitions
@@ -55,6 +71,7 @@ fixing it would have been a lost cause, if not for Cscope itself. Well, Csope no
 | main.c | generic init functions, main() and primary event loops (and junk)
 | display.c | all functions directly dealing with NCurses |
 | input.c | top layer of functions dealing with user input; migth dispatch to readline |
+| find.c | searching functions |
 | globals.h | an inherited curse; global var/prototype hell |
 | readline.c | all functions directly dealing with GNU Readline; responsible for line editing in *input mode* |
 | help.c | all functions dealing with help messages |
