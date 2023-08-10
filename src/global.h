@@ -93,6 +93,13 @@ enum {
     CH_HELP   = 0x0001 << 3, /* do NOT add to CH_ALL */
     CH_ALL    = CH_RESULT | CH_INPUT | CH_MODE
 };
+enum {
+	INPUT_NORMAL,
+	INPUT_APPEND,
+	INPUT_PIPE,
+	INPUT_READ,
+	INPUT_CHANGE
+};
 
 #ifndef DFLT_INCDIR
 # define DFLT_INCDIR "/usr/include"
@@ -180,14 +187,11 @@ extern    int numlen;    				/* line number display field length */
 extern    int    *displine;				/* screen line of displayed reference */
 extern    unsigned int disprefs;    	/* displayed references */
 extern    int    field;					/* input field */
-extern    unsigned fldcolumn;    		/* input field column */
 extern    unsigned int mdisprefs;    	/* maximum displayed references */
 extern    unsigned int nextline;    	/* next line to be shown */
-extern    FILE    *nonglobalrefs;		/* non-global references file */
-extern    unsigned int topline;    	/* top line of page */
 extern    long    searchcount;		/* count of files searched */
 extern    unsigned int totallines;    /* total reference lines */
-extern    int window_change;
+extern    int window_change;		/* bitmask type to mark which windows have to be rerendered by display() */
 
 /* find.c global data */
 extern    char    block[];	/* cross-reference file block */
@@ -249,6 +253,7 @@ bool	interpret(int c);    // XXX: probably rename
 int		handle_input(const int c);
 int		dispchar2int(const char c);
 int process_mouse();
+extern int input_mode;
 
 long	seekpage(size_t i);
 long	seekrelline(unsigned i);

@@ -79,20 +79,22 @@
 #define NUMLEN_STR STRINGIZE(NUMLEN)
 #define TEMPSTRING_LEN_STR STRINGIZE(TEMPSTRING_LEN)
 
-/* screen lines */
-#define    PRLINE    (LINES - 1)		/* input prompt line */
-
 /* input fields (value matches field order on screen) */
-#define    SYMBOL    	0
-#define DEFINITION    1
-#define    CALLEDBY    2
-#define    CALLING    	3
-#define    STRING    	4
-#define    CHANGE    	5
-#define    REGEXP    	6
-#define FILENAME    7
-#define INCLUDES    8
+enum {
+	SYMBOL    	= 0,
+	DEFINITION  = 1,
+	CALLEDBY    = 2,
+	CALLING    	= 3,
+	STRING    	= 4,
+	CHANGE    	= 5,
+	REGEXP    	= 6,
+	FILENAME    = 7,
+	INCLUDES    = 8
+};
 #define    FIELDS    	10
+
+// XXX
+#define bazdmeg 1
 
 /* file open modes */
 #ifndef R_OK

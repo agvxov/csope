@@ -83,6 +83,8 @@ fixing it would have been a lost cause, if not for Cscope itself. Well, Csope no
  + Ordering function declarations in global.h by alpha order is not smart
  + lineflagafterfile is stupid
  + library.h...; "private library", in a program using 90 globals; ffs
+ + sort out the global hell
+ + changestring() forks sh to execute an ed script...
 ## Original
 + Display the current case mode (^C) onscreen
 + emacs like key bindings

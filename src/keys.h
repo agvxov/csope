@@ -35,7 +35,7 @@
 #ifndef KEY_NPAGE
 # define KEY_NPAGE KEY_UNDEF_BASE-8
 #endif
-#ifdef KEY_ENTER
+#ifndef KEY_ENTER
 # define KEY_ENTER KEY_UNDEF_BASE-9
 #endif
 #ifndef KEY_CLEAR

@@ -35,8 +35,24 @@ static void callback_handler(char* line){
 	if(!line){ return; }
     strncpy(input_line, line, PATLEN);
 
-    if(!search()){
+	switch(input_mode){
+		case INPUT_NORMAL:
+			search();
+			break;
+		case INPUT_CHANGE:
+			changestring();
+			input_mode = INPUT_NORMAL;
+			break;
+	}
 
+	switch(field){
+		case CHANGE:
+			input_mode = INPUT_CHANGE;
+			break;
+		case DEFINITION:
+		case FILENAME:
+			if(totallines == 1){ editref(0); }
+			break;
 	}
 
 	curdispline = 0;
@@ -78,7 +94,6 @@ static int rebuild_reference(){
     postmsg("");        /* clear any previous message */
     totallines = 0;
     disprefs = 0;
-    topline = nextline = 1;
     return(true);
 }
 

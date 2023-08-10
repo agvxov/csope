@@ -49,17 +49,10 @@
 #include <time.h>
 #include <errno.h>
 #include <stdarg.h>
-#include <assert.h>
 
 /* XXX */
 #define    MSGLINE    0			/* message line */
 #define    MSGCOL    0			/* message column */
-
-static    const char    appendprompt[] = "Append to file: ";
-static    const char    pipeprompt[] = "Pipe to shell command: ";
-static    const char    readprompt[] = "Read from file: ";
-static    const char    toprompt[] = "To: ";
-static    const char    inputprompt[] = "$ ";
 
 int subsystemlen    = sizeof("Subsystem")-1;    /* OGS subsystem name display field length */
 int booklen            = sizeof("Book")-1;         /* OGS book name display field length */
@@ -72,14 +65,21 @@ unsigned int disprefs;        /* displayed references */
 int    field;            /* input field */
 unsigned int mdisprefs;        /* maximum displayed references */
 unsigned int nextline;        /* next line to be shown */
-FILE    *nonglobalrefs;        /* non-global references file */
-unsigned int topline = 1;        /* top line of page */
 static int    bottomline;        /* bottom line of page */
 long    searchcount;        /* count of files searched */
 unsigned int totallines;    /* total reference lines */
-unsigned fldcolumn;        /* input field column */
 unsigned int curdispline = 0;
 int current_page = 0;
+int input_mode = INPUT_NORMAL;
+const char* prompts[] = {
+	[INPUT_NORMAL] = "$ ",
+	[INPUT_APPEND] = "Append to file: ",
+	[INPUT_PIPE] = "Pipe to shell command: ",
+	[INPUT_READ] = "Read from file: ",
+	[INPUT_CHANGE] = "To: "
+};
+
+static unsigned int topline = 1;        /* top line of page */
 
 /* Selectable windows */
 WINDOW* winput;
@@ -124,17 +124,17 @@ struct    {        /* text of input fields */
     char    *text2;
 } /* Paralel array to "field_searchers", indexed by "field" */
 fields[FIELDS + 1] = {    /* samuel has a search that is not part of the cscope display */
-    {"Find this", "C symbol",            findsymbol},
-    {"Find this", "global definition",        finddef},
-    {"Find", "functions called by this function",    findcalledby},
-    {"Find", "functions calling this function",    findcalling},
-    {"Find this", "text string",            findstring},
-    {"Change this", "text string",            findstring},
-    {"Find this", "egrep pattern",            findregexp},
-    {"Find this", "file",                findfile},
-    {"Find", "files #including this file",        findinclude},
-    {"Find", "assignments to this symbol",         findassign},
-    {"Find all", "function definitions",        findallfcns},    /* samuel only */
+    {"Find this", "C symbol"},
+    {"Find this", "global definition"},
+    {"Find", "functions called by this function"},
+    {"Find", "functions calling this function"},
+    {"Find this", "text string"},
+    {"Change this", "text string"},
+    {"Find this", "egrep pattern"},
+    {"Find this", "file"},
+    {"Find", "files #including this file"},
+    {"Find", "assignments to this symbol"},
+    {"Find all", "function definitions"},    /* samuel only */
 };
 
 /* initialize display parameters */
@@ -270,7 +270,7 @@ static inline void display_mode(){
 }
 
 static inline void display_command_field(){
-    mvwaddstr(winput, 0, 0, inputprompt);
+    mvwaddstr(winput, 0, 0, prompts[input_mode]);
     waddstr(winput, rl_line_buffer);
 }
 static inline void display_results(){
@@ -491,13 +491,13 @@ void display_cursor(void){
     int yoffset = 0, xoffset = 0;
 
     if(current_window == &winput){
-        xoffset = sizeof(inputprompt)-1 + rl_point;
+        xoffset = strlen(prompts[input_mode]) + rl_point;
     }else if(current_window == &wmode){
         yoffset = field;
     }else if(current_window == &wresult){
         yoffset = displine[curdispline];
     }else{
-        assert(("No window selected.", true));
+        assert("No window selected.");
     }
 
     wmove(*current_window, yoffset, xoffset);

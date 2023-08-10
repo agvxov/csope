@@ -74,7 +74,7 @@ static    void    scrollbar(MOUSE *p);
 static void
 clearprompt(void)
 {
-    move(PRLINE, 0);
+    wmove(winput, 0, 0);
     clrtoeol();
 }
 
@@ -120,7 +120,7 @@ mark(unsigned int i)
 {
     unsigned int j;
 
-    j = i + topline - 1;
+    //j = i + topline - 1;
     if (j < totallines) {
     move(displine[i], 1);
 
@@ -139,38 +139,38 @@ mark(unsigned int i)
 static void
 scrollbar(MOUSE *p)
 {
-    /* reposition list if it makes sense */
-    if (totallines == 0) {
-    return;
-    }
-    switch (p->percent) {
+    ///* reposition list if it makes sense */
+    //if (totallines == 0) {
+    //return;
+    //}
+    //switch (p->percent) {
 
-    case 101: /* scroll down one page */
-    if (nextline + mdisprefs > totallines) {
-        nextline = totallines - mdisprefs + 1;
-    }
-    break;
+    //case 101: /* scroll down one page */
+    //if (nextline + mdisprefs > totallines) {
+    //    nextline = totallines - mdisprefs + 1;
+    //}
+    //break;
 
-    case 102: /* scroll up one page */
-    nextline = topline - mdisprefs;
-    if (nextline < 1) {
-        nextline = 1;
-    }
-    break;
+    //case 102: /* scroll up one page */
+    //nextline = topline - mdisprefs;
+    //if (nextline < 1) {
+    //    nextline = 1;
+    //}
+    //break;
 
-    case 103: /* scroll down one line */
-    nextline = topline + 1;
-    break;
+    //case 103: /* scroll down one line */
+    //nextline = topline + 1;
+    //break;
 
-    case 104: /* scroll up one line */
-    if (topline > 1) {
-        nextline = topline - 1;
-    }
-    break;
-    default:
-    nextline = p->percent * totallines / 100;
-    }
-    //seekline(nextline);
+    //case 104: /* scroll up one line */
+    //if (topline > 1) {
+    //    nextline = topline - 1;
+    //}
+    //break;
+    //default:
+    //nextline = p->percent * totallines / 100;
+    //}
+    ////seekline(nextline);
 }
 
 

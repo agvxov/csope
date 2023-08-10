@@ -57,8 +57,7 @@ static void catchint(int sig);
 /* catch the interrupt signal */
 
 static void
-catchint(int sig)
-{
+catchint(int sig){
 	UNUSED(sig);
 
     signal(SIGINT, catchint);
@@ -74,8 +73,7 @@ myungetch(int c)
 
 /* get a line from the terminal in non-canonical mode */
 int
-mygetline(char p[], char s[], unsigned size, int firstchar, bool iscaseless)
-{
+mygetline(char p[], char s[], unsigned size, int firstchar, bool iscaseless){
     int    c;
     unsigned int i = 0, j;
     char *sright;    /* substring to the right of the cursor */
@@ -207,8 +205,7 @@ mygetline(char p[], char s[], unsigned size, int firstchar, bool iscaseless)
 /* ask user to enter a character after reading the message */
 
 void
-askforchar(void)
-{
+askforchar(void){
     addstr("Type any character to continue: ");
     getch();
 }
@@ -216,8 +213,7 @@ askforchar(void)
 /* ask user to press the RETURN key after reading the message */
 
 void
-askforreturn(void)
-{
+askforreturn(void){
     fprintf(stderr, "Press the RETURN key to continue: ");
     getchar();
     /* HBB 20060419: message probably messed up the screen --- redraw */
@@ -229,8 +225,7 @@ askforreturn(void)
 /* expand the ~ and $ shell meta characters in a path */
 
 void
-shellpath(char *out, int limit, char *in)
-{
+shellpath(char *out, int limit, char *in){
     char    *lastchar;
     char    *s, *v;
 
@@ -449,7 +444,7 @@ global_input(const int c){
             break;
         case '<':    /* read lines from a file */
             break;                    // XXX
-            move(PRLINE, 0);
+            //move(PRLINE, 0);
             //addstr(readprompt); // XXX fix
             //if (mygetline("", newpat, COLS - sizeof(readprompt), '\0', NO) > 0) {
             //    clearprompt();
@@ -471,7 +466,7 @@ global_input(const int c){
                 return 0;
             }
             /* get the shell command */
-            move(PRLINE, 0);
+            //move(PRLINE, 0);
             //addstr(pipeprompt);
             //if (mygetline("", newpat, COLS - sizeof(pipeprompt), '\0', NO) == 0) {
             //    clearprompt();
@@ -530,10 +525,159 @@ global_input(const int c){
     return 1;
 }
 
-extern const void const* winput;
-extern const void const* wmode;
-extern const void const* wresult;
-extern const void const* const* current_window;
+extern const void *const winput;
+extern const void *const wmode;
+extern const void *const wresult;
+extern const void *const *const current_window;
+
+static int changestring(bool *change);
+
+static int
+change_input(const int c){
+    MOUSE *p;                       /* mouse data */
+    change = calloc(totallines, sizeof(*change));
+
+	switch(c){
+	case '*':	/* invert selection */
+	    for(int i = 0; topline + i < nextline; ++i){
+			change[i] = !change[i];
+	    }
+		break;
+	case ctrl('A'):	/* mark/unmark all lines */
+	    for(unsigned i = 0; i < totallines; ++i) {
+			change[i] = !change[i];
+	    }
+	    /* show that all have been marked */
+	    seekline(totallines);	// ?!
+	    break;
+	case ctrl('X'):	/* mouse selection */
+	    if ((p = getmouseaction(DUMMYCHAR)) == NULL) {
+			break;	/* unknown control sequence */
+	    }
+	    /* if the button number is a scrollbar tag */
+	    if (p->button == '0') {
+			scrollbar(p);
+			break;
+	    }
+	    /* find the selected line */
+	    /* NOTE: the selection is forced into range */
+		{
+			int i;
+			for(i = disprefs - 1; i > 0; --i) {
+				if (p->y1 >= displine[i]) {
+					break;
+				}
+			}
+			change[i] = !change[i];
+		}
+	    break;
+	case ctrl('D'):
+		changestring(change);
+		break;
+	default:
+		{
+			/* if a line was selected */
+			const int cc = dispchar2int(c);
+			if(cc != -1){
+				change[cc] = !change[cc];
+			}
+		}
+	}
+
+	return 0;
+}
+
+static int
+changestring(bool *change){
+    char    newfile[PATHLEN + 1];   /* new file name */
+    char    oldfile[PATHLEN + 1];   /* old file name */
+    char    linenum[NUMLEN + 1];    /* file line number */
+    char    msg[MSGLEN + 1];        /* message */
+    FILE    *script;                /* shell script file */
+    bool    anymarked = false;         /* any line marked */
+
+    /* open the temporary file */
+    if((script = myfopen(temp2, "w")) == NULL) {
+		cannotopen(temp2);
+		return(false);
+    }
+
+    /* for each line containing the old text */
+    fprintf(script, "ed - <<\\!\n");
+    *oldfile = '\0';
+	fseek(refsfound, 0, SEEK_SET);
+    for(int i = 0; 
+	 	fscanf(refsfound, "%" PATHLEN_STR "s%*s%" NUMLEN_STR "s%*[^\n]", newfile, linenum) == 2;
+	 	++i)
+	{
+		/* see if the line is to be changed */
+		if (change[i] == false) { break; }
+	    anymarked = true;
+		
+	    /* if this is a new file */
+	    if (strcmp(newfile, oldfile) != 0) {
+				
+		/* make sure it can be changed */
+		if (access(newfile, WRITE) != 0) {
+		    snprintf(msg, sizeof(msg), "Cannot write to file %s", newfile);
+		    postmsg(msg);
+		    anymarked = false;
+		    break;
+		}
+		/* if there was an old file */
+		if (*oldfile != '\0') {
+		    fprintf(script, "w\n");	/* save it */
+		}
+		/* edit the new file */
+		strcpy(oldfile, newfile);
+		fprintf(script, "e %s\n", oldfile);
+	    }
+	    /* output substitute command */
+	    fprintf(script, "%ss/", linenum);	/* change */
+	    for (char *s = Pattern; *s != '\0'; ++s) {
+			/* old text */
+			if (strchr("/\\[.^*", *s) != NULL) {
+				putc('\\', script);
+			}
+			if (caseless == true && isalpha((unsigned char)*s)) {
+				putc('[', script);
+				if(islower((unsigned char)*s)) {
+				putc(toupper((unsigned char)*s), script);
+				putc(*s, script);
+				} else {
+				putc(*s, script);
+				putc(tolower((unsigned char)*s), script);
+				}
+				putc(']', script);
+			} else {
+				putc(*s, script);
+			}
+	    }
+	    putc('/', script);			/* to */
+	    for (char *s = newpat; *s != '\0'; ++s) {	/* new text */
+			if (strchr("/\\&", *s) != NULL) {
+				putc('\\', script);
+			}
+			putc(*s, script);
+	    }
+	    fprintf(script, "/gp\n");	/* and print */
+    }
+    fprintf(script, "w\nq\n!\n");	/* write and quit */
+    fclose(script);
+
+    /* if any line was marked */
+    if (anymarked == true) {
+		/* edit the files */
+		fprintf(stderr, "Changed lines:\n\r");
+		execute("sh", "sh", temp2, NULL);
+		askforchar();
+    } 
+	changing = false;
+    mousemenu();
+    fclose(script);
+    free(change);
+    return(anymarked);
+}
 
 int
 handle_input(const int c){
@@ -546,13 +690,20 @@ handle_input(const int c){
     const int r = global_input(c);
     if(r){ return 0; }
     /* --- mode specific --- */
-    if(*current_window == winput){
-        return interpret(c);
-    }else if(*current_window == wmode){
-        return wmode_input(c);
-    }else if(*current_window == wresult){
-        return wresult_input(c);
-    }
+	switch(input_mode){
+		case INPUT_NORMAL:
+			if(*current_window == winput){
+				return interpret(c);
+			}else if(*current_window == wmode){
+				return wmode_input(c);
+			}else if(*current_window == wresult){
+				return wresult_input(c);
+			}
+			assert("'current_window' dangling.");
+			break; /* NOTREACHED */
+		case INPUT_CHANGE:
+			return change_input(c);
+	}
 
     return 0;
 }

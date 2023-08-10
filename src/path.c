@@ -30,6 +30,41 @@
  DAMAGE.
  =========================================================================*/
 
+/* get a file's base name from its path name */
+
+#include "global.h"
+
+const char *
+basename(char *path)
+{
+    char    *s;
+
+    if ((s = strrchr(path, '/')) != 0) {
+        return(s + 1);
+    }
+    return(path);
+}
+
+/* get the requested path components */
+char *
+pathcomponents(char *path, int components)
+{
+    int    i;
+    char    *s;
+
+    s = path + strlen(path) - 1;
+    for (i = 0; i < components; ++i) {
+        while (s > path && *--s != '/') {
+            ;
+        }
+    }
+    if (s > path && *s == '/') {
+        ++s;
+    }
+    return(s);
+}
+
+
 /*
  *    compath(pathname)
  *
@@ -43,12 +78,6 @@
  *         of accidently changing strings obtained from makefiles
  *         and stored in global structures.
  */
-
-#include "global.h"
-
-#ifndef NULL
-#define    NULL    0
-#endif
 
 char *
 compath(char *pathname)        	/*FDEF*/

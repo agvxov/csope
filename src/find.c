@@ -79,6 +79,7 @@ static  bool    check_for_assignment(void);
 static    void    putpostingref(POSTING *p, char *pat);
 static    void    putref(int seemore, char *file, char *func);
 static    void    putsource(int seemore, FILE *output);
+static	FILE    *nonglobalrefs;        /* non-global references file */
 
 static    sigjmp_buf    env;        /* setjmp/longjmp buffer */
 
@@ -707,7 +708,7 @@ findinit(char *pattern)
     bool    isregexp = false;
     int    i;
     char    *s;
-    unsigned char c;    /* HBB 20010427: changed uint to uchar */
+    unsigned char c;
 
     /* HBB: be nice: free regexp before allocating a new one */
     if(isregexp_valid == true)
@@ -722,7 +723,7 @@ findinit(char *pattern)
         *s = '\0';
     }
 
-    /* HBB 20020620: new: make sure pattern is lowercased. Curses
+    /* Make sure pattern is lowercased. Curses
      * mode gets this right all on its own, but at least -L mode
      * doesn't */
     if (caseless == true) {
