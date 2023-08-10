@@ -40,7 +40,7 @@ static void callback_handler(char* line){
 			search();
 			break;
 		case INPUT_CHANGE:
-			changestring(NULL);
+			changestring(change);
 			input_mode = INPUT_NORMAL;
 			break;
 	}

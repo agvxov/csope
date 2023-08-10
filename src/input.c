@@ -529,24 +529,23 @@ extern const void *const winput;
 extern const void *const wmode;
 extern const void *const wresult;
 extern const void *const *const current_window;
+extern const int topline;
 
-static int
+int
 change_input(const int c){
     MOUSE *p;                       /* mouse data */
     change = calloc(totallines, sizeof(*change));
 
 	switch(c){
-	case '*':	/* invert selection */
-	    //for(int i = 0; topline + i < nextline; ++i){
-		//	change[i] = !change[i];
-	    //}
+	case '*':	/* invert page */
+	    for(int i = 0; topline + i < nextline; i++){
+			change[topline + i] = !change[topline + i];
+	    }
 		break;
-	case ctrl('A'):	/* mark/unmark all lines */
-	    for(unsigned i = 0; i < totallines; ++i) {
+	case ctrl('A'):	/* invert all lines */
+	    for(unsigned i = 0; i < totallines; i++) {
 			change[i] = !change[i];
 	    }
-	    /* show that all have been marked */
-	    //seekline(totallines);	// ?!
 	    break;
 	case ctrl('X'):	/* mouse selection */
 	    if ((p = getmouseaction(DUMMYCHAR)) == NULL) {
@@ -570,7 +569,7 @@ change_input(const int c){
 		}
 	    break;
 	case ctrl('D'):
-		changestring(change);
+		changestring(input_line, newpat, change);
 		break;
 	default:
 		{
@@ -586,7 +585,7 @@ change_input(const int c){
 }
 
 int
-changestring(bool *change){
+changestring(const char* from, const char* to, bool *change){
     char    newfile[PATHLEN + 1];   /* new file name */
     char    oldfile[PATHLEN + 1];   /* old file name */
     char    linenum[NUMLEN + 1];    /* file line number */
@@ -632,27 +631,27 @@ changestring(bool *change){
 	    }
 	    /* output substitute command */
 	    fprintf(script, "%ss/", linenum);	/* change */
-	    //for (char *s = Pattern; *s != '\0'; ++s) {
-		//	/* old text */
-		//	if (strchr("/\\[.^*", *s) != NULL) {
-		//		putc('\\', script);
-		//	}
-		//	if (caseless == true && isalpha((unsigned char)*s)) {
-		//		putc('[', script);
-		//		if(islower((unsigned char)*s)) {
-		//		putc(toupper((unsigned char)*s), script);
-		//		putc(*s, script);
-		//		} else {
-		//		putc(*s, script);
-		//		putc(tolower((unsigned char)*s), script);
-		//		}
-		//		putc(']', script);
-		//	} else {
-		//		putc(*s, script);
-		//	}
-	    //}
+	    for(const char *s = from; *s != '\0'; ++s) {
+			/* old text */
+			if (strchr("/\\[.^*", *s) != NULL) {
+				putc('\\', script);
+			}
+			if (caseless == true && isalpha((unsigned char)*s)) {
+				putc('[', script);
+				if(islower((unsigned char)*s)) {
+				putc(toupper((unsigned char)*s), script);
+				putc(*s, script);
+				} else {
+				putc(*s, script);
+				putc(tolower((unsigned char)*s), script);
+				}
+				putc(']', script);
+			} else {
+				putc(*s, script);
+			}
+	    }
 	    putc('/', script);			/* to */
-	    for (char *s = newpat; *s != '\0'; ++s) {	/* new text */
+	    for(const char *s = to; *s != '\0'; ++s) {	/* new text */
 			if (strchr("/\\&", *s) != NULL) {
 				putc('\\', script);
 			}
@@ -661,7 +660,6 @@ changestring(bool *change){
 	    fprintf(script, "/gp\n");	/* and print */
     }
     fprintf(script, "w\nq\n!\n");	/* write and quit */
-    fclose(script);
 
     /* if any line was marked */
     if (anymarked == true) {
@@ -670,6 +668,7 @@ changestring(bool *change){
 		execute("sh", "sh", temp2, NULL);
 		askforchar();
     } 
+
 	changing = false;
     mousemenu();
     fclose(script);

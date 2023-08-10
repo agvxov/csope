@@ -79,7 +79,7 @@ const char* prompts[] = {
 	[INPUT_CHANGE] = "To: "
 };
 
-static unsigned int topline = 1;        /* top line of page */
+unsigned int topline = 1;        /* top line of page */
 
 /* Selectable windows */
 WINDOW* winput;
@@ -444,9 +444,9 @@ static inline void display_results(){
             /* if this is the first displayed line,
                display what will fit on the screen */
             if (topline == nextline-1) {
-            disprefs++;
-            /* break out of two loops */
-            goto endrefs;
+				disprefs++;
+				/* break out of two loops */
+				goto endrefs;
             }
 
             /* erase the reference */
