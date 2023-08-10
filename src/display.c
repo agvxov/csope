@@ -76,6 +76,7 @@ const char* prompts[] = {
 	[INPUT_APPEND] = "Append to file: ",
 	[INPUT_PIPE] = "Pipe to shell command: ",
 	[INPUT_READ] = "Read from file: ",
+	[INPUT_CHANGE_TO] = "To: ",
 	[INPUT_CHANGE] = "To: "
 };
 
@@ -190,7 +191,7 @@ entercurses(void)
     curs_set(0);
     clear();        	/* clear the screen */
     mouseinit();        /* initialize any mouse interface */
-    drawscrollbar(topline, nextline);
+    //drawscrollbar(topline, nextline);
     keypad(stdscr, TRUE);    /* enable the keypad */
     //fixkeypad();    /* fix for getch() intermittently returning garbage */
     standend();    /* turn off reverse video */
@@ -295,7 +296,7 @@ static inline void display_results(){
         waddstr(wresult, lastmsg);
         return;
     }
-    if (changing == true) { // Its a pattern
+    if (input_mode == INPUT_CHANGE) { // Its a pattern
 		snprintf(lastmsg, MSGLEN, "Change \"%s\" to \"%s\"", input_line, newpat);
     } else {
 		snprintf(lastmsg, MSGLEN, "%c%s: %s", toupper((unsigned char)fields[field].text2[0]),
@@ -339,14 +340,15 @@ static inline void display_results(){
 
 	/* decide where to list from */
 	/* XXX: this error handling migth be redundant*/
-	int seekerr;
-	do{
-		seekerr = seekpage(current_page);
-	}while(seekerr == -1 && current_page--);
+	{
+		int seekerr;
+		do{
+			seekerr = seekpage(current_page);
+		}while(seekerr == -1 && current_page--);
+	}
 
     /* until the max references have been displayed or
        there is no more room */
-    topline = nextline;
     for (disprefs = 0, screenline = WRESULT_TABLE_BODY_START;
          disprefs < mdisprefs && screenline <= result_window_height;
          ++disprefs, ++screenline)
@@ -368,7 +370,7 @@ static inline void display_results(){
         wprintw(wresult, "%c", dispchars[disprefs]);
 
         /* display any change mark */
-        if (changing == true && change[topline + disprefs - 1] == true) {
+        if (input_mode == INPUT_CHANGE && change[topref + disprefs]) {
         	waddch(wresult, '>');
         } else {
             waddch(wresult, ' ');
@@ -376,19 +378,19 @@ static inline void display_results(){
 
         /* display the file name */
         if (field == FILENAME) {
-        wprintw(wresult, "%-*s ", filelen, file);
+			wprintw(wresult, "%-*s ", filelen, file);
         } else {
-        /* if OGS, display the subsystem and book names */
-        if (ogs == true) {
-            ogsnames(file, &subsystem, &book);
-            wprintw(wresult, "%-*.*s ", subsystemlen, subsystemlen, subsystem);
-            wprintw(wresult, "%-*.*s ", booklen, booklen, book);
-        }
-        /* display the requested path components */
-        if (dispcomponents > 0) {
-            wprintw(wresult, "%-*.*s ", filelen, filelen,
-               pathcomponents(file, dispcomponents));
-        }
+			/* if OGS, display the subsystem and book names */
+			if (ogs == true) {
+				ogsnames(file, &subsystem, &book);
+				wprintw(wresult, "%-*.*s ", subsystemlen, subsystemlen, subsystem);
+				wprintw(wresult, "%-*.*s ", booklen, booklen, book);
+			}
+			/* display the requested path components */
+			if (dispcomponents > 0) {
+				wprintw(wresult, "%-*.*s ", filelen, filelen,
+				   pathcomponents(file, dispcomponents));
+			}
         } /* else(field == FILENAME) */
 
         /* display the function name */
@@ -443,7 +445,7 @@ static inline void display_results(){
 
             /* if this is the first displayed line,
                display what will fit on the screen */
-            if (topline == nextline-1) {
+            if (topref == nextline-1) {
 				disprefs++;
 				/* break out of two loops */
 				goto endrefs;
@@ -479,10 +481,10 @@ endrefs:
     i = totallines - nextline + 1;
     bottomline = nextline;
     if (i > 0) {
-        wprintw(wresult, "* Lines %d-%d of %d, %d more - press the space bar to display more *", topline, bottomline, totallines, i);
+        wprintw(wresult, "* Lines %d-%d of %d, %d more - press the space bar to display more *", topref, bottomline, totallines, i);
     }
     /* if this is the last page of references */
-    else if (topline > 1 && nextline > totallines) {
+    else if (current_page > 0 && nextline > totallines) {
         waddstr(wresult, "* Press the space bar to display the first lines again *");
     }
 }
@@ -507,44 +509,6 @@ void display_cursor(void){
     i |= A_REVERSE;
     waddch(*current_window, i);
 }
-
-void
-display(void)
-{
-    //drawscrollbar(topline, nextline);    /* display the scrollbar */
-
-    if(window_change){
-		if(window_change == CH_HELP){
-			display_help();
-			/* Do not display over the help msg and */
-			/*  rely on display_help() setting CH_ALL */
-			return;
-		}
-		/**/
-        if(window_change == CH_ALL){
-            display_frame();
-        }
-        if(window_change & CH_INPUT){
-            display_command_field();
-        }
-        if(window_change & CH_RESULT){
-            display_results();
-        }
-        if(window_change & CH_MODE){
-            display_mode();
-        }
-
-        display_cursor();
-
-        refresh();
-        wrefresh(winput);
-        wrefresh(wmode);
-        wrefresh(wresult);
-    }
-
-    window_change = CH_NONE;
-}
-
 void
 horswp_field(void){
     if(current_window != &wresult){
@@ -737,4 +701,41 @@ ogsnames(char *file, char **subsystem, char **book)
         }
         s = slash + 1;
     }
+}
+
+void
+display(void)
+{
+    //drawscrollbar(topline, nextline);    /* display the scrollbar */
+
+    if(window_change){
+		if(window_change == CH_HELP){
+			display_help();
+			/* Do not display over the help msg and */
+			/*  rely on display_help() setting CH_ALL */
+			return;
+		}
+		/**/
+        if(window_change == CH_ALL){
+            display_frame();
+        }
+        if(window_change & CH_INPUT){
+            display_command_field();
+        }
+        if(window_change & CH_RESULT){
+            display_results();
+        }
+        if(window_change & CH_MODE){
+            display_mode();
+        }
+
+        display_cursor();
+
+        refresh();
+        wrefresh(winput);
+        wrefresh(wmode);
+        wrefresh(wresult);
+    }
+
+    window_change = CH_NONE;
 }

@@ -54,29 +54,17 @@
  * In the original version this was handled by
  *  "int selecting // whether the (upper) symbol list is being browsed".
  */
-extern const void const* winput;
-extern const void const* wmode;
-extern const void const* wresult;
-extern const void const* const* current_window;
+extern const void *const winput;
+extern const void *const wmode;
+extern const void *const wresult;
+extern const void *const *const current_window;
 
 bool    caseless;    	/* ignore letter case when searching */
 bool    *change;    	/* change this line */
-bool    changing;    	/* changing text */
 char    newpat[PATLEN + 1];    /* new pattern */
 
 /* Internal prototypes: */
-static    void    clearprompt(void);
-static    void    mark(unsigned int i);
 static    void    scrollbar(MOUSE *p);
-
-/* clear the prompt line */
-
-static void
-clearprompt(void)
-{
-    wmove(winput, 0, 0);
-    clrtoeol();
-}
 
 /* read references from a file */
 
@@ -113,27 +101,6 @@ readrefs(char *filename)
         fclose(file);
     return(true);
 }
-
-/* mark/unmark this displayed line to be changed */
-static void
-mark(unsigned int i)
-{
-    unsigned int j;
-
-    //j = i + topline - 1;
-    if (j < totallines) {
-    move(displine[i], 1);
-
-    if (change[j] == false) {
-        change[j] = true;
-        addch('>');
-    } else {
-        change[j] = false;
-        addch(' ');
-    }
-    }
-}
-
 
 /* scrollbar actions */
 static void

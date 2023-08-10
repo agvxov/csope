@@ -1909,7 +1909,7 @@ follow(unsigned int v)
 }
 
 char *
-egrepinit(char *egreppat)
+egrepinit(const char *egreppat)
 {
     /* initialize the global data */
     memset(gotofn, 0, sizeof(gotofn));

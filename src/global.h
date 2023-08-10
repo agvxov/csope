@@ -64,12 +64,6 @@ typedef void (*sighandler_t)(int);
 
 #include <stdbool.h>
 
-typedef    enum    {		/* findinit return code */
-    falseERROR,
-    falseTSYMBOL,
-    REGCMPERROR
-} FINDINIT;
-
 typedef    struct {    	/* mouse action */
     int    button;
     int    percent;
@@ -98,6 +92,7 @@ enum {
 	INPUT_APPEND,
 	INPUT_PIPE,
 	INPUT_READ,
+	INPUT_CHANGE_TO,
 	INPUT_CHANGE
 };
 
@@ -157,7 +152,6 @@ extern    char    *tmpdir;	/* temporary directory */
 /* command.c global data */
 extern    bool    caseless;	/* ignore letter case when searching */
 extern    bool    *change;	/* change this line */
-extern    bool    changing;	/* changing text */
 extern    unsigned int curdispline;
 extern    char    newpat[];	/* new pattern */
 
@@ -221,17 +215,17 @@ extern    bool    unixpcmouse;		/* UNIX PC mouse interface */
 
 /* cscope functions called from more than one function or between files */
 
-char    *filepath(char *file);
-char    *findcalledby(char *pattern);
-char    *findcalling(char *pattern);
-char    *findallfcns(char *dummy);
-char    *finddef(char *pattern);
-char    *findfile(char *dummy);
-char    *findinclude(char *pattern);
-char    *findsymbol(char *pattern);
-char    *findassign(char *pattern);
-char    *findregexp(char *egreppat);
-char    *findstring(char *pattern);
+char    *filepath(const char *file);
+char    *findsymbol(const char *pattern);
+char    *finddef(const char *pattern);
+char    *findcalledby(const char *pattern);
+char    *findcalling(const char *pattern);
+char    *findstring(const char *pattern);
+char    *findregexp(const char *egreppat);
+char    *findfile(const char *dummy);
+char    *findinclude(const char *pattern);
+char    *findassign(const char *pattern);
+char    *findallfcns(const char *dummy);
 char    *inviewpath(char *file);
 char    *lookup(char *ident);
 char    *pathcomponents(char *path, int components);
@@ -247,6 +241,7 @@ extern bool    onesearch;    	 /* one search only in line mode */
 extern char    *reflines;    	 /* symbol reference lines file */
 extern bool    do_press_any_key; /* wait for any key to continue */
 extern int     current_page;
+#define topref	current_page*mdisprefs
 void	verswp_field(void);
 void	horswp_field(void);
 bool	interpret(int c);    // XXX: probably rename
@@ -254,7 +249,7 @@ int		handle_input(const int c);
 int		dispchar2int(const char c);
 int process_mouse();
 extern int input_mode;
-int changestring(const char* from, const char* to, bool *change);
+int changestring(const char* from, const char* to, const bool *const change, const int change_len);
 
 long	seekpage(size_t i);
 long	seekrelline(unsigned i);
@@ -314,10 +309,10 @@ void    writestring(char *s);
 
 bool    infilelist(char *file);
 bool    readrefs(char *filename);
-bool    search(void);
+bool    search(const char* query);
 bool    writerefsfound(void);
 
-FINDINIT findinit(char *pattern);
+int findinit(const char *pattern_);
 MOUSE    *getmouseaction(char leading_char);
 struct    cmd *currentcmd(void);
 struct    cmd *prevcmd(void);

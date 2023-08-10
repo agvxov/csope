@@ -156,7 +156,7 @@ void
 mousemenu(void)
 {
     if (mouse == true) {
-        if (changing == true) {
+        if (input_mode == INPUT_CHANGE) {
         	loadmenu(changemenu);
         }
         else {

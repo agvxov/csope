@@ -37,9 +37,9 @@
 
 /* private library */
 char    *compath(char *pathname);
-char    *egrepinit(char *egreppat);
+char    *egrepinit(const char *egreppat);
 char    *logdir(char *name);
-const char    *basename(char *path);
+const char    *basename(const char *path);
 FILE    *myfopen(char *path, char *mode);
 char    *mygetenv(char *variable, char *deflt);
 int    myopen(char *path, int flag, int mode);

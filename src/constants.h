@@ -94,7 +94,7 @@ enum {
 #define    FIELDS    	10
 
 // XXX
-#define bazdmeg 1
+#define bazdki 1
 
 /* file open modes */
 #ifndef R_OK

@@ -35,9 +35,9 @@
 #include "global.h"
 
 const char *
-basename(char *path)
+basename(const char *path)
 {
-    char    *s;
+    const char *s;
 
     if ((s = strrchr(path, '/')) != 0) {
         return(s + 1);

@@ -135,7 +135,7 @@ edit(char *file, char *linenum)
 /* if requested, prepend a path to a relative file name */
 
 char *
-filepath(char *file)
+filepath(const char *file)
 {
     static    char	path[PATHLEN + 1];
 

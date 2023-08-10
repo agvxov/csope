@@ -6,8 +6,8 @@ struct FILE;
 /* Page cursor stack */
 static FILE** hto_page = &refsfound;
 #define PCS_MAXPAGE 16
-static long PCS_pos[PCS_MAXPAGE] = {0};
-static int PCS_top = 0;
+static size_t PCS_pos[PCS_MAXPAGE] = {0};
+static size_t PCS_top = 0;
 
 long seekpage(size_t i){
 	if(i > PCS_MAXPAGE-1){ return -1; }
@@ -31,7 +31,7 @@ long seekrelline(unsigned i){
 	size_t lc = 0;
 	while(lc < i){
 		const char c = getc(*hto_page);
-		assert(("seekrelline() tried to read past the reference file", !(c == EOF)));
+		assert("seekrelline() tried to read past the reference file" && !(c == EOF));
 		if(c == '\n'){ ++lc; }
 	}
 	return ftell(*hto_page);

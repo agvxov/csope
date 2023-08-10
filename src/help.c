@@ -101,7 +101,7 @@ static char changeing_help_msg[] =
 const char*
 help(void)
 {
-    if (changing == false) {
+    if (input_mode == INPUT_CHANGE) {
 		return help_msg;
     } else {
 		return changeing_help_msg;

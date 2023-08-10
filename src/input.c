@@ -529,23 +529,23 @@ extern const void *const winput;
 extern const void *const wmode;
 extern const void *const wresult;
 extern const void *const *const current_window;
-extern const int topline;
 
 int
 change_input(const int c){
     MOUSE *p;                       /* mouse data */
-    change = calloc(totallines, sizeof(*change));
 
 	switch(c){
 	case '*':	/* invert page */
-	    for(int i = 0; topline + i < nextline; i++){
-			change[topline + i] = !change[topline + i];
+	    for(int i = 0; topref + i < nextline; i++){
+			change[topref + i] = !change[topref + i];
 	    }
+		window_change |= CH_RESULT;
 		break;
 	case ctrl('A'):	/* invert all lines */
 	    for(unsigned i = 0; i < totallines; i++) {
 			change[i] = !change[i];
 	    }
+		window_change |= CH_RESULT;
 	    break;
 	case ctrl('X'):	/* mouse selection */
 	    if ((p = getmouseaction(DUMMYCHAR)) == NULL) {
@@ -569,7 +569,7 @@ change_input(const int c){
 		}
 	    break;
 	case ctrl('D'):
-		changestring(input_line, newpat, change);
+		changestring(input_line, newpat, change, totallines);
 		break;
 	default:
 		{
@@ -577,6 +577,7 @@ change_input(const int c){
 			const int cc = dispchar2int(c);
 			if(cc != -1){
 				change[cc] = !change[cc];
+				window_change |= CH_RESULT;
 			}
 		}
 	}
@@ -585,13 +586,26 @@ change_input(const int c){
 }
 
 int
-changestring(const char* from, const char* to, bool *change){
+changestring(const char* from,
+				const char* to,
+				const bool *const change,
+				const int change_len
+){
     char    newfile[PATHLEN + 1];   /* new file name */
     char    oldfile[PATHLEN + 1];   /* old file name */
     char    linenum[NUMLEN + 1];    /* file line number */
     char    msg[MSGLEN + 1];        /* message */
     FILE    *script;                /* shell script file */
+
+	/* Return early */
     bool    anymarked = false;         /* any line marked */
+	for(int i = 0; i < change_len; i++){
+		if(change[i]){
+			anymarked = true;
+			break;
+		}
+	}
+	if(!anymarked){ return false; }
 
     /* open the temporary file */
     if((script = myfopen(temp2, "w")) == NULL) {
@@ -608,8 +622,7 @@ changestring(const char* from, const char* to, bool *change){
 	 	++i)
 	{
 		/* see if the line is to be changed */
-		if (change[i] == false) { break; }
-	    anymarked = true;
+		if (!change[i]) { break; }
 		
 	    /* if this is a new file */
 	    if (strcmp(newfile, oldfile) != 0) {
@@ -618,8 +631,7 @@ changestring(const char* from, const char* to, bool *change){
 		if (access(newfile, WRITE) != 0) {
 		    snprintf(msg, sizeof(msg), "Cannot write to file %s", newfile);
 		    postmsg(msg);
-		    anymarked = false;
-		    break;
+		    goto end;
 		}
 		/* if there was an old file */
 		if (*oldfile != '\0') {
@@ -660,20 +672,15 @@ changestring(const char* from, const char* to, bool *change){
 	    fprintf(script, "/gp\n");	/* and print */
     }
     fprintf(script, "w\nq\n!\n");	/* write and quit */
+    fflush(script);
 
-    /* if any line was marked */
-    if (anymarked == true) {
-		/* edit the files */
-		fprintf(stderr, "Changed lines:\n\r");
-		execute("sh", "sh", temp2, NULL);
-		askforchar();
-    } 
-
-	changing = false;
-    mousemenu();
+	/* edit the files */
+	fprintf(stderr, "Changed lines:\n\r");
+	execute("sh", "sh", temp2, NULL);
+	askforchar();
+end:
     fclose(script);
-    free(change);
-    return(anymarked);
+    return true;
 }
 
 int
@@ -698,6 +705,8 @@ handle_input(const int c){
 			}
 			assert("'current_window' dangling.");
 			break; /* NOTREACHED */
+		case INPUT_CHANGE_TO:
+			return interpret(c);
 		case INPUT_CHANGE:
 			return change_input(c);
 	}

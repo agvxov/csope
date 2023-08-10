@@ -33,31 +33,32 @@ static void redisplay_function(){
 
 static void callback_handler(char* line){
 	if(!line){ return; }
-    strncpy(input_line, line, PATLEN);
 
 	switch(input_mode){
 		case INPUT_NORMAL:
-			search();
+    		strncpy(input_line, line, PATLEN);
+			search(input_line);
+			curdispline = 0;
+			PCS_reset();
+			current_page = 0;
 			break;
-		case INPUT_CHANGE:
-			changestring(change);
-			input_mode = INPUT_NORMAL;
-			break;
+		case INPUT_CHANGE_TO:
+    		strncpy(newpat, line, PATLEN);
+    		change = calloc(totallines, sizeof(*change));
+			input_mode = INPUT_CHANGE;
+			horswp_field();
+			return;
 	}
 
 	switch(field){
 		case CHANGE:
-			input_mode = INPUT_CHANGE;
+			input_mode = INPUT_CHANGE_TO;
 			break;
 		case DEFINITION:
 		case FILENAME:
 			if(totallines == 1){ editref(0); }
 			break;
 	}
-
-	curdispline = 0;
-	PCS_reset();
-	current_page = 0;
 }
 
 static int ctrl_z(){
@@ -112,7 +113,7 @@ void rlinit(){
     rl_bind_key(7, rl_rubout);	// XXX: 7 is backspace for some reason (on my system anyways?)
     rl_bind_key(KEY_BACKSPACE, rl_rubout);
 
-    rl_bind_key(EOF, exit);
+    rl_bind_key(EOF, myexit);
     rl_bind_key(ctrl('Z'), ctrl_z);
     rl_bind_key(ctrl('Z'), toggle_caseless);
     rl_bind_key(ctrl('R'), rebuild_reference);

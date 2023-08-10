@@ -259,7 +259,7 @@ static inline    void    linemode_event_loop(void){
     int c;
 
     if (*input_line != '\0') {    	/* do any optional search */
-        if (search() == true) {
+        if (search(input_line) == true) {
         /* print the total number of lines in
          * verbose mode */
         if (verbosemode == true)
@@ -272,7 +272,7 @@ static inline    void    linemode_event_loop(void){
     }
     if (onesearch == true) {
         myexit(0);
-        /* falseTREACHED */
+        /* NOTREACHED */
     }
 
     for (char *s;;) {
@@ -281,7 +281,7 @@ static inline    void    linemode_event_loop(void){
         printf(">> ");
         fflush(stdout);
         if (fgets(buf, sizeof(buf), stdin) == NULL) {
-        myexit(0);
+			myexit(0);
         }
         /* remove any trailing newline character */
         if (*(s = buf + strlen(buf) - 1) == '\n') {
@@ -300,7 +300,7 @@ static inline    void    linemode_event_loop(void){
         case '9':    /* samuel only */
         field = *buf - '0';
         strcpy(input_line, buf + 1);
-        if (search() == false) {
+        if (search(input_line) == false) {
         	printf("Unable to search database\n");
         } else {
         	printf("cscope: %d lines\n", totallines);
@@ -348,8 +348,9 @@ static inline    void    linemode_event_loop(void){
         case 'q':    /* quit */
         case ctrl('D'):
         case ctrl('Z'):
-        myexit(0);
-
+			myexit(0);
+			/* NOTREACHED */
+			break;
         default:
         fprintf(stderr, "cscope: unknown command '%s'\n", buf);
         break;

@@ -70,20 +70,26 @@ static    bool    isregexp_valid = false;	/* regular expression status */
 static    bool    match(void);
 static    bool    matchrest(void);
 static    POSTING    *getposting(void);
-static    char    *lcasify(char *s);
-static    void    findcalledbysub(char *file, bool macro);
-static    void    findterm(char *pattern);
+static    char    *lcasify(const char *s);
+static    void    findcalledbysub(const char *file, bool macro);
+static    void    findterm(const char *pattern);
 static    void    putline(FILE *output);
-static  char    *find_symbol_or_assignment(char *pattern, bool assign_flag);
+static  char    *find_symbol_or_assignment(const char *pattern, bool assign_flag);
 static  bool    check_for_assignment(void);
-static    void    putpostingref(POSTING *p, char *pat);
-static    void    putref(int seemore, char *file, char *func);
+static    void    putpostingref(POSTING *p, const char *pat);
+static    void    putref(int seemore, const char *file, const char *func);
 static    void    putsource(int seemore, FILE *output);
 static	FILE    *nonglobalrefs;        /* non-global references file */
 
 static    sigjmp_buf    env;        /* setjmp/longjmp buffer */
 
-typedef char * (*FP)(char *);    /* pointer to function returning a character pointer */
+typedef    enum    {		/* findinit return code */
+    NOERROR,
+    NOTSYMBOL,
+    REGCMPERROR
+} FINDINIT;
+
+typedef char * (*FP)(const char *);    /* pointer to function returning a character pointer */
 /* Paralel array to "fields", indexed by "field" */
 FP field_searchers[FIELDS + 1] = {
 	findsymbol,
@@ -118,14 +124,14 @@ jumpback(int sig)
 
 /* find the symbol in the cross-reference */
 char *
-findsymbol(char *pattern)
+findsymbol(const char *pattern)
 {
     return find_symbol_or_assignment(pattern, false);
 }
 
 /* find the symbol in the cross-reference, and look for assignments */
 char *
-findassign(char *pattern)
+findassign(const char *pattern)
 {
     return find_symbol_or_assignment(pattern, true);
 }
@@ -188,10 +194,10 @@ check_for_assignment(void)
     return false;
 }
 
-/* The actual routine that does the work for findsymbol() and
+/* The actual routine that does the work for findsymbol() and
 * findassign() */
 static char *
-find_symbol_or_assignment(char *pattern, bool assign_flag)
+find_symbol_or_assignment(const char *pattern, bool assign_flag)
 {
     char    file[PATHLEN + 1];	/* source file name */
     char    function[PATLEN + 1];	/* function name */
@@ -386,10 +392,10 @@ find_symbol_or_assignment(char *pattern, bool assign_flag)
 
     return NULL;
 }
-/* find the function definition or #define */
+/* find the function definition or #define */
 
 char *
-finddef(char *pattern)
+finddef(const char *pattern)
 {
     char    file[PATHLEN + 1];	/* source file name */
 
@@ -449,10 +455,10 @@ finddef(char *pattern)
 
     return NULL;
 }
-/* find all function definitions (used by samuel only) */
+/* find all function definitions (used by samuel only) */
 
 char *
-findallfcns(char *dummy)
+findallfcns(const char *dummy)
 {
     char    file[PATHLEN + 1];	/* source file name */
     char    function[PATLEN + 1];	/* function name */
@@ -492,7 +498,7 @@ findallfcns(char *dummy)
 /* find the functions calling this function */
 
 char *
-findcalling(char *pattern)
+findcalling(const char *pattern)
 {
     char    file[PATHLEN + 1];	/* source file name */
     char    function[PATLEN + 1];	/* function name */
@@ -584,13 +590,13 @@ findcalling(char *pattern)
 /* find the text in the source files */
 
 char *
-findstring(char *pattern)
+findstring(const char *pattern)
 {
     char    egreppat[2 * PATLEN];
-    char    *cp, *pp;
+    char    *cp = egreppat;
+	const char* pp;
 
     /* translate special characters in the regular expression */
-    cp = egreppat;
     for (pp = pattern; *pp != '\0'; ++pp) {
         if (strchr(".*[\\^$+?|()", *pp) != NULL) {
         	*cp++ = '\\';
@@ -606,7 +612,7 @@ findstring(char *pattern)
 /* find this regular expression in the source files */
 
 char *
-findregexp(char *egreppat)
+findregexp(const char *egreppat)
 {
     unsigned int i;
     char *egreperror;
@@ -630,7 +636,7 @@ findregexp(char *egreppat)
 /* find matching file names */
 
 char *
-findfile(char *dummy)
+findfile(const char *dummy)
 {
     unsigned int i;
 
@@ -656,7 +662,7 @@ findfile(char *dummy)
 /* find files #including this file */
 
 char *
-findinclude(char *pattern)
+findinclude(const char *pattern)
 {
     char    file[PATHLEN + 1];	/* source file name */
 
@@ -701,9 +707,11 @@ findinclude(char *pattern)
 
 /* initialize */
 
-FINDINIT
-findinit(char *pattern)
+int
+findinit(const char *pattern_)
 {
+	char* pattern = strdup(pattern_);
+	int r = NOERROR;
     char    buf[PATLEN + 3];
     bool    isregexp = false;
     int    i;
@@ -733,11 +741,11 @@ findinit(char *pattern)
     /* allow a partial match for a file name */
     if (field == FILENAME || field == INCLUDES) {
         if (regcomp (&regexp, pattern, REG_EXTENDED | REG_NOSUB) != 0) {
-        	return(REGCMPERROR);
+        	r = REGCMPERROR;
         } else {
         	isregexp_valid = true;
         }
-        return(falseERROR);
+		goto end;
     }
     /* see if the pattern is a regular expression */
     if (strpbrk(pattern, "^.[{*+$|(") != NULL) {
@@ -746,11 +754,13 @@ findinit(char *pattern)
         /* check for a valid C symbol */
         s = pattern;
         if (!isalpha((unsigned char)*s) && *s != '_') {
-        	return(falseTSYMBOL);
+        	r = NOTSYMBOL;
+			goto end;
         }
         while (*++s != '\0') {
         	if (!isalnum((unsigned char)*s) && *s != '_') {
-        		return(falseTSYMBOL);
+        		r = NOTSYMBOL;
+				goto end;
         	}
         }
         /* look for use of the -T option (truncate symbol to 8
@@ -788,7 +798,8 @@ findinit(char *pattern)
                  unless it is given as a single arg */
         (void) snprintf(buf, sizeof(buf), "^%s$", s);
         if (regcomp (&regexp, buf, REG_EXTENDED | REG_NOSUB) != 0) {
-        	return(REGCMPERROR);
+        	r = REGCMPERROR;
+			goto end;
         }
         else
         {
@@ -811,7 +822,10 @@ findinit(char *pattern)
         }
         *s = '\0';
     }
-    return(falseERROR);
+
+	end:
+	free(pattern);
+    return r;
 }
 
 void
@@ -868,7 +882,7 @@ matchrest(void)
 /* put the reference into the file */
 
 static void
-putref(int seemore, char *file, char *func)
+putref(int seemore, const char *file, const char *func)
 {
     FILE    *output;
 
@@ -1051,7 +1065,7 @@ read_block(void)
 }
 
 static char    *
-lcasify(char *s)
+lcasify(const char *s)
 {
     static char ls[PATLEN+1];    /* largest possible match string */
     char *lptr = ls;
@@ -1062,7 +1076,7 @@ lcasify(char *s)
         s++;
     }
     *lptr = '\0';
-    return(ls);
+    return ls;
 }
 
 /* find the functions called by this function */
@@ -1073,7 +1087,7 @@ lcasify(char *s)
  * 'n', for the boolean result values true and false */
 
 char *
-findcalledby(char *pattern)
+findcalledby(const char *pattern)
 {
     char    file[PATHLEN + 1];	/* source file name */
     static char found_caller = 'n'; /* seen calling function? */
@@ -1132,7 +1146,7 @@ findcalledby(char *pattern)
 /* find this term, which can be a regular expression */
 
 static void
-findterm(char *pattern)
+findterm(const char *pattern)
 {
     char    *s;
     int    len;
@@ -1229,7 +1243,7 @@ getposting(void)
 /* put the posting reference into the file */
 
 static void
-putpostingref(POSTING *p, char *pat)
+putpostingref(POSTING *p, const char *pat)
 {
     // initialize function to "unknown" so that the first line of temp1
     // is properly formed if symbol matches a header file entry first time
@@ -1282,7 +1296,7 @@ dbseek(long offset)
 }
 
 static void
-findcalledbysub(char *file, bool macro)
+findcalledbysub(const char *file, bool macro)
 {
     /* find the next function call or the end of this function */
     while (scanpast('\t') != NULL) {
@@ -1353,12 +1367,12 @@ writerefsfound(void)
 
 /* Perform token search based on "field" */
 bool
-search(void)
+search(const char* query)
 {
 	char	msg[MSGLEN+1];
     char    *findresult = NULL;	/* find function output */
     bool    funcexist = true;		/* find "function" error */
-    FINDINIT rc = falseERROR;    	/* findinit return code */
+    FINDINIT rc = NOERROR;    	/* findinit return code */
     sighandler_t savesig;    	/* old value of signal */
     FP    f;			/* searching function */
     int    c;
@@ -1376,15 +1390,15 @@ search(void)
     if (sigsetjmp(env, 1) == 0) {
         f = field_searchers[field];
         if (f == findregexp || f == findstring) {
-            findresult = (*f)(input_line);
+            findresult = (*f)(query);
         } else {
         	if ((nonglobalrefs = myfopen(temp2, "wb")) == NULL) {
         		cannotopen(temp2);
         		return(false);
         	}
-        	if ((rc = findinit(input_line)) == falseERROR) {
+        	if ((rc = findinit(query)) == NOERROR) {
         		(void) dbseek(0L); /* read the first block */
-        		findresult = (*f)(input_line);
+        		findresult = (*f)(query);
         		if (f == findcalledby)
         			funcexist = (*findresult == 'y');
         		findcleanup();
@@ -1422,20 +1436,20 @@ search(void)
     if ((c = getc(refsfound)) == EOF) {
         if (findresult != NULL) {
         	(void) snprintf(msg, sizeof(msg), "Egrep %s in this pattern: %s",
-        		       findresult, input_line);
-        } else if (rc == falseTSYMBOL) {
+        		       findresult, query);
+        } else if (rc == NOTSYMBOL) {
         	(void) snprintf(msg, sizeof(msg), "This is not a C symbol: %s",
-        		       input_line);
+        		       query);
         } else if (rc == REGCMPERROR) {
             (void) snprintf(msg, sizeof(msg), "Error in this regcomp(3) regular expression: %s",
-                       input_line);
+                       query);
 
         } else if (funcexist == false) {
         	(void) snprintf(msg, sizeof(msg), "Function definition does not exist: %s",
-        		       input_line);
+        		       query);
         } else {
             (void) snprintf(msg, sizeof(msg), "Could not find the %s: %s",
-                       fields[field].text2, input_line);
+                       fields[field].text2, query);
         }
 		postmsg(msg);
         return(false);
