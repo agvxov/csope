@@ -254,6 +254,7 @@ int		handle_input(const int c);
 int		dispchar2int(const char c);
 int process_mouse();
 extern int input_mode;
+int changestring(bool *change);
 
 long	seekpage(size_t i);
 long	seekrelline(unsigned i);

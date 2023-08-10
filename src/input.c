@@ -530,8 +530,6 @@ extern const void *const wmode;
 extern const void *const wresult;
 extern const void *const *const current_window;
 
-static int changestring(bool *change);
-
 static int
 change_input(const int c){
     MOUSE *p;                       /* mouse data */
@@ -539,16 +537,16 @@ change_input(const int c){
 
 	switch(c){
 	case '*':	/* invert selection */
-	    for(int i = 0; topline + i < nextline; ++i){
-			change[i] = !change[i];
-	    }
+	    //for(int i = 0; topline + i < nextline; ++i){
+		//	change[i] = !change[i];
+	    //}
 		break;
 	case ctrl('A'):	/* mark/unmark all lines */
 	    for(unsigned i = 0; i < totallines; ++i) {
 			change[i] = !change[i];
 	    }
 	    /* show that all have been marked */
-	    seekline(totallines);	// ?!
+	    //seekline(totallines);	// ?!
 	    break;
 	case ctrl('X'):	/* mouse selection */
 	    if ((p = getmouseaction(DUMMYCHAR)) == NULL) {
@@ -556,7 +554,7 @@ change_input(const int c){
 	    }
 	    /* if the button number is a scrollbar tag */
 	    if (p->button == '0') {
-			scrollbar(p);
+			//scrollbar(p);
 			break;
 	    }
 	    /* find the selected line */
@@ -587,7 +585,7 @@ change_input(const int c){
 	return 0;
 }
 
-static int
+int
 changestring(bool *change){
     char    newfile[PATHLEN + 1];   /* new file name */
     char    oldfile[PATHLEN + 1];   /* old file name */
@@ -634,25 +632,25 @@ changestring(bool *change){
 	    }
 	    /* output substitute command */
 	    fprintf(script, "%ss/", linenum);	/* change */
-	    for (char *s = Pattern; *s != '\0'; ++s) {
-			/* old text */
-			if (strchr("/\\[.^*", *s) != NULL) {
-				putc('\\', script);
-			}
-			if (caseless == true && isalpha((unsigned char)*s)) {
-				putc('[', script);
-				if(islower((unsigned char)*s)) {
-				putc(toupper((unsigned char)*s), script);
-				putc(*s, script);
-				} else {
-				putc(*s, script);
-				putc(tolower((unsigned char)*s), script);
-				}
-				putc(']', script);
-			} else {
-				putc(*s, script);
-			}
-	    }
+	    //for (char *s = Pattern; *s != '\0'; ++s) {
+		//	/* old text */
+		//	if (strchr("/\\[.^*", *s) != NULL) {
+		//		putc('\\', script);
+		//	}
+		//	if (caseless == true && isalpha((unsigned char)*s)) {
+		//		putc('[', script);
+		//		if(islower((unsigned char)*s)) {
+		//		putc(toupper((unsigned char)*s), script);
+		//		putc(*s, script);
+		//		} else {
+		//		putc(*s, script);
+		//		putc(tolower((unsigned char)*s), script);
+		//		}
+		//		putc(']', script);
+		//	} else {
+		//		putc(*s, script);
+		//	}
+	    //}
 	    putc('/', script);			/* to */
 	    for (char *s = newpat; *s != '\0'; ++s) {	/* new text */
 			if (strchr("/\\&", *s) != NULL) {
