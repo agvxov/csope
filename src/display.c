@@ -270,6 +270,7 @@ static inline void display_mode(){
 }
 
 static inline void display_command_field(){
+    werase(winput);
     mvwaddstr(winput, 0, 0, prompts[input_mode]);
     waddstr(winput, rl_line_buffer);
 }
@@ -514,7 +515,6 @@ display(void)
 
     if(window_change){
 		if(window_change == CH_HELP){
-			werase(whelp);
 			display_help();
 			/* Do not display over the help msg and */
 			/*  rely on display_help() setting CH_ALL */
@@ -525,7 +525,6 @@ display(void)
             display_frame();
         }
         if(window_change & CH_INPUT){
-            werase(winput);
             display_command_field();
         }
         if(window_change & CH_RESULT){
