@@ -191,12 +191,12 @@ skiplist(FILE *oldrefs)
     int    i;
 
     if (fscanf(oldrefs, "%d", &i) != 1) {
-    postfatal("cscope: cannot read list size from file %s\n", reffile);
+    postfatal(PROGRAM_NAME ": cannot read list size from file %s\n", reffile);
     /* falseTREACHED */
     }
     while (--i >= 0) {
     if (fscanf(oldrefs, "%*s") != 0) {
-        postfatal("cscope: cannot read list name from file %s\n", reffile);
+        postfatal(PROGRAM_NAME ": cannot read list name from file %s\n", reffile);
         /* falseTREACHED */
     }
     }
@@ -260,7 +260,7 @@ static inline    void    linemode_event_loop(void){
         /* print the total number of lines in
          * verbose mode */
         if (verbosemode == true)
-            printf("cscope: %d lines\n",
+            printf(PROGRAM_NAME ": %d lines\n",
         	   totallines);
 
         while ((c = getc(refsfound)) != EOF)
@@ -349,7 +349,7 @@ static inline    void    linemode_event_loop(void){
 			/* NOTREACHED */
 			break;
         default:
-        fprintf(stderr, "cscope: unknown command '%s'\n", buf);
+        fprintf(stderr, PROGRAM_NAME ": unknown command '%s'\n", buf);
         break;
         }
     }
@@ -387,35 +387,34 @@ main(int argc, char **argv)
 
     /* XXX remove if/when clearerr() in dir.c does the right thing. */
     if (namefile && strcmp(namefile, "-") == 0 && !buildonly) {
-    postfatal("cscope: Must use -b if file list comes from stdin\n");
+    postfatal(PROGRAM_NAME ": Must use -b if file list comes from stdin\n");
     /* falseTREACHED */
     }
 
     /* make sure that tmpdir exists */
     if (lstat (tmpdir, &stat_buf)) {
-    fprintf (stderr,
-        "cscope: Temporary directory %s does not exist or cannot be accessed\n",
+    fprintf (stderr, PROGRAM_NAME ": Temporary directory %s does not exist or cannot be accessed\n",
          tmpdir);
     fprintf (stderr,
-        "cscope: Please create the directory or set the environment variable\n"
-        "cscope: TMPDIR to a valid directory\n");
+        PROGRAM_NAME ": Please create the directory or set the environment variable\n"
+        PROGRAM_NAME ": TMPDIR to a valid directory\n");
     myexit(1);
     }
 
     /* create the temporary file names */
     orig_umask = umask(S_IRWXG|S_IRWXO);
     pid = getpid();
-    snprintf(tempdirpv, sizeof(tempdirpv), "%s/cscope.%d", tmpdir, pid);
+    snprintf(tempdirpv, sizeof(tempdirpv), "%s/"PROGRAM_NAME".%d", tmpdir, pid);
     if(mkdir(tempdirpv,S_IRWXU)) {
     fprintf(stderr,
-        "cscope: Could not create private temp dir %s\n",
+        PROGRAM_NAME ": Could not create private temp dir %s\n",
         tempdirpv);
     myexit(1);
     }
     umask(orig_umask);
 
-    snprintf(temp1, sizeof(temp1), "%s/cscope.1", tempdirpv);
-    snprintf(temp2, sizeof(temp2), "%s/cscope.2", tempdirpv);
+    snprintf(temp1, sizeof(temp1), "%s/"PROGRAM_NAME".1", tempdirpv);
+    snprintf(temp2, sizeof(temp2), "%s/"PROGRAM_NAME".2", tempdirpv);
 
     /* if the database path is relative and it can't be created */
     if (reffile[0] != '/' && access(".", WRITE) != 0) {
@@ -448,12 +447,12 @@ main(int argc, char **argv)
     /* if the cross-reference is to be considered up-to-date */
     if (isuptodate == true) {
     if ((oldrefs = vpfopen(reffile, "rb")) == NULL) {
-        postfatal("cscope: cannot open file %s\n", reffile);
+        postfatal(PROGRAM_NAME ": cannot open file %s\n", reffile);
         /* falseTREACHED */
     }
     /* get the crossref file version but skip the current directory */
-    if (fscanf(oldrefs, "cscope %d %*s", &fileversion) != 1) {
-        postfatal("cscope: cannot read file version from file %s\n",
+    if (fscanf(oldrefs, PROGRAM_NAME " %d %*s", &fileversion) != 1) {
+        postfatal(PROGRAM_NAME ": cannot read file version from file %s\n",
               reffile);
         /* falseTREACHED */
     }
@@ -494,7 +493,7 @@ main(int argc, char **argv)
     /* get the number of source files */
     if (fscanf(oldrefs, "%lu", &nsrcfiles) != 1) {
         postfatal(
-        	"cscope: cannot read source file size from file %s\n",
+        	PROGRAM_NAME ": cannot read source file size from file %s\n",
         	reffile);
         /* falseTREACHED */
     }
@@ -505,7 +504,7 @@ main(int argc, char **argv)
         /* allocate the string space */
         if (fscanf(oldrefs, "%d", &oldnum) != 1) {
         postfatal(
-        	"cscope: cannot read string space size from file %s\n",
+        	PROGRAM_NAME ": cannot read string space size from file %s\n",
         	reffile);
         /* falseTREACHED */
         }
@@ -515,7 +514,7 @@ main(int argc, char **argv)
         /* read the strings */
         if (fread(s, oldnum, 1, oldrefs) != 1) {
         postfatal(
-        	"cscope: cannot read source file names from file %s\n",
+        	PROGRAM_NAME ": cannot read source file names from file %s\n",
         	reffile);
         /* falseTREACHED */
         }
@@ -543,7 +542,7 @@ main(int argc, char **argv)
             switch (i) {
             case 'p':	/* file path components to display */
         	if (*s < '0' || *s > '9') {
-        	    posterr("cscope: -p option in file %s: missing or invalid numeric value\n", namefile);
+        	    posterr(PROGRAM_NAME ": -p option in file %s: missing or invalid numeric value\n", namefile);
 
         	}
         	dispcomponents = atoi(s);
@@ -555,8 +554,9 @@ main(int argc, char **argv)
         for (i = 0; i < nsrcfiles; ++i) {
         if (!fgets(path, sizeof(path), oldrefs) ) {
             postfatal(
-        		"cscope: cannot read source file name from file %s\n",
-        	      reffile);
+        		PROGRAM_NAME ": cannot read source file name from file %s\n",
+        	    reffile
+			);
             /* falseTREACHED */
         }
         srcfiles[i] = strdup(path);
@@ -576,8 +576,8 @@ main(int argc, char **argv)
     srcfiles = malloc(msrcfiles * sizeof(*srcfiles));
     makefilelist();
     if (nsrcfiles == 0) {
-        postfatal("cscope: no source files found\n");
-        /* falseTREACHED */
+        postfatal(PROGRAM_NAME ": no source files found\n");
+        /* NOTREACHED */
     }
     /* get include directories from the environment */
     if ((s = getenv("INCLUDEDIRS")) != NULL) {

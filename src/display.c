@@ -170,10 +170,10 @@ dispinit(void)
     mode_window_height = LINES - input_window_height - 2 - 1;
     first_col_width = 48; // (((COLS - 2)%2 == 0) ? ((COLS-2)/2) : (((COLS-2)/2)+1));
     second_col_width = COLS - 2 - 1 - first_col_width; //((COLS - 2) / 2) - 1;
-    mdisprefs = result_window_height - WRESULT_TABLE_BODY_START - 1 - 1 - 1;
+    mdisprefs = result_window_height - (WRESULT_TABLE_BODY_START + 1);
 
     if (mdisprefs <= 0) {
-        postfatal("%s: screen too small\n", argv0);
+        postfatal(PROGRAM_NAME ": screen too small\n");
         /* NOTREACHED */
     }
     if(mdisprefs > sizeof(dispchars)){
@@ -255,12 +255,18 @@ static inline void display_frame(const bool border_only){
     const int LEFT_PADDING = 5;
     wmove(stdscr, 0, LEFT_PADDING);
 #if CCS
-    wprintw(stdscr, "cscope %s", ESG_REL);
+    wprintw(stdscr, PROGRAM_NAME " %s", ESG_REL);
 #else
-    wprintw(stdscr, "Cscope version %d%s", FILEVERSION, FIXVERSION);
+    wprintw(stdscr, PROGRAM_NAME " version %d%s", FILEVERSION, FIXVERSION);
 #endif
     wmove(stdscr, 0, COLS - (int)sizeof(helpstring) - 3);
     waddstr(stdscr, helpstring);
+    wmove(stdscr, LINES-1, 4);
+	if(caseless){
+    	waddstr(stdscr, "Case:  ON");
+	}else{
+    	waddstr(stdscr, "Case: OFF");
+	}
 	/* --- */
 	if(!border_only){
 		/* Vertical line */

@@ -486,7 +486,7 @@ void
 warning(char *text)
 {
 
-    (void) fprintf(stderr, "cscope: \"%s\", line %d: warning: %s\n", filename,
+    (void) fprintf(stderr, PROGRAM_NAME ": \"%s\", line %d: warning: %s\n", filename,
         myylineno, text);
     errorsfound = true;
 }

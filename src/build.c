@@ -97,12 +97,10 @@ static    bool    samelist(FILE *oldrefs, char **names, int count);
 static void
 cannotindex(void)
 {
-    fprintf(stderr, "\
-cscope: cannot create inverted index; ignoring -q option\n");
+    fprintf(stderr, PROGRAM_NAME ": cannot create inverted index; ignoring -q option\n");
     invertedindex = false;
     errorsfound = true;
-    fprintf(stderr, "\
-cscope: removed files %s and %s\n",
+    fprintf(stderr, PROGRAM_NAME ": removed files %s and %s\n",
         newinvname, newinvpost);
     unlink(newinvname);
     unlink(newinvpost);
@@ -232,7 +230,7 @@ build(void)
     /* or this is an unconditional build */
     if ((oldrefs = vpfopen(reffile, "rb")) != NULL
     && unconditional == false
-    && fscanf(oldrefs, "cscope %d %" PATHLEN_STR "s", &fileversion, olddir) == 2
+    && fscanf(oldrefs, PROGRAM_NAME " %d %" PATHLEN_STR "s", &fileversion, olddir) == 2
     && (strcmp(olddir, currentdir) == 0 /* remain compatible */
         || strcmp(olddir, newdir) == 0)) {
     /* get the cross-reference file's modification time */
@@ -267,15 +265,13 @@ build(void)
         }
         /* check the old and new option settings */
         if (oldcompress != compress || oldtruncate != trun_syms) {
-        posterr("\
-cscope: -c or -T option mismatch between command line and old symbol database\n");
+        posterr(PROGRAM_NAME ": -c or -T option mismatch between command line and old symbol database\n");
         goto force;
         }
         if (oldinvertedindex != invertedindex) {
-        posterr("\
-cscope: -q option mismatch between command line and old symbol database\n");
+        posterr(PROGRAM_NAME ": -q option mismatch between command line and old symbol database\n");
         if (invertedindex == false) {
-            posterr("cscope: removed files %s and %s\n",
+            posterr(PROGRAM_NAME ": removed files %s and %s\n",
         	    invname, invpost);
             unlink(invname);
             unlink(invpost);
@@ -285,7 +281,7 @@ cscope: -q option mismatch between command line and old symbol database\n");
         /* seek to the trailer */
         if (fscanf(oldrefs, "%ld", &traileroffset) != 1 ||
         fseek(oldrefs, traileroffset, SEEK_SET) == -1) {
-        posterr("cscope: incorrect symbol database file format\n");
+        posterr(PROGRAM_NAME ": incorrect symbol database file format\n");
         goto force;
         }
     }
@@ -324,14 +320,13 @@ cscope: -q option mismatch between command line and old symbol database\n");
     outofdate:
     /* if the database format has changed, rebuild it all */
     if (fileversion != FILEVERSION) {
-        fprintf(stderr, "\
-cscope: converting to new symbol database file format\n");
+        fprintf(stderr, PROGRAM_NAME ": converting to new symbol database file format\n");
         goto force;
     }
     /* reopen the old cross-reference file for fast scanning */
     if ((symrefs = vpopen(reffile, O_BINARY | O_RDONLY)) == -1) {
-        postfatal("cscope: cannot open file %s\n", reffile);
-        /* falseTREACHED */
+        postfatal(PROGRAM_NAME ": cannot open file %s\n", reffile);
+        /* NOTREACHED */
     }
     /* get the first file name in the old cross-reference */
     blocknumber = -1;
@@ -345,8 +340,8 @@ cscope: converting to new symbol database file format\n");
     }
     /* open the new cross-reference file */
     if ((newrefs = myfopen(newreffile, "wb")) == NULL) {
-    postfatal("cscope: cannot open file %s\n", reffile);
-    /* falseTREACHED */
+    postfatal(PROGRAM_NAME ": cannot open file %s\n", reffile);
+    /* NOTREACHED */
     }
     if (invertedindex == true && (postings = myfopen(temp1, "wb")) == NULL) {
     cannotwrite(temp1);
@@ -456,7 +451,7 @@ cscope: converting to new symbol database file format\n");
     fclose(postings);
     snprintf(sortcommand, sizeof(sortcommand), "env LC_ALL=C sort -T %s %s", tmpdir, temp1);
     if ((postings = mypopen(sortcommand, "r")) == NULL) {
-        fprintf(stderr, "cscope: cannot open pipe to sort command\n");
+        fprintf(stderr, PROGRAM_NAME ": cannot open pipe to sort command\n");
         cannotindex();
     } else {
         if ((totalterms = invmake(newinvname, newinvpost, postings)) > 0) {
@@ -503,11 +498,11 @@ void
 seek_to_trailer(FILE *f)
 {
     if (fscanf(f, "%ld", &traileroffset) != 1) {
-    postfatal("cscope: cannot read trailer offset from file %s\n", reffile);
+    postfatal(PROGRAM_NAME ": cannot read trailer offset from file %s\n", reffile);
     /* falseTREACHED */
     }
     if (fseek(f, traileroffset, SEEK_SET) == -1) {
-    postfatal("cscope: cannot seek to trailer in file %s\n", reffile);
+    postfatal(PROGRAM_NAME ": cannot seek to trailer in file %s\n", reffile);
     /* falseTREACHED */
     }
 }
@@ -549,7 +544,7 @@ void free_newbuildfiles(void)
 static void
 putheader(char *dir)
 {
-    dboffset = fprintf(newrefs, "cscope %d %s", FILEVERSION, dir);
+    dboffset = fprintf(newrefs, PROGRAM_NAME " %d %s", FILEVERSION, dir);
     if (compress == false) {
     dboffset += fprintf(newrefs, " -c");
     }
@@ -718,8 +713,8 @@ movefile(char *new, char *old)
 {
     unlink(old);
     if (rename(new, old) == -1) {
-    myperror("cscope");
-    postfatal("cscope: cannot rename file %s to file %s\n",
+    myperror(PROGRAM_NAME);
+    postfatal(PROGRAM_NAME ": cannot rename file %s to file %s\n",
           new, old);
     /* falseTREACHED */
     }

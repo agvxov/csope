@@ -90,7 +90,7 @@ char ** parse_options(int *argc, char **argv)
         	verbosemode = true;
         	break;
         case 'V':
-        	fprintf(stderr, "%s: version %d%s\n", argv0,
+        	fprintf(stderr, PROGRAM_NAME ": version %d%s\n",
         		FILEVERSION, FIXVERSION);
         	myexit(0);
         	break;

@@ -93,7 +93,7 @@ makevpsrcdirs(void)
     }
     /* get the current directory name */
     if (getcwd(currentdir, PATHLEN) == NULL) {
-        fprintf(stderr, "cscope: warning: cannot get current directory name\n");
+        fprintf(stderr, PROGRAM_NAME ": warning: cannot get current directory name\n");
         strcpy(currentdir, "<unknown>");
     }
     /* see if there is a view path and this directory is in it */
@@ -283,7 +283,7 @@ makefilelist(void)
         if ((s = inviewpath(file)) != NULL) {
             addsrcfile(s);
         } else {
-            fprintf(stderr, "cscope: cannot find file %s\n",
+            fprintf(stderr, PROGRAM_NAME ": cannot find file %s\n",
         	    file);
             errorsfound = true;
         }
@@ -337,8 +337,7 @@ makefilelist(void)
         if (unfinished_option) {
             /* Can't have another option directly after an
              * -I or -p option with no name after it! */
-            fprintf(stderr, "\
-cscope: Syntax error in namelist file %s: unfinished -I or -p option\n",
+            fprintf(stderr, PROGRAM_NAME ": Syntax error in namelist file %s: unfinished -I or -p option\n",
         	    namefile);
             unfinished_option = 0;
         }
@@ -382,8 +381,7 @@ cscope: Syntax error in namelist file %s: unfinished -I or -p option\n",
         	break;						\
             case 'p':	/* file path components to display */	\
         	if (*(s) < '0' || *(s) > '9') {			\
-        	    fprintf(stderr,				\
-"cscope: -p option in file %s: missing or invalid numeric value\n",    \
+        	    fprintf(stderr,	"csope: -p option in file %s: missing or invalid numeric value\n",    \
         		    namefile);				\
         	}						\
         	dispcomponents = atoi(s);			\
@@ -398,7 +396,7 @@ cscope: Syntax error in namelist file %s: unfinished -I or -p option\n",
             HANDLE_OPTION_ARGUMENT(i, s)
         	break;
         default:
-            fprintf(stderr, "cscope: only -I, -c, -k, -p, and -T options can be in file %s\n",
+            fprintf(stderr, PROGRAM_NAME ": only -I, -c, -k, -p, and -T options can be in file %s\n",
         	    namefile);
         } /* switch(i) */
         } /* if('-') */
@@ -437,7 +435,7 @@ cscope: Syntax error in namelist file %s: unfinished -I or -p option\n",
             if ((s = inviewpath(newpath)) != NULL) {
         	addsrcfile(s);
             } else {
-        	fprintf(stderr, "cscope: cannot find file %s\n",
+        	fprintf(stderr, PROGRAM_NAME, ": cannot find file %s\n",
         		newpath);
         	errorsfound = true;
             }
@@ -454,7 +452,7 @@ cscope: Syntax error in namelist file %s: unfinished -I or -p option\n",
             if ((s = inviewpath(path)) != NULL) {
         	addsrcfile(s);
             } else {
-        	fprintf(stderr, "cscope: cannot find file %s\n",
+        	fprintf(stderr, PROGRAM_NAME ": cannot find file %s\n",
         		path);
         	errorsfound = true;
             }

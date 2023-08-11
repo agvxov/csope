@@ -40,7 +40,6 @@
 
 #define UNUSED(x) (void)(x)
 
-//#include "config.h"
 #include <unistd.h>
 #include <sys/types.h>
 #include <assert.h>
@@ -116,11 +115,12 @@ extern    char    dicode2[];	/* digraph second character code */
   ((0200 - 2) + dicode1[(unsigned char)(inchar1)]    \
    + dicode2[(unsigned char)(inchar2)])
 
+#define PROGRAM_NAME "Csope"
+
 /* main.c global data */
 extern    char    *editor, *home, *shell, *lineflag;	/* environment variables */
 extern    char    *home;		/* Home directory */
 extern     bool    lineflagafterfile;
-extern    char    *argv0;		/* command name */
 extern    bool    compress;	/* compress the characters in the crossref */
 extern    bool    dbtruncated;	/* database symbols truncated to 8 chars */
 extern    int    dispcomponents;	/* file path components to display */

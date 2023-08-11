@@ -581,19 +581,19 @@ invopen(INVCONTROL *invcntl, char *invname, char *invpost, int stat)
         return(-1);
     }
     if (fread(&invcntl->param, sizeof(invcntl->param), 1, invcntl->invfile) == 0) {
-        fprintf(stderr, "%s: empty inverted file\n", argv0);
+        fprintf(stderr, PROGRAM_NAME ": empty inverted file\n");
         fclose(invcntl->invfile);
         return(-1);
     }
     if (invcntl->param.version != FMTVERSION) {
-        fprintf(stderr, "%s: cannot read old index format; use -U option to force database to rebuild\n", argv0);
+        fprintf(stderr, PROGRAM_NAME ": cannot read old index format; use -U option to force database to rebuild\n");
         fclose(invcntl->invfile);
         return(-1);
     }
     assert(invcntl->param.sizeblk == sizeof(t_logicalblk));
 
     if (stat == 0 && invcntl->param.filestat == INVALONE) {
-        fprintf(stderr, "%s: inverted file is locked\n", argv0);
+        fprintf(stderr, PROGRAM_NAME ": inverted file is locked\n");
         fclose(invcntl->invfile);
         return(-1);
     }
@@ -636,7 +636,7 @@ invopen(INVCONTROL *invcntl, char *invname, char *invpost, int stat)
         if (shm_id != -1) {
         	invcntl->iindex = shmat(shm_id, 0, ((read_index) ? 0 : SHM_RDONLY));
         	if (invcntl->iindex == (char *)ERR) {
-        		fprintf(stderr, "%s: shared memory link failed\n", argv0);
+        		fprintf(stderr, PROGRAM_NAME ": shared memory link failed\n");
         		invcntl->iindex = NULL;
         		read_index = 1;
         	}
@@ -1187,18 +1187,18 @@ boolsave(int clear)        /* flag about whether to clear core  */
 static void
 invcannotalloc(unsigned n)
 {
-    fprintf(stderr, "%s: cannot allocate %u bytes\n", argv0, n);
+    fprintf(stderr, PROGRAM_NAME ": cannot allocate %u bytes\n", n);
 }
 
 static void
 invcannotopen(char *file)
 {
-    fprintf(stderr, "%s: cannot open file %s\n", argv0, file);
+    fprintf(stderr, PROGRAM_NAME "%s: cannot open file %s\n", file);
 }
 
 static void
 invcannotwrite(char *file)
 {
-    perror(argv0);    /* must be first to preserve errno */
-    fprintf(stderr, "%s: write to file %s failed\n", argv0, file);
+    perror(PROGRAM_NAME);    /* must be first to preserve errno */
+    fprintf(stderr, PROGRAM_NAME ": write to file %s failed\n", file);
 }

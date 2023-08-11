@@ -74,10 +74,10 @@ static char help_msg[] =
         "^F\t\tRecall next input field and search pattern.\n"
         "^C\t\tToggle ignore/use letter case when searching.\n"
         "^R\t\tRebuild the cross-reference.\n"
-        "!\t\tStart an interactive shell (type ^D to return to cscope).\n"
+        "!\t\tStart an interactive shell (type ^D to return).\n"
         "^L\t\tRedraw the screen.\n"
         "?\t\tDisplay this list of commands.\n"
-        "^D\t\tExit cscope.\n"
+        "^D\t\tExit the program.\n"
         "\nNote: If the first character of the pattern you want to search for matches\n"
         "a command, type a \\ character first.\n"
         "Note: Some ctrl keys may be occupied by your terminal configuration.\n"
@@ -93,7 +93,7 @@ static char changeing_help_msg[] =
         "^A\t\tMark or unmark all lines to be changed.\n"
         "^D\t\tChange the marked lines and exit.\n"
         "ESC\t\tExit without changing the marked lines.\n"
-        "!\t\tStart an interactive shell (type ^D to return to cscope).\n"
+        "!\t\tStart an interactive shell (type ^D to return).\n"
         "^L\t\tRedraw the screen.\n"
         "?\t\tDisplay this list of commands.\n"
 ;
@@ -122,7 +122,7 @@ void
 usage(void)
 {
     fputs(
-		"Usage: cscope [-bcCdehklLqRTuUvV] [-f file] [-F file] [-i file] [-I dir] [-s dir]\n"
+		"Usage: " PROGRAM_NAME " [-bcCdehklLqRTuUvV] [-f file] [-F file] [-i file] [-I dir] [-s dir]\n"
     	"              [-p number] [-P path] [-[0-8] pattern] [source files]\n",
 		stderr
 	);
