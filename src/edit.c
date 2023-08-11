@@ -93,7 +93,7 @@ editall(void)
 
 /* call the editor */
 void
-edit(char *file, char *linenum)
+edit(char *file, const char *const linenum)
 {
 	const char	*const editor_basename = basename(editor);
     char    msg[MSGLEN + 1];	/* message */
@@ -135,7 +135,7 @@ edit(char *file, char *linenum)
 /* if requested, prepend a path to a relative file name */
 
 char *
-filepath(const char *file)
+filepath(char *file)
 {
     static    char	path[PATHLEN + 1];
 

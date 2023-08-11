@@ -72,9 +72,6 @@ char    *argv0;    		/* command name */
 bool    compress = true;    	/* compress the characters in the crossref */
 bool    dbtruncated;    	/* database symbols are truncated to 8 chars */
 int    dispcomponents = 1;    /* file path components to display */
-#if CCS
-bool    displayversion;    	/* display the C Compilation System version */
-#endif
 bool    editallprompt = true;    /* prompt between editing files */
 unsigned int fileargc;        /* file argument count */
 char    **fileargv;    	/* file argument values */
@@ -150,14 +147,14 @@ siginit(void){
 }
 
 void
-cannotopen(char *file)
+cannotopen(const char *const file)
 {
     posterr("Cannot open file %s", file);
 }
 
 /* FIXME MTE - should use postfatal here */
 void
-cannotwrite(char *file)
+cannotwrite(const char *const file)
 {
     char    msg[MSGLEN + 1];
 

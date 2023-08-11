@@ -37,6 +37,7 @@
 
 #include "global.h"
 #include "build.h"
+#include "colors.h"
 
 #ifdef CCS
 #include "sgs.h"    /* ESG_PKG and ESG_REL */
@@ -144,6 +145,23 @@ dispinit(void)
 {
     /* initialize the curses display package */
     initscr();    /* initialize the screen */
+	start_color();
+	use_default_colors();
+	easy_init_pair(FRAME);
+	easy_init_pair(PROMPT);
+	easy_init_pair(FIELD);
+	easy_init_pair(FIELD_SELECTED);
+	easy_init_pair(HELP);
+	easy_init_pair(TOOLTIP);
+	easy_init_pair(MESSAGE);
+	easy_init_pair(PATTERN);
+	easy_init_pair(TABLE_HEADER);
+	easy_init_pair(TABLE_ID);
+	easy_init_pair(TABLE_COL_LINE);
+	easy_init_pair(TABLE_COL_FILE);
+	easy_init_pair(TABLE_COL_FUNCTION);
+	easy_init_pair(TABLE_COL_TEXT);
+	easy_init_pair(PAGER_MSG);
     entercurses();
 
     /* Calculate section sizes */
@@ -152,7 +170,7 @@ dispinit(void)
     mode_window_height = LINES - input_window_height - 2 - 1;
     first_col_width = 48; // (((COLS - 2)%2 == 0) ? ((COLS-2)/2) : (((COLS-2)/2)+1));
     second_col_width = COLS - 2 - 1 - first_col_width; //((COLS - 2) / 2) - 1;
-    mdisprefs = result_window_height - WRESULT_TABLE_BODY_START - 1 - 1;
+    mdisprefs = result_window_height - WRESULT_TABLE_BODY_START - 1 - 1 - 1;
 
     if (mdisprefs <= 0) {
         postfatal("%s: screen too small\n", argv0);
@@ -216,44 +234,51 @@ exitcurses(void)
 }
 
 static inline void display_help(){
+	// XXX: this could be optimized by only overriding the buffer if theres an actual change
 	werase(whelp);
 	wmove(whelp, 0, 0);
+	wattron(whelp, COLOR_PAIR(COLOR_PAIR_HELP));
 	waddstr(whelp, help());
+	wattroff(whelp, COLOR_PAIR(COLOR_PAIR_HELP));
+
+	refresh();
 	wrefresh(whelp);
+
 	do_press_any_key = true;
-	window_change = CH_ALL;
 }
 
-static inline void display_frame(){
+static inline void display_frame(const bool border_only){
+	wattron(stdscr, COLOR_PAIR(COLOR_PAIR_FRAME));
+
     box(stdscr, 0, 0);
-    /* Vertical line */
-    mvaddch(0, first_col_width + 1, ACS_TTEE);
-    for(int i = 0; i < LINES-2; i++){
-        mvaddch(i+1, first_col_width + 1, ACS_VLINE);
-    }
-    mvaddch(LINES-1, first_col_width + 1, ACS_BTEE);
-    /* Horizontal line */
-    wmove(stdscr, input_window_height + 1, 0);
-    addch(ACS_LTEE);
-    for(int i = 0; i < first_col_width; i++){
-        addch(ACS_HLINE);
-    }
-    addch(ACS_RTEE);
     /* Title*/
     const int LEFT_PADDING = 5;
     wmove(stdscr, 0, LEFT_PADDING);
 #if CCS
-    if (displayversion == true) {
-        wprintw(stdscr, "cscope %s", ESG_REL);
-    }
-    else {
-        waddstr(stdscr, "cscope");
-    }
+    wprintw(stdscr, "cscope %s", ESG_REL);
 #else
     wprintw(stdscr, "Cscope version %d%s", FILEVERSION, FIXVERSION);
 #endif
     wmove(stdscr, 0, COLS - (int)sizeof(helpstring) - 3);
     waddstr(stdscr, helpstring);
+	/* --- */
+	if(!border_only){
+		/* Vertical line */
+		mvaddch(0, first_col_width + 1, ACS_TTEE);
+		for(int i = 0; i < LINES-2; i++){
+			mvaddch(i+1, first_col_width + 1, ACS_VLINE);
+		}
+		mvaddch(LINES-1, first_col_width + 1, ACS_BTEE);
+		/* Horizontal line */
+		wmove(stdscr, input_window_height + 1, 0);
+		addch(ACS_LTEE);
+		for(int i = 0; i < first_col_width; i++){
+			addch(ACS_HLINE);
+		}
+		addch(ACS_RTEE);
+	}
+
+	wattroff(stdscr, COLOR_PAIR(COLOR_PAIR_FRAME));
 }
 
 static inline void display_mode(){
@@ -261,18 +286,22 @@ static inline void display_mode(){
 
     for(int i = 0; i < FIELDS; ++i){
 		if(i == field){
-			wattron(wmode, A_REVERSE);
+			wattron(wmode, COLOR_PAIR(COLOR_PAIR_FIELD_SELECTED) | ATTRIBUTE_FIELD_SELECTED);
 			mvwprintw(wmode, i, 0, "%s %s", fields[i].text1, fields[i].text2);
-			wattroff(wmode, A_REVERSE);
+			wattroff(wmode, COLOR_PAIR(COLOR_PAIR_FIELD_SELECTED) | ATTRIBUTE_FIELD_SELECTED);
 		}else{
+			wattron(wmode, COLOR_PAIR(COLOR_PAIR_FIELD));
 			mvwprintw(wmode, i, 0, "%s %s", fields[i].text1, fields[i].text2);
+			wattroff(wmode, COLOR_PAIR(COLOR_PAIR_FIELD));
 		}
     }
 }
 
 static inline void display_command_field(){
     werase(winput);
+	wattron(winput, COLOR_PAIR(COLOR_PAIR_PROMPT));
     mvwaddstr(winput, 0, 0, prompts[input_mode]);
+	wattroff(winput, COLOR_PAIR(COLOR_PAIR_PROMPT));
     waddstr(winput, rl_line_buffer);
 }
 static inline void display_results(){
@@ -293,7 +322,9 @@ static inline void display_results(){
     if (totallines == 0) { // Its a real message
     	wmove(wresult, MSGLINE, 0);
     	wclrtoeol(wresult);
+		wattron(wresult, COLOR_PAIR(COLOR_PAIR_MESSAGE));
         waddstr(wresult, lastmsg);
+		wattroff(wresult, COLOR_PAIR(COLOR_PAIR_MESSAGE));
         return;
     }
     if (input_mode == INPUT_CHANGE) { // Its a pattern
@@ -302,9 +333,12 @@ static inline void display_results(){
 		snprintf(lastmsg, MSGLEN, "%c%s: %s", toupper((unsigned char)fields[field].text2[0]),
            fields[field].text2 + 1, input_line);
     }
+	wattron(wresult, COLOR_PAIR(COLOR_PAIR_PATTERN));
     waddstr(wresult, lastmsg);
+	wattroff(wresult, COLOR_PAIR(COLOR_PAIR_PATTERN));
 
     /* --- Display the column headings --- */
+	wattron(wresult, COLOR_PAIR(COLOR_PAIR_TABLE_HEADER));
     wmove(wresult, 2, 2);
     if (ogs == true && field != FILENAME) {
         wprintw(wresult, "%-*s ", subsystemlen, "Subsystem");
@@ -319,6 +353,7 @@ static inline void display_results(){
     if (field != FILENAME) {
         waddstr(wresult, "Line");
     }
+	wattroff(wresult, COLOR_PAIR(COLOR_PAIR_TABLE_HEADER));
 
 	/* --- Display table entries --- */
     wmove(wresult, WRESULT_TABLE_BODY_START, 0);
@@ -367,7 +402,9 @@ static inline void display_results(){
         ++nextline;
         displine[disprefs] = screenline;
 
+		wattron(wresult, COLOR_PAIR(COLOR_PAIR_TABLE_ID));
         wprintw(wresult, "%c", dispchars[disprefs]);
+		wattroff(wresult, COLOR_PAIR(COLOR_PAIR_TABLE_ID));
 
         /* display any change mark */
         if (input_mode == INPUT_CHANGE && change[topref + disprefs]) {
@@ -377,6 +414,7 @@ static inline void display_results(){
         }
 
         /* display the file name */
+		wattron(wresult, COLOR_PAIR(COLOR_PAIR_TABLE_COL_FILE));
         if (field == FILENAME) {
 			wprintw(wresult, "%-*s ", filelen, file);
         } else {
@@ -392,24 +430,30 @@ static inline void display_results(){
 				   pathcomponents(file, dispcomponents));
 			}
         } /* else(field == FILENAME) */
+		wattroff(wresult, COLOR_PAIR(COLOR_PAIR_TABLE_COL_FILE));
 
         /* display the function name */
-        if (field == SYMBOL || field == CALLEDBY || field == CALLING) {
-        wprintw(wresult, "%-*.*s ", fcnlen, fcnlen, function);
+        if(field == SYMBOL || field == CALLEDBY || field == CALLING){
+			wattron(wresult, COLOR_PAIR(COLOR_PAIR_TABLE_COL_FUNCTION));
+        	wprintw(wresult, "%-*.*s ", fcnlen, fcnlen, function);
+			wattroff(wresult, COLOR_PAIR(COLOR_PAIR_TABLE_COL_FUNCTION));
         }
-        if (field == FILENAME) {
-        waddch(wresult, '\n');    /* go to next line */
-        continue;
+        if(field == FILENAME){
+			waddch(wresult, '\n');    /* go to next line */
+			continue;
         }
 
         /* display the line number */
+		wattron(wresult, COLOR_PAIR(COLOR_PAIR_TABLE_COL_LINE));
         wprintw(wresult, "%*s ", numlen, linenum);
+		wattroff(wresult, COLOR_PAIR(COLOR_PAIR_TABLE_COL_LINE));
         /* there may be tabs in egrep output */
-        while ((s = strchr(tempstring, '\t')) != NULL) {
-        *s = ' ';
+        while((s = strchr(tempstring, '\t')) != NULL){
+			*s = ' ';
         }
 
         /* display the source line */
+		wattron(wresult, COLOR_PAIR(COLOR_PAIR_TABLE_COL_TEXT));
         s = tempstring;
         for (;;) {
         /* if the source line does not fit */
@@ -467,6 +511,7 @@ static inline void display_results(){
         wmove(wresult, screenline, second_col_width - srctxtw);
         } /* for(ever) */
     } /* for(reference output lines) */
+	wattron(wresult, COLOR_PAIR(COLOR_PAIR_TABLE_COL_TEXT));
 
 endrefs:
     /* position the screen cursor for the message */
@@ -477,6 +522,8 @@ endrefs:
     else {
         wmove(wresult, i, 0);
     }
+	/* --- display pager message --- */
+	wattron(wresult, COLOR_PAIR(COLOR_PAIR_PAGER_MSG));
     /* check for more references */
     i = totallines - nextline + 1;
     bottomline = nextline;
@@ -487,6 +534,7 @@ endrefs:
     else if (current_page > 0 && nextline > totallines) {
         waddstr(wresult, "* Press the space bar to display the first lines again *");
     }
+	wattroff(wresult, COLOR_PAIR(COLOR_PAIR_PAGER_MSG));
 }
 
 void display_cursor(void){
@@ -710,14 +758,17 @@ display(void)
 
     if(window_change){
 		if(window_change == CH_HELP){
+			display_frame(true);
 			display_help();
-			/* Do not display over the help msg and */
-			/*  rely on display_help() setting CH_ALL */
+			/* Do not display over the help msg and
+			 *  rely on setting CH_ALL for the next display
+			 */
+			window_change = CH_ALL;
 			return;
 		}
 		/**/
         if(window_change == CH_ALL){
-            display_frame();
+            display_frame(false);
         }
         if(window_change & CH_INPUT){
             display_command_field();

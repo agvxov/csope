@@ -124,9 +124,6 @@ extern    char    *argv0;		/* command name */
 extern    bool    compress;	/* compress the characters in the crossref */
 extern    bool    dbtruncated;	/* database symbols truncated to 8 chars */
 extern    int    dispcomponents;	/* file path components to display */
-#if CCS
-extern    bool    displayversion;	/* display the C Compilation System version */
-#endif
 extern    bool    editallprompt;	/* prompt between editing files */
 extern    unsigned int fileargc;    /* file argument count */
 extern    char    **fileargv;	/* file argument values */
@@ -142,12 +139,13 @@ extern    char    *namefile;	/* file of file names */
 extern    bool    ogs;		/* display OGS book and subsystem names */
 extern    char    *prependpath;	/* prepend path to file names */
 extern    FILE    *refsfound;	/* references found file */
-extern    char    temp1[];	/* temporary file name */
-extern    char    temp2[];	/* temporary file name */
 extern    long    totalterms;	/* total inverted index terms */
 extern    bool    trun_syms;	/* truncate symbols to 8 characters */
 extern    char    tempstring[TEMPSTRING_LEN + 1]; /* global dummy string buffer */
+
 extern    char    *tmpdir;	/* temporary directory */
+extern    char    temp1[];	/* temporary file name */
+extern    char    temp2[];	/* temporary file name */
 
 /* command.c global data */
 extern    bool    caseless;	/* ignore letter case when searching */
@@ -167,10 +165,10 @@ extern    char    currentdir[];	/* current directory */
 extern    char    **incdirs;	/* #include directories */
 extern    char    **srcdirs;	/* source directories */
 extern    char    **srcfiles;	/* source files */
-extern    unsigned long nincdirs;    /* number of #include directories */
-extern    unsigned long nsrcdirs;    /* number of source directories */
-extern    unsigned long nsrcfiles; /* number of source files */
-extern    unsigned long msrcfiles; /* maximum number of source files */
+extern    size_t	nincdirs;    /* number of #include directories */
+extern    size_t	nsrcdirs;    /* number of source directories */
+extern    size_t	nsrcfiles; /* number of source files */
+extern    size_t	msrcfiles; /* maximum number of source files */
 
 /* display.c global data */
 extern    int subsystemlen;    		/* OGS subsystem name display field length */
@@ -215,7 +213,7 @@ extern    bool    unixpcmouse;		/* UNIX PC mouse interface */
 
 /* cscope functions called from more than one function or between files */
 
-char    *filepath(const char *file);
+char    *filepath(char *file);
 char    *findsymbol(const char *pattern);
 char    *finddef(const char *pattern);
 char    *findcalledby(const char *pattern);
@@ -261,8 +259,8 @@ void    addcmd(int f, char *s);
 void    addsrcfile(char *path);
 void    askforchar(void);
 void    askforreturn(void);
-void    cannotwrite(char *file);
-void    cannotopen(char *file);
+void    cannotwrite(const char *const file);
+void    cannotopen(const char *const file);
 void    clearmsg(void);
 void    clearmsg2(void);
 void    countrefs(void);
@@ -270,7 +268,7 @@ void    crossref(char *srcfile);
 void    dispinit(void);
 void    display(void);
 void    drawscrollbar(int top, int bot);
-void    edit(char *file, char *linenum);
+void    edit(char *file, const char *const linenum);
 void    editall(void);
 void    editref(int);
 void    entercurses(void);
