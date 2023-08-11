@@ -207,9 +207,7 @@ extern char* rl_line_buffer;
 extern char input_line[PATLEN + 1];
 extern int rl_point;
 
-#if UNIXPC
-extern    bool    unixpcmouse;		/* UNIX PC mouse interface */
-#endif
+//extern    bool    unixpcmouse;		/* UNIX PC mouse interface */
 
 /* cscope functions called from more than one function or between files */
 
@@ -249,7 +247,7 @@ int process_mouse();
 extern int input_mode;
 int changestring(const char* from, const char* to, const bool *const change, const int change_len);
 
-long	seekpage(size_t i);
+long	seekpage(const size_t i);
 long	seekrelline(unsigned i);
 void	PCS_reset(void);
 

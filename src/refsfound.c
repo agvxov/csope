@@ -9,8 +9,13 @@ static FILE** hto_page = &refsfound;
 static size_t PCS_pos[PCS_MAXPAGE] = {0};
 static size_t PCS_top = 0;
 
-long seekpage(size_t i){
+long seekpage(const size_t i){
 	if(i > PCS_MAXPAGE-1){ return -1; }
+
+	if(i < PCS_top){
+		fseek(*hto_page, PCS_pos[i], SEEK_SET);
+		return PCS_pos[i];
+	}
 
 	fseek(*hto_page, PCS_pos[PCS_top], SEEK_SET);
 

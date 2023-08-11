@@ -81,7 +81,7 @@ vpinit(char *current_dir)
     }
     /* if not given, get the current directory name */
     if (current_dir == NULL && (current_dir = getcwd(buf, MAXPATH)) == NULL) {
-        (void) fprintf(stderr, PROGRAM_NAME ": cannot get current directory name\n");
+        fprintf(stderr, PROGRAM_NAME ": cannot get current directory name\n");
         return;
     }
     /* see if this directory is in the first view path node */

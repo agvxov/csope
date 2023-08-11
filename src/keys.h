@@ -44,6 +44,9 @@
 #ifndef KEY_RESIZE
 # define KEY_RESIZE KEY_UNDEF_BASE-11
 #endif
+#ifndef KEY_END
+# define KEY_END KEY_UNDEF_BASE-12
+#endif
 
 /* Always define these keys */
 #ifndef ESC

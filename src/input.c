@@ -114,22 +114,14 @@ mygetline(char p[], char s[], unsigned size, int firstchar, bool iscaseless){
         s[i++] = sright[--ri];
         addch(s[i-1]);
         }
-    } else if (
-#ifdef KEY_HOME
-           c == KEY_HOME ||
-#endif
-           c == ctrl('A') ) {
+    } else if (c == KEY_HOME || c == ctrl('A') ) {
         while (i > 0) {
         sright[ri++] = s[--i];
         addch('\b');
         addch(s[i]);
         addch('\b');
         }
-    } else if (
-#ifdef KEY_END
-           c == KEY_END ||
-#endif
-           c == ctrl('E') ) {
+    } else if (c == KEY_END || c == ctrl('E') ) {
         while (ri > 0) {
         s[i++] = sright[--ri];
         addch(s[i-1]);
@@ -174,10 +166,8 @@ mygetline(char p[], char s[], unsigned size, int firstchar, bool iscaseless){
             addch(c);    /* advance cursor */
         }
         }
-#if UNIXPC
-    } else if (unixpcmouse == true && c == ESC) {    /* mouse */
+    } else if (/*unixpcmouse == true && */c == ESC) {    /* mouse */
         getmouseaction(ESC);    /* ignore it */
-#endif
     } else if (mouse == true && c == ctrl('X')) {
         getmouseaction(ctrl('X'));    /* ignore it */
     } else if (c == EOF) {                /* end-of-file */
@@ -392,21 +382,10 @@ global_input(const int c){
         case KEY_PPAGE:
             if (totallines == 0) { return 0; } /* don't redisplay if there are no lines */
             curdispline = 0;
-			--current_page;
-            ///* if on first page but not at beginning, go to beginning */
-            //nextline -= mdisprefs;    /* already at next page */
-            //if (nextline > 1 && nextline <= mdisprefs) {
-            //    nextline = 1;
-            //} else {
-            //    nextline -= mdisprefs;
-            //    if (nextline < 1) {
-            //        nextline = totallines - mdisprefs + 1;
-            //        if (nextline < 1) {
-            //            nextline = 1;
-            //        }
-            //    }
-            //}
-            //seekline(nextline);
+			if(current_page > 0){
+				--current_page;
+				window_change |= CH_RESULT;
+			}
             break;
         case '>':    /* write or append the lines to a file */
             break;                    // XXX

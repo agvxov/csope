@@ -84,6 +84,7 @@ fixing it would have been a lost cause, if not for Cscope itself. Well, Csope no
  + library.h...; "private library", in a program using 90 globals; ffs
  + sort out the global hell
  + was there really ever a scrollbar?
+ + handle resizing
 ## Original
 + Same capabilities as interactive in non interactive (one shot) mode
 + Provide some how-do-I-use-this-thing doc.
