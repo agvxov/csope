@@ -380,7 +380,6 @@ static inline void display_results(){
     srctxtw -= numlen+1;
 
 	/* decide where to list from */
-	/* XXX: this error handling migth be redundant*/
 	{
 		int seekerr;
 		do{
@@ -391,7 +390,7 @@ static inline void display_results(){
     /* until the max references have been displayed or
        there is no more room */
     for (disprefs = 0, screenline = WRESULT_TABLE_BODY_START;
-         disprefs < mdisprefs && screenline <= result_window_height;
+         disprefs < mdisprefs && screenline < (result_window_height-1);
          ++disprefs, ++screenline)
     {
         /* read the reference line */
