@@ -436,7 +436,7 @@ build(void)
     if (fflush(newrefs) == EOF) {
     /* rewind doesn't check for write failure */
     cannotwrite(newreffile);
-    /* falseTREACHED */
+    /* NOTREACHED */
     }
 
     /* create the inverted index if requested */
@@ -445,7 +445,7 @@ build(void)
 
     if (fflush(postings) == EOF) {
         cannotwrite(temp1);
-        /* falseTREACHED */
+        /* NOTREACHED */
     }
     fstat(fileno(postings), &statstruct);
     fclose(postings);
@@ -499,11 +499,11 @@ seek_to_trailer(FILE *f)
 {
     if (fscanf(f, "%ld", &traileroffset) != 1) {
     postfatal(PROGRAM_NAME ": cannot read trailer offset from file %s\n", reffile);
-    /* falseTREACHED */
+    /* NOTREACHED */
     }
     if (fseek(f, traileroffset, SEEK_SET) == -1) {
     postfatal(PROGRAM_NAME ": cannot seek to trailer in file %s\n", reffile);
-    /* falseTREACHED */
+    /* NOTREACHED */
     }
 }
 
@@ -586,7 +586,7 @@ putlist(char **names, int count)
     if (fputs(names[i], newrefs) == EOF ||
         putc('\n', newrefs) == EOF) {
         cannotwrite(newreffile);
-        /* falseTREACHED */
+        /* NOTREACHED */
     }
     }
 }
@@ -716,7 +716,7 @@ movefile(char *new, char *old)
     myperror(PROGRAM_NAME);
     postfatal(PROGRAM_NAME ": cannot rename file %s to file %s\n",
           new, old);
-    /* falseTREACHED */
+    /* NOTREACHED */
     }
 }
 

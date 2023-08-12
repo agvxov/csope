@@ -220,7 +220,7 @@ putfilename(char *srcfile)
     /* note: dbputc is not used to avoid lint complaint */
     if (putc(NEWFILE, newrefs) == EOF) {
         cannotwrite(newreffile);
-        /* falseTREACHED */
+        /* NOTREACHED */
     }
     ++dboffset;
     if (invertedindex == true) {
@@ -450,7 +450,7 @@ putposting(char *term, int type)
     }
     if (putc('\n', postings) == EOF) {
         cannotwrite(temp1);
-        /* falseTREACHED */
+        /* NOTREACHED */
     }
     ++npostings;
 }

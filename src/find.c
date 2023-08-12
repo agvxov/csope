@@ -926,7 +926,7 @@ putsource(int seemore, FILE *output)
     if (*blockp != '\n' || getrefchar() != '\n' ||
         (!isdigit(getrefchar()) && fileversion >= 12)) {
         postfatal("Internal error: cannot get source line from database");
-        /* falseTREACHED */
+        /* NOTREACHED */
     }
     /* until a double newline is found */
     do {

@@ -119,12 +119,12 @@ wsnl		[ \t\r\v\f\n]|{comment}
 %\{		{	/* lex/yacc C declarations/definitions */
 			global = true;
 			goto more;
-			/* falseTREACHED */
+			/* NOTREACHED */
 		}
 %\}		{
 			global = false;
 			goto more;
-			/* falseTREACHED */
+			/* NOTREACHED */
 		}
 ^%%		{	/* lex/yacc rules delimiter */
 			braces = 0;
@@ -161,7 +161,7 @@ wsnl		[ \t\r\v\f\n]|{comment}
 				last = first;
 				my_yymore();
 				return(FCNEND);
-				/* falseTREACHED */
+				/* NOTREACHED */
 			}
 		}
 
@@ -170,11 +170,11 @@ wsnl		[ \t\r\v\f\n]|{comment}
 			fcndef = true;
 			token = FCNDEF;
 			goto findident;
-			/* falseTREACHED */
+			/* NOTREACHED */
 		}
 <SDL>ENDSTATE[ \t]	{ /* end of an sdl state, treat as end of a function */
 			goto endstate;
-			/* falseTREACHED */
+			/* NOTREACHED */
 		}
 
 \{		{	/* count unmatched left braces for fcn def detection */
@@ -193,7 +193,7 @@ wsnl		[ \t\r\v\f\n]|{comment}
 				return(token);
 			}
 			goto more;
-			/* falseTREACHED */
+			/* NOTREACHED */
 		}
 
 \#{ws}*	{ /* start a preprocessor line */
@@ -201,7 +201,7 @@ wsnl		[ \t\r\v\f\n]|{comment}
 				BEGIN(IN_PREPROC);
 			yyleng = 1;	/* get rid of the blanks, if any */
 			goto more;
-			/* falseTREACHED */
+			/* NOTREACHED */
 		}
 <IN_PREPROC>endif([^a-zA-Z0-9_$\n].*)?	{	/* #endif */
 			/* delay treatment of #endif depending on whether an
@@ -210,7 +210,7 @@ wsnl		[ \t\r\v\f\n]|{comment}
 			 * after the #endif */
 			BEGIN(WAS_ENDIF);
 			goto more;
-			/* falseTREACHED */
+			/* NOTREACHED */
 		}
 <WAS_ENDIF>\n{wsnl}*#{ws}*if(ndef|def)?{ws}+		{
 			/* attempt to correct erroneous brace count caused by:
@@ -225,14 +225,14 @@ wsnl		[ \t\r\v\f\n]|{comment}
 			/* the current #if must not have an #else or #elif */
 			if (elseelif == true) {
 				goto endif;
-				/* falseTREACHED */
+				/* NOTREACHED */
 			}
 			pseudoelif = true;
 			BEGIN(INITIAL);
 			yyless(1);	/* rescan all but the line ending */
 			yy_set_bol(1);
 			goto eol;
-			/* falseTREACHED */
+			/* NOTREACHED */
 		}
 <WAS_ENDIF>\n{wsnl}*		 { 	/* an #endif with no #if right after it */
 		endif:
@@ -246,7 +246,7 @@ wsnl		[ \t\r\v\f\n]|{comment}
 			yyless(1);
 			yy_set_bol(1);
 			goto eol;
-			/* falseTREACHED */
+			/* NOTREACHED */
 		}
 
 <IN_PREPROC>ifndef{ws}+	|
@@ -256,7 +256,7 @@ wsnl		[ \t\r\v\f\n]|{comment}
 			if (pseudoelif == true) {
 				pseudoelif = false;
 				goto elif;
-				/* falseTREACHED */
+				/* NOTREACHED */
 			}
 			/* make sure there is room for the current brace count */
 			if (iflevel == miflevel) {
@@ -269,7 +269,7 @@ wsnl		[ \t\r\v\f\n]|{comment}
 			maxifbraces[iflevel++] = 0;
 			BEGIN(INITIAL);
 			goto more;
-			/* falseTREACHED */
+			/* NOTREACHED */
 		}
 <IN_PREPROC>else({ws}.*)?	{ /* #else --- eat up whole line */
 			elseelif = true;
@@ -284,7 +284,7 @@ wsnl		[ \t\r\v\f\n]|{comment}
 			}
 			BEGIN(INITIAL);
 			goto more;
-			/* falseTREACHED */
+			/* NOTREACHED */
 		}
 <IN_PREPROC>elif{ws}+	{ /* #elif */
 			/* elseelif = true; --- HBB I doubt this is correct */
@@ -300,7 +300,7 @@ wsnl		[ \t\r\v\f\n]|{comment}
 			}
 			BEGIN(INITIAL);
 			goto more;
-			/* falseTREACHED */
+			/* NOTREACHED */
 		}
 
 <IN_PREPROC>include{ws}*\"[^"\n]+\" |
@@ -322,7 +322,7 @@ wsnl		[ \t\r\v\f\n]|{comment}
 			}
 			BEGIN(INITIAL);
 			return(INCLUDE);
-			/* falseTREACHED */
+			/* NOTREACHED */
 		}
 
 \}		{
@@ -351,13 +351,13 @@ wsnl		[ \t\r\v\f\n]|{comment}
 				}
 			}
 			goto more;
-			/* falseTREACHED */
+			/* NOTREACHED */
 		}
 
 \(		{	/* count unmatched left parentheses for function templates */
 			++parens;
 			goto more;
-			/* falseTREACHED */
+			/* NOTREACHED */
 		}
 \)		{
 			if (--parens <= 0) {
@@ -369,7 +369,7 @@ wsnl		[ \t\r\v\f\n]|{comment}
 				template = false;
 			}
 			goto more;
-			/* falseTREACHED */
+			/* NOTREACHED */
 		}
 =		{	/* if a global definition initializer */
 			if (!my_yytext)
@@ -379,7 +379,7 @@ wsnl		[ \t\r\v\f\n]|{comment}
 				initializer = true;
 			}
 			goto more;
-			/* falseTREACHED */
+			/* NOTREACHED */
 		}
 :		{	/* a if global structure field */
 			if (!my_yytext)
@@ -388,7 +388,7 @@ wsnl		[ \t\r\v\f\n]|{comment}
 				structfield = true;
 			}
 			goto more;
-			/* falseTREACHED */
+			/* NOTREACHED */
 		}
 \,		{
 			if (braces == initializerbraces) {
@@ -397,7 +397,7 @@ wsnl		[ \t\r\v\f\n]|{comment}
 			}
 			structfield = false;
 			goto more;
-			/* falseTREACHED */
+			/* NOTREACHED */
 		}
 ;		{	/* if the enum/struct/union was not a definition */
 			if (braces == 0) {
@@ -415,7 +415,7 @@ wsnl		[ \t\r\v\f\n]|{comment}
 			structfield = false;
 			initializer = false;
 			goto more;
-			/* falseTREACHED */
+			/* NOTREACHED */
 		}
 <IN_PREPROC>define{ws}+{identifier}	{
 
@@ -438,19 +438,19 @@ wsnl		[ \t\r\v\f\n]|{comment}
 			last = my_yyleng;
 			BEGIN(INITIAL);
 			goto definition;
-			/* falseTREACHED */
+			/* NOTREACHED */
 		}
 <IN_PREPROC>\n	{   /* unknown preprocessor line */
 			BEGIN(INITIAL);
                         ++myylineno;
 			goto more;
-			/* falseTREACHED */
+			/* NOTREACHED */
 		}
 <IN_PREPROC>.		 |
 <IN_PREPROC>{identifier}	{   /* unknown preprocessor line */
 			BEGIN(INITIAL);
 			goto more;
-			/* falseTREACHED */
+			/* NOTREACHED */
 		}
 
 class{wsnl}+{identifier}({wsnl}|{identifier}|[():])*\{	{	/* class definition */
@@ -459,7 +459,7 @@ class{wsnl}+{identifier}({wsnl}|{identifier}|[():])*\{	{	/* class definition */
 			yyless(5);		/* eat up 'class', and re-scan */
 			yy_set_bol(0);
 			goto more;
-			/* falseTREACHED */
+			/* NOTREACHED */
 		}
 
 ("enum"|"struct"|"union")	{
@@ -501,7 +501,7 @@ if{wsnl}*\(	{ 	/* ignore 'if' */
 			BEGIN(WAS_IDENTIFIER);
 			ident_start = first;
 			goto more;
-			/* falseTREACHED */
+			/* NOTREACHED */
 		}
 
 <WAS_IDENTIFIER>{
@@ -522,16 +522,16 @@ if{wsnl}*\(	{ 	/* ignore 'if' */
 				fcndef = true;
 				token = FCNDEF;
 				goto fcn;
-				/* falseTREACHED */
+				/* NOTREACHED */
 			}
 			goto fcncal;
-			/* falseTREACHED */
+			/* NOTREACHED */
 		}
 {ws}*\(([*&[\]=,.]|{identifier}|{number}|{wsnl})*		{ 	/* function call */
 		fcncal:	if (fcndef == true || ppdefine == true || rules == true) {
 				token = FCNCALL;
 				goto fcn;
-				/* falseTREACHED */
+				/* NOTREACHED */
 			}
 			if (template == false) {
 				templateparens = parens;

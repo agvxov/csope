@@ -114,7 +114,7 @@ myexecvp(char *a, char **args)
     perror(msg);        /* display the reason */
     askforreturn();        /* wait until the user sees the message */
     myexit(1);        /* exit the child */
-    /* falseTREACHED */
+    /* NOTREACHED */
     return 0;
 }
 
