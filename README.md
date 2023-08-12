@@ -50,7 +50,7 @@ fixing it would have been a lost cause, if not for Cscope itself. Well, Csope no
 # Improvements/Changes
 ## User side
 + renamed the program, because "cscope" is annoying to type
-+ improved gui	/*pending*/
++ improved gui
 + GNU Readline integration (ie. VI/EMACS mode, command history) /*pending*/
 ## To the code
 + nuked autoconf, replaced with single Makefile
@@ -68,7 +68,7 @@ fixing it would have been a lost cause, if not for Cscope itself. Well, Csope no
 # Project structure	/*probably move to documentation*/
 | Component | Purpose |
 | :-------: | :-----: |
-| main.c | generic init functions, main() and primary event loops (and junk)
+| main.c | generic init functions, main() and primary event loops (and junk) |
 | display.c | all functions directly dealing with NCurses |
 | input.c | top layer of functions dealing with user input; migth dispatch to readline |
 | find.c | searching functions |
@@ -95,7 +95,6 @@ fixing it would have been a lost cause, if not for Cscope itself. Well, Csope no
  	free(): double free detected in tcache 2
  	Aborted
  + Changing text can crash without replacing text and leaving the console ncursed
- + The wrong number of lines are bing printed
 
 # Future features / contributor wishlist
 + providing support for other languages by integrating new lexers (e.g. ctag's)

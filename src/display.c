@@ -83,11 +83,19 @@ const char* prompts[] = {
 
 unsigned int topline = 1;        /* top line of page */
 
+extern const char tooltip_winput[];
+extern const char tooltip_wmode[];
+extern const char tooltip_wresult[];
+
+#define MAX(a, b) ((a) > (b) ? (a) : (b))
+
 /* Selectable windows */
 WINDOW* winput;
 WINDOW* wmode;
 WINDOW* wresult;
 WINDOW* whelp;
+/* Non-Selectable windows */
+WINDOW* wtooltip;
 /* Selected window pointer */
 WINDOW** current_window;
 static WINDOW** last_window;
@@ -97,10 +105,19 @@ static int second_col_width;
 static int first_col_width;
 static int input_window_height;
 static int mode_window_height;
+static int tooltip_width;
 
 #define WRESULT_TABLE_BODY_START 4
 
 int window_change;
+
+static inline void display_cursor(void);
+static inline void display_help(void);
+static inline void display_frame(const bool border_only);
+static inline void display_mode(void);
+static inline void display_command_field(void);
+static inline void display_results(void);
+static inline void display_tooltip(void);
 
 /* NOTE: It's declared like this because we dont need a terminating '\00'. */
 static const char dispchars[] = {
@@ -117,9 +134,6 @@ int dispchar2int(const char c){
 }
 
 char    lastmsg[MSGLEN + 1];    /* last message displayed */
-static    const char    helpstring[] = "Press the ? key for help";
-static    const char    selprompt[] =
-    "Select lines to change (press the ? key for help): ";
 
 struct    {        /* text of input fields */
     char    *text1;
@@ -157,10 +171,18 @@ dispinit(void)
 	easy_init_pair(PATTERN);
 	easy_init_pair(TABLE_HEADER);
 	easy_init_pair(TABLE_ID);
+	easy_init_pair(TABLE_MARK);
 	easy_init_pair(TABLE_COL_LINE);
 	easy_init_pair(TABLE_COL_FILE);
 	easy_init_pair(TABLE_COL_FUNCTION);
 	easy_init_pair(TABLE_COL_TEXT);
+	easy_init_pair(TABLE_ID);
+	easy_init_pair(TABLE_SELECTED_ID);
+	easy_init_pair(TABLE_SELECTED_MARK);
+	easy_init_pair(TABLE_COL_SELECTED_LINE);
+	easy_init_pair(TABLE_COL_SELECTED_FILE);
+	easy_init_pair(TABLE_COL_SELECTED_FUNCTION);
+	easy_init_pair(TABLE_COL_SELECTED_TEXT);
 	easy_init_pair(PAGER_MSG);
     entercurses();
 
@@ -171,6 +193,7 @@ dispinit(void)
     first_col_width = 48; // (((COLS - 2)%2 == 0) ? ((COLS-2)/2) : (((COLS-2)/2)+1));
     second_col_width = COLS - 2 - 1 - first_col_width; //((COLS - 2) / 2) - 1;
     mdisprefs = result_window_height - (WRESULT_TABLE_BODY_START + 1);
+	tooltip_width = MAX(MAX(strlen(tooltip_winput), strlen(tooltip_wmode)), strlen(tooltip_wresult));
 
     if (mdisprefs <= 0) {
         postfatal(PROGRAM_NAME ": screen too small\n");
@@ -187,10 +210,11 @@ dispinit(void)
     rlinit();
 
     /* initialize windows */
-    winput = newwin(input_window_height, first_col_width, 1, 1);
-    wmode = newwin(mode_window_height, first_col_width, input_window_height+1 + 1, 1);
-    wresult = newwin(result_window_height, second_col_width, 1, first_col_width + 1 + 1);
-    whelp = newwin(LINES-2, COLS-2, 1, 1);
+    winput		= newwin(input_window_height, first_col_width, 1, 1);
+    wmode		= newwin(mode_window_height, first_col_width, input_window_height+1 + 1, 1);
+    wresult		= newwin(result_window_height, second_col_width, 1, first_col_width + 1 + 1);
+    whelp		= newwin(LINES-2, COLS-2, 1, 1);
+    wtooltip	= newwin(1, tooltip_width, LINES-1, COLS - (tooltip_width+4));
     refresh();
 
     current_window = &winput;
@@ -259,9 +283,7 @@ static inline void display_frame(const bool border_only){
 #else
     wprintw(stdscr, PROGRAM_NAME " version %d%s", FILEVERSION, FIXVERSION);
 #endif
-    wmove(stdscr, 0, COLS - (int)sizeof(helpstring) - 3);
-    waddstr(stdscr, helpstring);
-    wmove(stdscr, LINES-1, 4);
+    wmove(stdscr, 0, COLS - (int)sizeof("Case: XXX") - 4);
 	if(caseless){
     	waddstr(stdscr, "Case:  ON");
 	}else{
@@ -309,12 +331,24 @@ static inline void display_command_field(){
     mvwaddstr(winput, 0, 0, prompts[input_mode]);
 	wattroff(winput, COLOR_PAIR(COLOR_PAIR_PROMPT));
     waddstr(winput, rl_line_buffer);
+
+	display_cursor();
 }
 static inline void display_results(){
     int     i;
     char    *s;
     int     screenline;             /* screen line number */
     int     srctxtw;                /* source line display width */
+	int		color_swp;				/* holds the rigth ncurses color value,
+									 * so we dont have to branch twice
+									 * (at attron & attroff)
+									 * because of selections
+									 */
+	int		attr_swp;				/* holds the rigth ncurses attribute value,
+									 * so we dont have to branch twice
+									 * (at attron & attroff)
+									 * because of selections
+									 */
 	/* column headings */
     char    *subsystem;             /* OGS subsystem name */
     char    *book;                  /* OGS book name */
@@ -393,6 +427,8 @@ static inline void display_results(){
          disprefs < mdisprefs && screenline < (result_window_height-1);
          ++disprefs, ++screenline)
     {
+		attr_swp = (disprefs != curdispline) ? A_NORMAL : ATTRIBUTE_RESULT_SELECTED;
+		wattron(wresult, attr_swp);
         /* read the reference line */
         if (
                 fscanf(refsfound, "%" PATHLEN_STR "s%" PATHLEN_STR "s%" NUMLEN_STR "s %" TEMPSTRING_LEN_STR "[^\n]",
@@ -404,22 +440,28 @@ static inline void display_results(){
                 <
                     4
             ){ break; }
+
         ++nextline;
         displine[disprefs] = screenline;
 
-		wattron(wresult, COLOR_PAIR(COLOR_PAIR_TABLE_ID));
+		color_swp = (disprefs != curdispline) ? COLOR_PAIR_TABLE_ID : COLOR_PAIR_TABLE_SELECTED_ID;
+		wattron(wresult, COLOR_PAIR(color_swp));
         wprintw(wresult, "%c", dispchars[disprefs]);
-		wattroff(wresult, COLOR_PAIR(COLOR_PAIR_TABLE_ID));
+		wattroff(wresult, COLOR_PAIR(color_swp));
 
         /* display any change mark */
+		color_swp = (disprefs != curdispline) ? COLOR_PAIR_TABLE_MARK : COLOR_PAIR_TABLE_SELECTED_MARK;
+		wattron(wresult, COLOR_PAIR(color_swp));
         if (input_mode == INPUT_CHANGE && change[topref + disprefs]) {
         	waddch(wresult, '>');
         } else {
             waddch(wresult, ' ');
         }
+		wattroff(wresult, COLOR_PAIR(color_swp));
 
         /* display the file name */
-		wattron(wresult, COLOR_PAIR(COLOR_PAIR_TABLE_COL_FILE));
+		color_swp = (disprefs != curdispline) ? COLOR_PAIR_TABLE_COL_FILE : COLOR_PAIR_TABLE_COL_SELECTED_FILE;
+		wattron(wresult, COLOR_PAIR(color_swp));
         if (field == FILENAME) {
 			wprintw(wresult, "%-*s ", filelen, file);
         } else {
@@ -435,13 +477,14 @@ static inline void display_results(){
 				   pathcomponents(file, dispcomponents));
 			}
         } /* else(field == FILENAME) */
-		wattroff(wresult, COLOR_PAIR(COLOR_PAIR_TABLE_COL_FILE));
+		wattroff(wresult, COLOR_PAIR(color_swp));
 
         /* display the function name */
         if(field == SYMBOL || field == CALLEDBY || field == CALLING){
-			wattron(wresult, COLOR_PAIR(COLOR_PAIR_TABLE_COL_FUNCTION));
+			color_swp = (disprefs != curdispline) ? COLOR_PAIR_TABLE_COL_FUNCTION : COLOR_PAIR_TABLE_COL_SELECTED_FUNCTION;
+			wattron(wresult, COLOR_PAIR(color_swp));
         	wprintw(wresult, "%-*.*s ", fcnlen, fcnlen, function);
-			wattroff(wresult, COLOR_PAIR(COLOR_PAIR_TABLE_COL_FUNCTION));
+			wattroff(wresult, COLOR_PAIR(color_swp));
         }
         if(field == FILENAME){
 			waddch(wresult, '\n');    /* go to next line */
@@ -449,77 +492,82 @@ static inline void display_results(){
         }
 
         /* display the line number */
-		wattron(wresult, COLOR_PAIR(COLOR_PAIR_TABLE_COL_LINE));
+		color_swp = (disprefs != curdispline) ? COLOR_PAIR_TABLE_COL_LINE : COLOR_PAIR_TABLE_COL_SELECTED_LINE;
+		wattron(wresult, COLOR_PAIR(color_swp));
         wprintw(wresult, "%*s ", numlen, linenum);
-		wattroff(wresult, COLOR_PAIR(COLOR_PAIR_TABLE_COL_LINE));
+		wattroff(wresult, COLOR_PAIR(color_swp));
         /* there may be tabs in egrep output */
         while((s = strchr(tempstring, '\t')) != NULL){
 			*s = ' ';
         }
 
         /* display the source line */
-		wattron(wresult, COLOR_PAIR(COLOR_PAIR_TABLE_COL_TEXT));
+		color_swp = (disprefs != curdispline) ? COLOR_PAIR_TABLE_COL_TEXT : COLOR_PAIR_TABLE_COL_SELECTED_TEXT;
+		wattron(wresult, COLOR_PAIR(color_swp));
         s = tempstring;
         for (;;) {
-        /* if the source line does not fit */
-        if ((i = strlen(s)) > srctxtw) {
+			/* if the source line does not fit */
+			if ((i = strlen(s)) > srctxtw) {
 
-            /* find the nearest blank */
-            for (i = srctxtw; s[i] != ' ' && i > 0; --i) {
-                ;
-            }
+				/* find the nearest blank */
+				for (i = srctxtw; s[i] != ' ' && i > 0; --i) {
+					;
+				}
 
-            if (i == 0) {
-                i = srctxtw;    /* no blank */
-            }
-        }
-        /* print up to this point */
-        wprintw(wresult, "%.*s", i, s);
-        s += i;
+				if (i == 0) {
+					i = srctxtw;    /* no blank */
+				}
+			}
+			/* print up to this point */
+			wprintw(wresult, "%.*s", i, s);
+			s += i;
 
-        /* if line didn't wrap around */
-        if (i < srctxtw) {
-            waddch(wresult, '\n');    /* go to next line */
-        }
-        /* skip blanks */
-        while (*s == ' ') {
-            ++s;
-        }
-        /* see if there is more text */
-        if (*s == '\0') {
-            break;
-        }
-        /* if the source line is too long */
-        if (++screenline > result_window_height) {
+			/* if line didn't wrap around */
+			if (i < srctxtw) {
+				waddch(wresult, '\n');    /* go to next line */
+			}
+			/* skip blanks */
+			while (*s == ' ') {
+				++s;
+			}
+			/* see if there is more text */
+			if (*s == '\0') {
+				break;
+			}
+			/* if the source line is too long */
+			if (++screenline > result_window_height) {
 
-            /* if this is the first displayed line,
-               display what will fit on the screen */
-            if (topref == nextline-1) {
-				disprefs++;
-				/* break out of two loops */
+				/* if this is the first displayed line,
+				   display what will fit on the screen */
+				if (topref == nextline-1) {
+					disprefs++;
+					/* break out of two loops */
+					goto endrefs;
+				}
+
+				/* erase the reference */
+				while (--screenline >= displine[disprefs]) {
+					wmove(wresult, screenline, 0);
+					wclrtoeol(wresult);
+				}
+				++screenline;
+
+				/* go back to the beginning of this reference */
+				--nextline;
+				fseek(refsfound, 0, SEEK_SET);
 				goto endrefs;
-            }
-
-            /* erase the reference */
-            while (--screenline >= displine[disprefs]) {
-                wmove(wresult, screenline, 0);
-                wclrtoeol(wresult);
-            }
-            ++screenline;
-
-            /* go back to the beginning of this reference */
-            --nextline;
-			fseek(refsfound, 0, SEEK_SET);
-            goto endrefs;
-        }
-        /* indent the continued source line */
-        wmove(wresult, screenline, second_col_width - srctxtw);
+			}
+			/* indent the continued source line */
+			wmove(wresult, screenline, second_col_width - srctxtw);
         } /* for(ever) */
+		wattroff(wresult, COLOR_PAIR(color_swp));
+		wattroff(wresult, attr_swp);
     } /* for(reference output lines) */
-	wattron(wresult, COLOR_PAIR(COLOR_PAIR_TABLE_COL_TEXT));
 
 endrefs:
-    /* position the screen cursor for the message */
+	wattroff(wresult, attr_swp);
+	/* --- display pager message --- */
+	/* position cursor */
     i = result_window_height - 1;
     if (screenline < i) {
         waddch(wresult, '\n');
@@ -527,34 +575,26 @@ endrefs:
     else {
         wmove(wresult, i, 0);
     }
-	/* --- display pager message --- */
+	/**/
 	wattron(wresult, COLOR_PAIR(COLOR_PAIR_PAGER_MSG));
     /* check for more references */
     i = totallines - nextline + 1;
     bottomline = nextline;
     if (i > 0) {
-        wprintw(wresult, "* Lines %d-%d of %d, %d more - press the space bar to display more *", topref, bottomline, totallines, i);
+        wprintw(wresult, "* Lines %d-%d of %d, %d more. *", topref, bottomline, totallines, i);
     }
     /* if this is the last page of references */
     else if (current_page > 0 && nextline > totallines) {
-        waddstr(wresult, "* Press the space bar to display the first lines again *");
+        waddstr(wresult, "* End of results. *");
     }
 	wattroff(wresult, COLOR_PAIR(COLOR_PAIR_PAGER_MSG));
 }
 
-void display_cursor(void){
+static inline void display_cursor(void){
     chtype i;
     int yoffset = 0, xoffset = 0;
 
-    if(current_window == &winput){
-        xoffset = strlen(prompts[input_mode]) + rl_point;
-    }else if(current_window == &wmode){
-        yoffset = field;
-    }else if(current_window == &wresult){
-        yoffset = displine[curdispline];
-    }else{
-        assert("No window selected.");
-    }
+    xoffset = strlen(prompts[input_mode]) + rl_point;
 
     wmove(*current_window, yoffset, xoffset);
 
@@ -565,6 +605,7 @@ void display_cursor(void){
 void
 horswp_field(void){
     if(current_window != &wresult){
+		if(totallines == 0){ return; }
         if(current_window == &winput){
             window_change |= CH_INPUT;
         }else{
@@ -574,6 +615,9 @@ horswp_field(void){
         current_window = &wresult;
     }else{
         current_window = last_window;
+        if(current_window == &winput){
+            window_change |= CH_INPUT;
+        }
     }
     window_change |= CH_RESULT;
 }
@@ -756,10 +800,30 @@ ogsnames(char *file, char **subsystem, char **book)
     }
 }
 
+static inline void display_tooltip(void){
+	wmove(wtooltip, 0, 0);
+	const char* tooltip;
+	if(*current_window == winput){
+		tooltip = tooltip_winput;
+	}else if(*current_window == wmode){
+		tooltip = tooltip_wmode;
+	}else if(*current_window == wresult){
+		tooltip = tooltip_wresult;
+	}
+	wattron(wtooltip, COLOR_PAIR(COLOR_PAIR_TOOLTIP));
+	waddstr(wtooltip, tooltip);
+	// XXX: cheap hack
+	for(int i = 0; i < (tooltip_width-strlen(tooltip)); i++){
+		waddch(wtooltip, ' ');
+	}
+	wattroff(wtooltip, COLOR_PAIR(COLOR_PAIR_TOOLTIP));
+}
+
 void
 display(void)
 {
     //drawscrollbar(topline, nextline);    /* display the scrollbar */
+	static void* lstwin = NULL;	/* for the tooltip (see below) */
 
     if(window_change){
 		if(window_change == CH_HELP){
@@ -771,10 +835,16 @@ display(void)
 			window_change = CH_ALL;
 			return;
 		}
-		/**/
         if(window_change == CH_ALL){
             display_frame(false);
         }
+		/* As it stands the tooltip has to be redisplayed
+		 *  on every window change.
+		 */
+		if(lstwin != *current_window){
+			lstwin = *current_window;
+			display_tooltip();
+		}
         if(window_change & CH_INPUT){
             display_command_field();
         }
@@ -785,12 +855,11 @@ display(void)
             display_mode();
         }
 
-        display_cursor();
-
         refresh();
         wrefresh(winput);
         wrefresh(wmode);
         wrefresh(wresult);
+        wrefresh(wtooltip);
     }
 
     window_change = CH_NONE;

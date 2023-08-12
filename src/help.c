@@ -37,16 +37,15 @@
  */
 
 #include "global.h"
-#if defined(USE_NCURSES) && !defined(RENAMED_NCURSES)
 #include <ncurses.h>
-#else
-#include <curses.h>
-#endif
 /*
     max num of lines of help screen -
     this number needs to be increased if more than n help items are needed
 */
-#define MAXHELP    50    /* maximum number of help strings */
+
+const char tooltip_winput[] = "Search [Enter] -Mode [^k] +Mode [^j] Right [Tab] Down [%]";
+const char tooltip_wmode[] = "-Mode [Up] +Mode [Down] Right [Tab] Up [%]";
+const char tooltip_wresult[] = "Edit [Enter] Up [Up] Down [Down] Left [Tab] Previous [-] Next [+]";
 
 static char help_msg[] = 
         "Press the RETURN key repeatedly to move to the desired input field, type the\n"

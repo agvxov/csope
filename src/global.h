@@ -47,6 +47,9 @@
 #include <signal.h>    /* SIGINT and SIGQUIT */
 #include <stdio.h>    /* standard I/O package */
 #include <stdlib.h>     /* standard library functions */
+#include <stdarg.h>
+#include <fcntl.h>
+#include <stdbool.h>
 
 #include <string.h>    /* string functions */
 
@@ -56,12 +59,6 @@
 #include "stddef.h"    /* size_t */
 
 typedef void (*sighandler_t)(int);
-
-#include <stdarg.h>
-
-#include <fcntl.h>
-
-#include <stdbool.h>
 
 typedef    struct {    	/* mouse action */
     int    button;
@@ -315,7 +312,6 @@ struct    cmd *prevcmd(void);
 struct    cmd *nextcmd(void);
 
 int    egrep(char *file, FILE *output, char *format);
-int    mygetline(char p[], char s[], unsigned size, int firstchar, bool iscaseless);
 int    hash(char *ss);
 int    execute(char *a, ...);
 long    dbseek(long offset);
