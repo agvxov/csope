@@ -115,7 +115,7 @@ char ** parse_options(int *argc, char **argv)
         		postfatal("\
         			cscope: reffile too long, cannot \
         			be > %d characters\n", sizeof(path) - 3);
-        		/* falseTREACHED */
+        		/* NOTREACHED */
         	}
         	strcpy(path, reffile);
 

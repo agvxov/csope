@@ -538,11 +538,11 @@ if{wsnl}*\(	{ 	/* ignore 'if' */
 				template = true;
 			}
 			goto ident;
-			/* falseTREACHED */
+			/* NOTREACHED */
 		}
 ("*"|{wsnl})+{identifier}		{	/* typedef name or modifier use */
 			goto ident;
-			/* falseTREACHED */
+			/* NOTREACHED */
 		}
 .|\n	{		/* general identifer usage */
 			char	*s;
@@ -649,7 +649,7 @@ if{wsnl}*\(	{ 	/* ignore 'if' */
 				}
 				/* my_yymore(); */
 				return(token);
-				/* falseTREACHED */
+				/* NOTREACHED */
 			}
 		}
 }
@@ -657,19 +657,19 @@ if{wsnl}*\(	{ 	/* ignore 'if' */
 \[		{	/* array dimension (don't worry or about subscripts) */
 			arraydimension = true;
 			goto more;
-			/* falseTREACHED */
+			/* NOTREACHED */
 		}
 \]		{
 			arraydimension = false;
 			goto more;
-			/* falseTREACHED */
+			/* NOTREACHED */
 		}
 \\\n		{	/* preprocessor statement is continued on next line */
 			/* save the '\\' to the output file, but not the '\n': */
 			yyleng = 1;
 			my_yymore();
 			goto eol;
-			/* falseTREACHED */
+			/* NOTREACHED */
 		}
 \n		{	/* end of the line */
 			if (ppdefine == true) {	/* end of a #define */
@@ -725,38 +725,38 @@ if{wsnl}*\(	{ 	/* ignore 'if' */
 			if (sdl == false)
 				BEGIN(IN_SQUOTE);
 			goto more;
-			/* falseTREACHED */
+			/* NOTREACHED */
 		}
 <IN_SQUOTE>\'	{
 			BEGIN(INITIAL);
 			goto more;
-			/* falseTREACHED */
+			/* NOTREACHED */
 		}
 \"		{	/* string constant */
 			BEGIN(IN_DQUOTE);
 			goto more;
-			/* falseTREACHED */
+			/* NOTREACHED */
 		}
 <IN_DQUOTE>\"	{
 			BEGIN(INITIAL);
 			goto more;
-			/* falseTREACHED */
+			/* NOTREACHED */
 		}
 <IN_DQUOTE,IN_SQUOTE>{
 \n	  	{	/* syntax error: unexpected EOL */
 			BEGIN(INITIAL);
 			goto eol;
-			/* falseTREACHED */
+			/* NOTREACHED */
 		}
 \\.	|
 .		{
 			goto more;
-			/* falseTREACHED */
+			/* NOTREACHED */
 		}
 \\\n 	{		/* line continuation inside a string! */
 			myylineno++;
 			goto more;
-			/* falseTREACHED */
+			/* NOTREACHED */
 		}
 }
 
@@ -787,7 +787,7 @@ if{wsnl}*\(	{ 	/* ignore 'if' */
 			} else {
 				++myylineno;
 			}
-			/* falseTREACHED */
+			/* NOTREACHED */
 		}
 "*"+"/"		{
 			/* replace the comment by a single blank */
@@ -799,7 +799,7 @@ if{wsnl}*\(	{ 	/* ignore 'if' */
 "//".*\n?		{
 			/* C++-style one-line comment */
 			goto eol;
-			/* falseTREACHED */
+			/* NOTREACHED */
 		}
 
 {number}				|	/* number */

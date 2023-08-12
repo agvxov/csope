@@ -192,12 +192,12 @@ skiplist(FILE *oldrefs)
 
     if (fscanf(oldrefs, "%d", &i) != 1) {
     postfatal(PROGRAM_NAME ": cannot read list size from file %s\n", reffile);
-    /* falseTREACHED */
+    /* NOTREACHED */
     }
     while (--i >= 0) {
     if (fscanf(oldrefs, "%*s") != 0) {
         postfatal(PROGRAM_NAME ": cannot read list name from file %s\n", reffile);
-        /* falseTREACHED */
+        /* NOTREACHED */
     }
     }
 }
@@ -388,7 +388,7 @@ main(int argc, char **argv)
     /* XXX remove if/when clearerr() in dir.c does the right thing. */
     if (namefile && strcmp(namefile, "-") == 0 && !buildonly) {
     postfatal(PROGRAM_NAME ": Must use -b if file list comes from stdin\n");
-    /* falseTREACHED */
+    /* NOTREACHED */
     }
 
     /* make sure that tmpdir exists */
@@ -448,13 +448,13 @@ main(int argc, char **argv)
     if (isuptodate == true) {
     if ((oldrefs = vpfopen(reffile, "rb")) == NULL) {
         postfatal(PROGRAM_NAME ": cannot open file %s\n", reffile);
-        /* falseTREACHED */
+        /* NOTREACHED */
     }
     /* get the crossref file version but skip the current directory */
     if (fscanf(oldrefs, PROGRAM_NAME " %d %*s", &fileversion) != 1) {
         postfatal(PROGRAM_NAME ": cannot read file version from file %s\n",
               reffile);
-        /* falseTREACHED */
+        /* NOTREACHED */
     }
     if (fileversion >= 8) {
 
@@ -495,7 +495,7 @@ main(int argc, char **argv)
         postfatal(
         	PROGRAM_NAME ": cannot read source file size from file %s\n",
         	reffile);
-        /* falseTREACHED */
+        /* NOTREACHED */
     }
     /* get the source file list */
     srcfiles = malloc(nsrcfiles * sizeof(*srcfiles));
@@ -506,7 +506,7 @@ main(int argc, char **argv)
         postfatal(
         	PROGRAM_NAME ": cannot read string space size from file %s\n",
         	reffile);
-        /* falseTREACHED */
+        /* NOTREACHED */
         }
         s = malloc(oldnum);
         getc(oldrefs);    /* skip the newline */
@@ -516,7 +516,7 @@ main(int argc, char **argv)
         postfatal(
         	PROGRAM_NAME ": cannot read source file names from file %s\n",
         	reffile);
-        /* falseTREACHED */
+        /* NOTREACHED */
         }
         /* change newlines to nulls */
         for (i = 0; i < nsrcfiles; ++i) {
@@ -557,7 +557,7 @@ main(int argc, char **argv)
         		PROGRAM_NAME ": cannot read source file name from file %s\n",
         	    reffile
 			);
-            /* falseTREACHED */
+            /* NOTREACHED */
         }
         srcfiles[i] = strdup(path);
         }
@@ -610,7 +610,7 @@ main(int argc, char **argv)
     }
     if (buildonly == true) {
         myexit(0);
-        /* falseTREACHED */
+        /* NOTREACHED */
     }
     }
     opendatabase();
@@ -636,6 +636,6 @@ main(int argc, char **argv)
     screenmode_event_loop();
     /* cleanup and exit */
     myexit(0);
-    /* falseTREACHED */
+    /* NOTREACHED */
     return 0;        /* avoid warning... */
 }
