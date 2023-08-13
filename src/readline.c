@@ -38,9 +38,10 @@ static void callback_handler(char *line) {
 		case INPUT_NORMAL:
 			strncpy(input_line, line, PATLEN);
 			search(input_line);
+			horswp_field();
 			curdispline = 0;
-			PCS_reset();
 			current_page = 0;
+			PCS_reset();
 			break;
 		case INPUT_CHANGE_TO:
 			strncpy(newpat, line, PATLEN);
