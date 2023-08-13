@@ -37,111 +37,95 @@
 
 #include "global.h"
 #if defined(USE_NCURSES) && !defined(RENAMED_NCURSES)
-#include <ncurses.h>
+# include <ncurses.h>
 #else
-#include <curses.h>
+# include <curses.h>
 #endif
 
 /* edit this displayed reference */
 
-void
-editref(int i)
-{
-    char    file[PATHLEN + 1];	/* file name */
-    char    linenum[NUMLEN + 1];	/* line number */
+void editref(int i) {
+	char file[PATHLEN + 1];	  /* file name */
+	char linenum[NUMLEN + 1]; /* line number */
 
-    /* verify that there is a references found file */
-    if (refsfound == NULL) {
-        return;
-    }
-    /* get the selected line */
-    seekrelline(i);
+	/* verify that there is a references found file */
+	if(refsfound == NULL) { return; }
+	/* get the selected line */
+	seekrelline(i);
 
-    /* get the file name and line number */
-    if (fscanf(refsfound, "%" PATHLEN_STR "s%*s%" NUMLEN_STR "s", file, linenum) == 2) {
-        edit(file, linenum);
-    }
+	/* get the file name and line number */
+	if(fscanf(refsfound, "%" PATHLEN_STR "s%*s%" NUMLEN_STR "s", file, linenum) == 2) {
+		edit(file, linenum);
+	}
 }
 
 /* edit all references */
 
-void
-editall(void)
-{
-    char    file[PATHLEN + 1];	/* file name */
-    char    linenum[NUMLEN + 1];	/* line number */
-    int    c;
+void editall(void) {
+	char file[PATHLEN + 1];	  /* file name */
+	char linenum[NUMLEN + 1]; /* line number */
+	int	 c;
 
-    /* verify that there is a references found file */
-    if (refsfound == NULL) {
-        return;
-    }
-    /* get the first line */
+	/* verify that there is a references found file */
+	if(refsfound == NULL) { return; }
+	/* get the first line */
 	fseek(refsfound, 0, SEEK_SET);
 
-    /* get each file name and line number */
-    while (fscanf(refsfound, "%" PATHLEN_STR "s%*s%" NUMLEN_STR "s%*[^\n]", file, linenum) == 2) {
-        edit(file, linenum);	/* edit it */
-        if (editallprompt == true) {
-        	addstr("Type ^D to stop editing all lines, or any other character to continue: ");
-        	if ((c = getch()) == EOF || c == ctrl('D') || c == ctrl('Z')) {
-        		break;
-        	}
-        }
-    }
+	/* get each file name and line number */
+	while(
+		fscanf(refsfound, "%" PATHLEN_STR "s%*s%" NUMLEN_STR "s%*[^\n]", file, linenum) ==
+		2) {
+		edit(file, linenum); /* edit it */
+		if(editallprompt == true) {
+			addstr(
+				"Type ^D to stop editing all lines, or any other character to continue: ");
+			if((c = getch()) == EOF || c == ctrl('D') || c == ctrl('Z')) { break; }
+		}
+	}
 }
 
 /* call the editor */
-void
-edit(char *file, const char *const linenum)
-{
-	const char	*const editor_basename = basename(editor);
-    char    msg[MSGLEN + 1];	/* message */
-    char    plusnum[NUMLEN + 20];	/* line number option: allow space for wordy line# flag */
+void edit(char *file, const char *const linenum) {
+	const char *const editor_basename = basename(editor);
+	char			  msg[MSGLEN + 1]; /* message */
+	char plusnum[NUMLEN + 20]; /* line number option: allow space for wordy line# flag */
 
-    file = filepath(file);
-    snprintf(msg, sizeof(msg), "%s +%s %s", basename(editor), linenum, file);
-    postmsg(msg);
-    snprintf(plusnum, sizeof(plusnum), lineflag, linenum);
+	file = filepath(file);
+	snprintf(msg, sizeof(msg), "%s +%s %s", basename(editor), linenum, file);
+	postmsg(msg);
+	snprintf(plusnum, sizeof(plusnum), lineflag, linenum);
 
 	/* Some pagers will not start paging, unless the input
 	 *  file has more lines thant the screen does.
 	 *  The way to get them to pause, is to pass in /dev/null too,
 	 *  imatating endless blank lines.
 	 */
-	const char* const shit_pagers[] = {
-		"page",
-		"more",
-		NULL
-	};
-	for(const char	*const *sp = shit_pagers; *sp != NULL; sp++){
-		if(!strcmp(editor_basename, *sp)){
-        	execute(editor, editor, plusnum, file, "/dev/null", NULL);
+	const char *const shit_pagers[] = {"page", "more", NULL};
+	for(const char *const *sp = shit_pagers; *sp != NULL; sp++) {
+		if(!strcmp(editor_basename, *sp)) {
+			execute(editor, editor, plusnum, file, "/dev/null", NULL);
 			goto end;
 		}
 	}
 
-    if (lineflagafterfile) {
-        execute(editor, editor, file, plusnum, NULL);
-    }
-    else {
-        execute(editor, editor, plusnum, file, NULL);
-    }
+	if(lineflagafterfile) {
+		execute(editor, editor, file, plusnum, NULL);
+	} else {
+		execute(editor, editor, plusnum, file, NULL);
+	}
 
-	end:
-    clear();    /* redisplay screen */
+end:
+	clear(); /* redisplay screen */
 }
 
 /* if requested, prepend a path to a relative file name */
 
-char *
-filepath(char *file)
-{
-    static    char	path[PATHLEN + 1];
+char *filepath(char *file) {
+	static char path[PATHLEN + 1];
 
-    if (prependpath != NULL && *file != '/') {
-        (void) snprintf(path, sizeof(path), "%s/%s", prependpath, file);
-        file = path;
-    }
-    return(file);
+	if(prependpath != NULL && *file != '/') {
+		(void)snprintf(path, sizeof(path), "%s/%s", prependpath, file);
+		file = path;
+	}
+	return (file);
 }

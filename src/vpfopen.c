@@ -37,26 +37,20 @@
 #include "vp.h"
 #include "global.h"
 
-FILE *
-vpfopen(char *filename, char *type)
-{
-    char    buf[MAXPATH + 1];
-    FILE    *returncode;
-    int    i;
+FILE *vpfopen(char *filename, char *type) {
+	char  buf[MAXPATH + 1];
+	FILE *returncode;
+	int	  i;
 
-    if ((returncode = myfopen(filename, type)) == NULL
-        && filename[0] != '/'
-        /* && strcmp(type, "r") == 0 */ /* HBB: this breaks if type=="rb" */
-        && type[0] == 'r'
-        ) {
-        vpinit(NULL);
-        for (i = 1; i < vpndirs; i++) {
-        	(void) snprintf(buf, sizeof(buf), "%s/%s", vpdirs[i], filename);
-        	if ((returncode = myfopen(buf, type)) != NULL) {
-        		break;
-        	}
-
-        }
-    }
-    return(returncode);
+	if((returncode = myfopen(filename, type)) == NULL &&
+		filename[0] != '/'
+		/* && strcmp(type, "r") == 0 */ /* HBB: this breaks if type=="rb" */
+		&& type[0] == 'r') {
+		vpinit(NULL);
+		for(i = 1; i < vpndirs; i++) {
+			(void)snprintf(buf, sizeof(buf), "%s/%s", vpdirs[i], filename);
+			if((returncode = myfopen(buf, type)) != NULL) { break; }
+		}
+	}
+	return (returncode);
 }

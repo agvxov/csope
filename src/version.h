@@ -39,7 +39,7 @@
 #ifndef CSCOPE_VERSION_H
 #define CSCOPE_VERSION_H
 
-#define    FILEVERSION    15	/* Initial Open Source and Linux Port */
-#define    FIXVERSION    ".9"	/* feature and bug fix version */
+#define FILEVERSION 15	 /* Initial Open Source and Linux Port */
+#define FIXVERSION	".9" /* feature and bug fix version */
 
-#endif /* CSCOPE_VERSION_H */
+#endif					 /* CSCOPE_VERSION_H */

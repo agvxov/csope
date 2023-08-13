@@ -38,77 +38,79 @@
 #ifndef CSCOPE_CONSTANTS_H
 #define CSCOPE_CONSTANTS_H
 
-#define ctrl(x)    (x & 037)    /* control character macro */
+#define ctrl(x) (x & 037) /* control character macro */
 
 /* fast string equality tests (avoids most strcmp() calls) */
-#define    strequal(s1, s2)    (*(s1) == *(s2) && strcmp(s1, s2) == 0)
-#define    strnotequal(s1, s2)    (*(s1) != *(s2) || strcmp(s1, s2) != 0)
+#define strequal(s1, s2)	(*(s1) == *(s2) && strcmp(s1, s2) == 0)
+#define strnotequal(s1, s2) (*(s1) != *(s2) || strcmp(s1, s2) != 0)
 
 /* set the mark character for searching the cross-reference file */
-#define    setmark(c)    (blockmark = c, block[blocklen] = blockmark)
+#define setmark(c) (blockmark = c, block[blocklen] = blockmark)
 
 /* get the next character in the cross-reference */
 /* note that blockp is assumed not to be null */
-#define    getrefchar()    (*(++blockp + 1) != '\0' ? *blockp : \
-        	(read_block() != NULL ? *blockp : '\0'))
+#define getrefchar()                                                                     \
+	(*(++blockp + 1) != '\0' ? *blockp : (read_block() != NULL ? *blockp : '\0'))
 
 /* skip the next character in the cross-reference */
 /* note that blockp is assumed not to be null and that
    this macro will always be in a statement by itself */
-#define    skiprefchar()    if (*(++blockp + 1) == '\0') (void) read_block()
+#define skiprefchar()                                                                    \
+	if(*(++blockp + 1) == '\0') (void)read_block()
 
-#define    DUMMYCHAR    ' '	/* use space as a dummy character */
-#define    MSGLEN    ((PATLEN) + 80)	/* displayed message length */
-#define    NUMLEN    10		/* line number length */
-#define    PATHLEN    250		/* file pathname length */
-#define    PATLEN    250		/* symbol pattern length */
-#define TEMPSTRING_LEN 8191     /* max strlen() of the global temp string */
-#define    REFFILE    "cscope.out"	/* cross-reference output file */
-#define    NAMEFILE "cscope.files"    /* default list-of-files file */
-#define    INVNAME    "cscope.in.out"	/* inverted index to the database */
-#define    INVPOST    "cscope.po.out"	/* inverted index postings */
-#define    INVNAME2 "cscope.out.in"/* follows correct naming convention */
-#define    INVPOST2 "cscope.out.po"/* follows correct naming convention */
+#define DUMMYCHAR	   ' '			   /* use space as a dummy character */
+#define MSGLEN		   ((PATLEN) + 80) /* displayed message length */
+#define NUMLEN		   10			   /* line number length */
+#define PATHLEN		   250			   /* file pathname length */
+#define PATLEN		   250			   /* symbol pattern length */
+#define TEMPSTRING_LEN 8191			   /* max strlen() of the global temp string */
+#define REFFILE		   "cscope.out"	   /* cross-reference output file */
+#define NAMEFILE	   "cscope.files"  /* default list-of-files file */
+#define INVNAME		   "cscope.in.out" /* inverted index to the database */
+#define INVPOST		   "cscope.po.out" /* inverted index postings */
+#define INVNAME2	   "cscope.out.in" /* follows correct naming convention */
+#define INVPOST2	   "cscope.out.po" /* follows correct naming convention */
 
-#define    STMTMAX    10000		/* maximum source statement length */
+#define STMTMAX 10000				   /* maximum source statement length */
 
-#define STR2(x) #x
-#define STRINGIZE(x) STR2(x)
-#define PATLEN_STR STRINGIZE(PATLEN)
-#define PATHLEN_STR STRINGIZE(PATHLEN)
-#define NUMLEN_STR STRINGIZE(NUMLEN)
+#define STR2(x)			   #x
+#define STRINGIZE(x)	   STR2(x)
+#define PATLEN_STR		   STRINGIZE(PATLEN)
+#define PATHLEN_STR		   STRINGIZE(PATHLEN)
+#define NUMLEN_STR		   STRINGIZE(NUMLEN)
 #define TEMPSTRING_LEN_STR STRINGIZE(TEMPSTRING_LEN)
 
 /* input fields (value matches field order on screen) */
 enum {
-	SYMBOL    	= 0,
-	DEFINITION  = 1,
-	CALLEDBY    = 2,
-	CALLING    	= 3,
-	STRING    	= 4,
-	CHANGE    	= 5,
-	REGEXP    	= 6,
-	FILENAME    = 7,
-	INCLUDES    = 8
+	SYMBOL	   = 0,
+	DEFINITION = 1,
+	CALLEDBY   = 2,
+	CALLING	   = 3,
+	STRING	   = 4,
+	CHANGE	   = 5,
+	REGEXP	   = 6,
+	FILENAME   = 7,
+	INCLUDES   = 8
 };
-#define    FIELDS    	10
+
+#define FIELDS 10
 
 // XXX
 #define bazdki 1
 
 /* file open modes */
 #ifndef R_OK
-# define    READ    R_OK
+# define READ R_OK
 #else
-# define    READ    4
+# define READ 4
 #endif
 #ifdef W_OK
-# define    WRITE    W_OK
+# define WRITE W_OK
 #else
-# define    WRITE    2
+# define WRITE 2
 #endif
 
-#define O_TEXT 0x00
+#define O_TEXT	 0x00
 #define O_BINARY 0x00
 
 

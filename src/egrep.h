@@ -36,7 +36,7 @@
    private implementation details that can be changed or removed.  */
 
 #ifndef YY_YY_EGREP_H_INCLUDED
-# define YY_YY_EGREP_H_INCLUDED
+#define YY_YY_EGREP_H_INCLUDED
 /* Debug traces.  */
 #ifndef YYDEBUG
 # define YYDEBUG 0
@@ -48,43 +48,43 @@ extern int yydebug;
 /* Token kinds.  */
 #ifndef YYTOKENTYPE
 # define YYTOKENTYPE
-  enum yytokentype
-  {
-    YYEMPTY = -2,
-    YYEOF = 0,                     /* "end of file"  */
-    YYerror = 256,                 /* error  */
-    YYUNDEF = 257,                 /* "invalid token"  */
-    CHAR = 258,                    /* CHAR  */
-    DOT = 259,                     /* DOT  */
-    CCL = 260,                     /* CCL  */
-    NCCL = 261,                    /* NCCL  */
-    OR = 262,                      /* OR  */
-    CAT = 263,                     /* CAT  */
-    STAR = 264,                    /* STAR  */
-    PLUS = 265,                    /* PLUS  */
-    QUEST = 266                    /* QUEST  */
-  };
-  typedef enum yytokentype yytoken_kind_t;
+
+enum yytokentype {
+	YYEMPTY = -2,
+	YYEOF	= 0,   /* "end of file"  */
+	YYerror = 256, /* error  */
+	YYUNDEF = 257, /* "invalid token"  */
+	CHAR	= 258, /* CHAR  */
+	DOT		= 259, /* DOT  */
+	CCL		= 260, /* CCL  */
+	NCCL	= 261, /* NCCL  */
+	OR		= 262, /* OR  */
+	CAT		= 263, /* CAT  */
+	STAR	= 264, /* STAR  */
+	PLUS	= 265, /* PLUS  */
+	QUEST	= 266  /* QUEST  */
+};
+typedef enum yytokentype yytoken_kind_t;
 #endif
 /* Token kinds.  */
 #define YYEMPTY -2
-#define YYEOF 0
+#define YYEOF	0
 #define YYerror 256
 #define YYUNDEF 257
-#define CHAR 258
-#define DOT 259
-#define CCL 260
-#define NCCL 261
-#define OR 262
-#define CAT 263
-#define STAR 264
-#define PLUS 265
-#define QUEST 266
+#define CHAR	258
+#define DOT		259
+#define CCL		260
+#define NCCL	261
+#define OR		262
+#define CAT		263
+#define STAR	264
+#define PLUS	265
+#define QUEST	266
 
 /* Value type.  */
-#if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
-typedef int YYSTYPE;
-# define YYSTYPE_IS_TRIVIAL 1
+#if !defined YYSTYPE && !defined YYSTYPE_IS_DECLARED
+typedef int						 YYSTYPE;
+# define YYSTYPE_IS_TRIVIAL  1
 # define YYSTYPE_IS_DECLARED 1
 #endif
 
@@ -92,7 +92,7 @@ typedef int YYSTYPE;
 extern YYSTYPE yylval;
 
 
-int yyparse (void);
+int yyparse(void);
 
 
 #endif /* !YY_YY_EGREP_H_INCLUDED  */
