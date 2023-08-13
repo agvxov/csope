@@ -117,76 +117,15 @@ static inline void display_command_field(void);
 static inline void display_results(void);
 static inline void display_tooltip(void);
 
-/* NOTE: It's declared like this because we dont need a terminating '\00'. */
-static const char dispchars[] = {'0',
-	'1',
-	'2',
-	'3',
-	'4',
-	'5',
-	'6',
-	'7',
-	'8',
-	'9',
-	'a',
-	'b',
-	'c',
-	'd',
-	'e',
-	'f',
-	'g',
-	'h',
-	'i',
-	'j',
-	'k',
-	'l',
-	'm',
-	'n',
-	'o',
-	'p',
-	'q',
-	'r',
-	's',
-	't',
-	'u',
-	'v',
-	'w',
-	'x',
-	'y',
-	'z',
-	'A',
-	'B',
-	'C',
-	'D',
-	'E',
-	'F',
-	'G',
-	'H',
-	'I',
-	'J',
-	'K',
-	'L',
-	'M',
-	'N',
-	'O',
-	'P',
-	'Q',
-	'R',
-	'S',
-	'T',
-	'U',
-	'V',
-	'W',
-	'X',
-	'Y',
-	'Z'};
+static const char dispchars[] = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
 int dispchar2int(const char c) {
-	const char fst = dispchars[0];
-	const char lst = dispchars[sizeof(dispchars) - 1];
-	int		   r   = c - fst;
-	if(r < 0 || lst < r) { return -1; }
-	return r;
+	int i = 0;
+	while(dispchars[i] != c){
+		if(dispchars[i] == '\00'){ return -1; }
+		++i;
+	}
+	return i;
 }
 
 char lastmsg[MSGLEN + 1]; /* last message displayed */

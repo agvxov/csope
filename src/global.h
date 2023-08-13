@@ -235,7 +235,7 @@ extern bool	 onesearch;		   /* one search only in line mode */
 extern char *reflines;		   /* symbol reference lines file */
 extern bool	 do_press_any_key; /* wait for any key to continue */
 extern int	 current_page;
-#define topref current_page *mdisprefs
+#define topref (current_page * mdisprefs)
 void	   verswp_field(void);
 void	   horswp_field(void);
 bool	   interpret(int c);	// XXX: probably rename

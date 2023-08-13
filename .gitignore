@@ -3,3 +3,4 @@ obj/*.gch
 csope
 **/*.out
 src/lex.yy.c
+main.plist
