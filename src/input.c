@@ -410,6 +410,9 @@ int change_input(const int c) {
 			break;
 		case ctrl('D'):
 			changestring(input_line, newpat, change, totallines);
+			input_mode = INPUT_NORMAL;
+			horswp_field();
+			search(newpat);
 			break;
 		default:
 			{
@@ -506,9 +509,7 @@ int changestring(const char *from, const char *to, const bool *const change,
 	fflush(script);
 
 	/* edit the files */
-	fprintf(stderr, "Changed lines:\n\r");
-	execute("sh", "sh", temp2, NULL);
-	askforchar();
+	execute("sh", "sh", temp2, NULL);	// XXX: this should not echo
 end:
 	fclose(script);
 	return true;

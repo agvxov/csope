@@ -67,7 +67,6 @@ char  newpat[PATLEN + 1]; /* new pattern */
 static void scrollbar(MOUSE *p);
 
 /* read references from a file */
-
 bool readrefs(char *filename) {
 	FILE *file;
 	int	  c;
@@ -148,7 +147,7 @@ void countrefs(void) {
 	/* count the references found and find the length of the file,
 	   function, and line number display fields */
 
-	/* HBB falseTE 2012-04-07: it may look like we shouldn't assing tempstring here,
+	/* HBB NOTE 2012-04-07: it may look like we shouldn't assing tempstring here,
 	 * since it's not used.  But it has to be assigned just so the return value
 	 * of fscanf will actually reach 4. */
 	while(EOF != (i = fscanf(refsfound,

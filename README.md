@@ -65,6 +65,9 @@ fixing it would have been a lost cause, if not for Cscope itself. Well, Csope no
 + saved kilobytes by stripping trailing whitespace
 + FILE\* refsfound used to be rewind()-ed everytime the reads were not sequencial
 
+# Control flow
+...
+
 # Project structure	/*probably move to documentation*/
 | Component | Purpose |
 | :-------: | :-----: |
@@ -76,6 +79,12 @@ fixing it would have been a lost cause, if not for Cscope itself. Well, Csope no
 | readline.c | all functions directly dealing with GNU Readline; responsible for line editing in *input mode* |
 | help.c | all functions dealing with help messages |
 
+# Key Symbols
+| Global | Role |
+| :----: | :--: |
+| int input_mode | Responsible of keeping track how current input should be handled. Not only does  the readline handler depend on it, its also used to determine what types of inputs all legal (e.g. swapping to another window). Takes up on of the values of the INPUT_\* macros.
+| int window_change | Bit mask type of the CH_\* macros. Keeps track of the windows to be refresed on the next run of display(). Could be better utalized.
+
 # TODO /*move soon*/
  + sort out constants.h
  + scrollbar() uses magic int literals?
@@ -85,6 +94,7 @@ fixing it would have been a lost cause, if not for Cscope itself. Well, Csope no
  + sort out the global hell
  + was there really ever a scrollbar?
  + handle resizing
+ + a search struct could be great for caching and could easy the global situation
 ## Original
 + Same capabilities as interactive in non interactive (one shot) mode
 + Provide some how-do-I-use-this-thing doc.
@@ -95,6 +105,7 @@ fixing it would have been a lost cause, if not for Cscope itself. Well, Csope no
  	free(): double free detected in tcache 2
  	Aborted
  + Changing text can crash without replacing text and leaving the console ncursed
+ + After an attempted change malloc *can* cry and crash
 
 # Future features / contributor wishlist
 + providing support for other languages by integrating new lexers (e.g. ctag's)

@@ -600,6 +600,8 @@ static inline void display_cursor(void) {
 }
 
 void horswp_field(void) {
+	if(input_mode != INPUT_NORMAL){ return; }
+
 	if(current_window != &wresult) {
 		if(totallines == 0) { return; }
 		if(current_window == &winput) {
@@ -613,6 +615,7 @@ void horswp_field(void) {
 		current_window = last_window;
 		if(current_window == &winput) { window_change |= CH_INPUT; }
 	}
+
 	window_change |= CH_RESULT;
 }
 
