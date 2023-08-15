@@ -91,8 +91,8 @@ extern const char tooltip_wresult[];
 WINDOW *winput;
 WINDOW *wmode;
 WINDOW *wresult;
-WINDOW *whelp;
 /* Non-Selectable windows */
+WINDOW *whelp;
 WINDOW *wtooltip;
 WINDOW *wcase;
 /* Selected window pointer */
@@ -797,10 +797,16 @@ void display(void) {
 		if(window_change == CH_HELP) {
 			display_frame(true);
 			display_help();
+
+			window_change = CH_ALL;
+			/* Since whelp is not Selectable,
+			 * trigger the tooltip redisplay
+			 * this way
+			*/
+			lstwin = NULL;
 			/* Do not display over the help msg and
 			 *  rely on setting CH_ALL for the next display
 			 */
-			window_change = CH_ALL;
 			return;
 		}
 		if(window_change == CH_ALL) { display_frame(false); }
