@@ -157,6 +157,7 @@ void dispinit(void) {
 	initscr(); /* initialize the screen */
 	start_color();
 	use_default_colors();
+	easy_init_pair(STD);
 	easy_init_pair(FRAME);
 	easy_init_pair(PROMPT);
 	easy_init_pair(FIELD);
@@ -213,6 +214,14 @@ void dispinit(void) {
 	whelp	 = newwin(LINES - 2, COLS - 2, 1, 1);
 	wtooltip = newwin(1, tooltip_width, LINES - 1, COLS - (tooltip_width + 4));
 	wcase    = newwin(1, case_width, 0, COLS - case_width - 4);
+	/* Set background */
+	wbkgdset(winput, COLOR_PAIR(COLOR_PAIR_STD));
+	wbkgdset(wmode, COLOR_PAIR(COLOR_PAIR_STD));
+	wbkgdset(wresult, COLOR_PAIR(COLOR_PAIR_STD));
+	wbkgdset(whelp, COLOR_PAIR(COLOR_PAIR_STD));
+	wbkgdset(wtooltip, COLOR_PAIR(COLOR_PAIR_STD));
+	wbkgdset(wcase, COLOR_PAIR(COLOR_PAIR_STD));
+
 	refresh();
 
 	current_window = &winput;

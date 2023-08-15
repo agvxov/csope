@@ -8,6 +8,7 @@
 static int	input_available = 0;
 static int  input_char;
 char		input_line[PATLEN + 1];
+
 /* used for saving a line not [Enter]-ed yet,
  *  so its not lost if the user scrolls the history
  */
@@ -164,6 +165,8 @@ static inline void next_history_proxy(){
 }
 
 void rlinit() {
+	rl_readline_name = PROGRAM_NAME;
+
 	using_history();
 
 	rl_catch_signals		= 0;

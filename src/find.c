@@ -754,7 +754,6 @@ int findinit(const char *pattern_) {
 	}
 
 end:
-	free(pattern);
 	return r;
 }
 

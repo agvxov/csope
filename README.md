@@ -73,6 +73,18 @@ Just run:
 	make
 This will yield the executable "scope", which you are free to do whatever with.
 
+# Configuration
+## Readline
+The readline integratoin should be complete -please let us know if not-, except for your prompt being used, which could easily break the TUIs display.
+
+The rl_readline_name variable will be set to "Csope", so you may have conditional configurations in your .inputrc with the following format:
+	$if Csope
+		# <whatever>
+	$endif
+## Colors
+All can be configured sucklessly under "config/colors.h". Hopefully the comments are self evident.
+
+
 # Control flow
 ...
 
