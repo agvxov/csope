@@ -80,8 +80,9 @@ enum {
 	CH_RESULT = 0x0001 << 0,
 	CH_INPUT  = 0x0001 << 1,
 	CH_MODE	  = 0x0001 << 2,
-	CH_HELP	  = 0x0001 << 3, /* do NOT add to CH_ALL */
-	CH_ALL	  = CH_RESULT | CH_INPUT | CH_MODE
+	CH_CASE   = 0x0001 << 3,
+	CH_HELP	  = 0x0001 << 4, /* do NOT add to CH_ALL */
+	CH_ALL	  = CH_RESULT | CH_INPUT | CH_MODE | CH_CASE
 };
 
 enum {
@@ -252,7 +253,6 @@ void PCS_reset(void);
 
 void rlinit(void);
 
-void		addcmd(int f, char *s);
 void		addsrcfile(char *path);
 void		askforchar(void);
 void		askforreturn(void);
@@ -295,7 +295,6 @@ void		posterr(char *msg, ...);
 void		postfatal(const char *msg, ...);
 void		putposting(char *term, int type);
 void		fetch_string_from_dbase(char *, size_t);
-void		resetcmd(void);
 void		shellpath(char *out, int limit, char *in);
 void		sourcedir(char *dirlist);
 void		myungetch(int c);
@@ -309,9 +308,6 @@ bool writerefsfound(void);
 
 int			findinit(const char *pattern_);
 MOUSE	   *getmouseaction(char leading_char);
-struct cmd *currentcmd(void);
-struct cmd *prevcmd(void);
-struct cmd *nextcmd(void);
 
 int	 egrep(char *file, FILE *output, char *format);
 int	 hash(char *ss);

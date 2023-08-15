@@ -1,12 +1,14 @@
 DEBUG:=1
 GCC:=0
 
+LIBS:=ncurses readline history
+
 CC:=gcc
 CFLAGS:=-Wall -Wextra -Wpedantic
 CFLAGS +=$(if $(DEBUG),-O0 -ggdb,-O3 -flto=auto -fomit-frame-pointer)
 CFLAGS +=$(if $(SAN),-fsanitize=${SAN})
-CPPFLAGS:=-I config/ -I ${CHDRD} ${shell pkg-config --cflags ncurses readline}
-LDLIBS=${shell pkg-config --libs ncurses readline}
+CPPFLAGS:=-I config/ -I ${CHDRD} ${shell pkg-config --cflags ${LIBS}}
+LDLIBS=${shell pkg-config --libs ${LIBS}}
 LEX:=flex
 
 LEXD:=src/

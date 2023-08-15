@@ -26,7 +26,7 @@ Csope is alive and well.
 
 # Interface
 	            <-- Tab -->
-	  +------------Message-------------+           +--------------------------------+
+	  +--Version-----------------Case--+           +--------------------------------+
 	A |+--------------+---------------+|           |+------------------------------+|
 	| || Input Window | Result window ||           ||                              ||
 	| |+--------------+               ||     ?     ||                              ||
@@ -36,7 +36,7 @@ Csope is alive and well.
 	| ||              |               ||           ||                              ||
 	| ||              |               ||           ||                              ||
 	V |+--------------+---------------+|           |+------------------------------+|
-	  +-----------Tool Tips------------+           +--------------------------------+
+	  +---------------------Tool Tips--+           +--------------------------------+
 
 # Usacases
 Csope shines at exploring stranger and obsecure code bases due to its TUI.
@@ -49,21 +49,29 @@ fixing it would have been a lost cause, if not for Cscope itself. Well, Csope no
 
 # Improvements/Changes
 ## User side
-+ renamed the program, because "cscope" is annoying to type
-+ improved gui
-+ GNU Readline integration (ie. VI/EMACS mode, command history) /*pending*/
++ Renamed the program, because "cscope" is annoying to type
++ Improved tui
++ GNU Readline/History integration
 ## To the code
-+ nuked autoconf, replaced with single Makefile
-+ reorganized main()
-+ encapsulated changes to the TUI into display.c
-+ encapsulated searching into find.c
-+ removed "scanner.l" which seems to be an anchient version (and redundant copy) of "fscanner.l" forgotten by all
-+ removed macro hell put in place to allow compiling on a dead badger
-+ replaced repeated inline #ifdef KEY_\*-s with guaranteed definitions
-+ removed random commets giving tips for and refering to specific issues
-+ use stdbool instead of YES/NO macros
-+ saved kilobytes by stripping trailing whitespace
-+ FILE\* refsfound used to be rewind()-ed everytime the reads were not sequencial
++ Nuked autoconf, replaced with single Makefile
++ Reorganized the control flow
++ Encapsulated changes to the TUI into display.c
++ Encapsulated searching into find.c
++ Removed "scanner.l" which seems to be an anchient version (and redundant copy) of "fscanner.l" forgotten by all
++ Removed macro hell put in place to allow compiling on a dead badger
++ Use stdbool instead of YES/NO macros
++ Saved kilobytes by stripping trailing whitespace
++ ...and much more
+
+# Installation
+You will have to compile from source.
+After you made sure you have the following (dev) libraries installed:
+	ncurses
+	GNU Readline
+	GNU History (should come with Readline)
+Just run:
+	make
+This will yield the executable "scope", which you are free to do whatever with.
 
 # Control flow
 ...
@@ -86,26 +94,25 @@ fixing it would have been a lost cause, if not for Cscope itself. Well, Csope no
 | int window_change | Bit mask type of the CH_\* macros. Keeps track of the windows to be refresed on the next run of display(). Could be better utalized.
 
 # TODO /*move soon*/
- + sort out constants.h
- + scrollbar() uses magic int literals?
- + Ordering function declarations in global.h by alpha order is not smart
- + lineflagafterfile is stupid
- + library.h...; "private library", in a program using 90 globals; ffs
- + sort out the global hell
- + was there really ever a scrollbar?
- + handle resizing
- + a search struct could be great for caching and could easy the global situation
++ sort out constants.h
++ scrollbar() uses magic int literals?
++ lineflagafterfile is stupid
++ library.h...; "private library", in a program using 90 globals; ffs
++ sort out the global hell
++ was there really ever a scrollbar?
++ handle resizing
++ a search struct could be great for caching and could ease the global situation
 ## Original
 + Same capabilities as interactive in non interactive (one shot) mode
 + Provide some how-do-I-use-this-thing doc.
 
 
 # BUGS
- + Changing text double frees:
- 	free(): double free detected in tcache 2
- 	Aborted
- + Changing text can crash without replacing text and leaving the console ncursed
- + After an attempted change malloc *can* cry and crash
++ Changing text double frees:
+	free(): double free detected in tcache 2
+	Aborted
++ Changing text can crash without replacing text and leaving the console ncursed
++ After an attempted change malloc *can* cry and crash
 
 # Future features / contributor wishlist
 + providing support for other languages by integrating new lexers (e.g. ctag's)

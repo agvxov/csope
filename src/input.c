@@ -160,17 +160,14 @@ static int wmode_input(const int c) {
 		case KEY_DOWN:
 		case KEY_RIGHT:
 			field = (field + 1) % FIELDS;
-			resetcmd();
 			break;
 		case ctrl('P'): /* go to previous input field */
 		case KEY_UP:
 		case KEY_LEFT:
 			field = (field + (FIELDS - 1)) % FIELDS;
-			resetcmd();
 			break;
 		case KEY_HOME: /* go to first input field */
 			field = 0;
-			resetcmd();
 			break;
 		case KEY_LL: /* go to last input field */
 			curdispline = disprefs;
@@ -206,7 +203,6 @@ static int wresult_input(const int c) {
 			break;
 		case KEY_LL:
 			field = FIELDS - 1;
-			resetcmd();
 			break;
 		default:
 			if(c > mdisprefs) { goto noredisp; }
@@ -230,12 +226,10 @@ static int global_input(const int c) {
 			break;
 		case ctrl('K'):
 			field = (field + (FIELDS - 1)) % FIELDS;
-			resetcmd();
 			window_change |= CH_MODE;
 			break;
 		case ctrl('J'):
 			field = (field + 1) % FIELDS;
-			resetcmd();
 			window_change |= CH_MODE;
 			break;
 		case ctrl('H'): /* display previous page */
@@ -361,6 +355,13 @@ static int global_input(const int c) {
 		case ctrl('E'): /* edit all lines */
 			editall();
 			break;
+		case ctrl('S'):	// toggle caseless
+			caseless = !caseless;
+			egrepcaseless(caseless);
+			window_change |= CH_CASE;
+			break;
+		case EOF:
+			myexit(0);
 		default:
 			return 0;
 	}

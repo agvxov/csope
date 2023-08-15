@@ -420,7 +420,6 @@ int process_mouse() {
 		field = p->y1 - FLDLINE;
 		/* force it into range */
 		if(field >= FIELDS) { field = FIELDS - 1; }
-		resetcmd();
 		return (false);
 	}
 

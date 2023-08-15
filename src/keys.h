@@ -1,6 +1,8 @@
 #ifndef KEYS_H
 #define KEYS_H
 
+#include <ncurses.h>
+
 /* Key macros */
 /* These macros are not guaranteed to be defined,
  *  however we wish to test for these anyways while

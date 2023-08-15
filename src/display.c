@@ -94,6 +94,7 @@ WINDOW *wresult;
 WINDOW *whelp;
 /* Non-Selectable windows */
 WINDOW *wtooltip;
+WINDOW *wcase;
 /* Selected window pointer */
 WINDOW		  **current_window;
 static WINDOW **last_window;
@@ -113,6 +114,7 @@ static inline void display_cursor(void);
 static inline void display_help(void);
 static inline void display_frame(const bool border_only);
 static inline void display_mode(void);
+static inline void display_case(void);
 static inline void display_command_field(void);
 static inline void display_results(void);
 static inline void display_tooltip(void);
@@ -161,6 +163,7 @@ void dispinit(void) {
 	easy_init_pair(FIELD_SELECTED);
 	easy_init_pair(HELP);
 	easy_init_pair(TOOLTIP);
+	easy_init_pair(CASE);
 	easy_init_pair(MESSAGE);
 	easy_init_pair(PATTERN);
 	easy_init_pair(TABLE_HEADER);
@@ -189,6 +192,7 @@ void dispinit(void) {
 	mdisprefs		 = result_window_height - (WRESULT_TABLE_BODY_START + 1);
 	tooltip_width =
 		MAX(MAX(strlen(tooltip_winput), strlen(tooltip_wmode)), strlen(tooltip_wresult));
+	static int case_width = sizeof("Case: XXX")-1;
 
 	if(mdisprefs <= 0) {
 		postfatal(PROGRAM_NAME ": screen too small\n");
@@ -203,11 +207,12 @@ void dispinit(void) {
 	rlinit();
 
 	/* initialize windows */
-	winput	= newwin(input_window_height, first_col_width, 1, 1);
-	wmode	= newwin(mode_window_height, first_col_width, input_window_height + 1 + 1, 1);
-	wresult = newwin(result_window_height, second_col_width, 1, first_col_width + 1 + 1);
-	whelp	= newwin(LINES - 2, COLS - 2, 1, 1);
+	winput	 = newwin(input_window_height, first_col_width, 1, 1);
+	wmode	 = newwin(mode_window_height, first_col_width, input_window_height + 1 + 1, 1);
+	wresult  = newwin(result_window_height, second_col_width, 1, first_col_width + 1 + 1);
+	whelp	 = newwin(LINES - 2, COLS - 2, 1, 1);
 	wtooltip = newwin(1, tooltip_width, LINES - 1, COLS - (tooltip_width + 4));
+	wcase    = newwin(1, case_width, 0, COLS - case_width - 4);
 	refresh();
 
 	current_window = &winput;
@@ -261,6 +266,13 @@ static inline void display_help() {
 	do_press_any_key = true;
 }
 
+static inline void display_case(){
+	wmove(wcase, 0, 0);
+	wattron(wcase, COLOR_PAIR(COLOR_PAIR_CASE));
+	waddstr(wcase, (caseless ? "Case: OFF" : "Case:  ON"));
+	wattroff(wcase, COLOR_PAIR(COLOR_PAIR_CASE));
+}
+
 static inline void display_frame(const bool border_only) {
 	wattron(stdscr, COLOR_PAIR(COLOR_PAIR_FRAME));
 
@@ -273,12 +285,6 @@ static inline void display_frame(const bool border_only) {
 #else
 	wprintw(stdscr, PROGRAM_NAME " version %d%s", FILEVERSION, FIXVERSION);
 #endif
-	wmove(stdscr, 0, COLS - (int)sizeof("Case: XXX") - 4);
-	if(caseless) {
-		waddstr(stdscr, "Case:  ON");
-	} else {
-		waddstr(stdscr, "Case: OFF");
-	}
 	/* --- */
 	if(!border_only) {
 		/* Vertical line */
@@ -805,6 +811,7 @@ void display(void) {
 			lstwin = *current_window;
 			display_tooltip();
 		}
+		if(window_change & CH_CASE) { display_case(); }
 		if(window_change & CH_INPUT) { display_command_field(); }
 		if(window_change & CH_RESULT) { display_results(); }
 		if(window_change & CH_MODE) { display_mode(); }
@@ -814,6 +821,7 @@ void display(void) {
 		wrefresh(wmode);
 		wrefresh(wresult);
 		wrefresh(wtooltip);
+		wrefresh(wcase);
 	}
 
 	window_change = CH_NONE;
