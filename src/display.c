@@ -77,7 +77,7 @@ const char	*prompts[]	  = {[INPUT_NORMAL] = "$ ",
 		[INPUT_PIPE]						= "Pipe to shell command: ",
 		[INPUT_READ]						= "Read from file: ",
 		[INPUT_CHANGE_TO]					= "To: ",
-		[INPUT_CHANGE]						= "To: "};
+		[INPUT_CHANGE]						= "###"};
 
 unsigned int topline = 1; /* top line of page */
 
@@ -614,7 +614,7 @@ static inline void display_cursor(void) {
 	waddch(*current_window, i);
 }
 
-void horswp_field(void) {
+void horswp_window(void) {
 	if(input_mode != INPUT_NORMAL){ return; }
 
 	if(current_window != &wresult) {
@@ -634,7 +634,7 @@ void horswp_field(void) {
 	window_change |= CH_RESULT;
 }
 
-void verswp_field(void) {
+void verswp_window(void) {
 	if(current_window == &wresult) { return; }
 	current_window = (current_window == &winput) ? &wmode : &winput;
 	window_change |= CH_INPUT | CH_MODE;

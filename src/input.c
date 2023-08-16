@@ -46,6 +46,11 @@
 
 #include "keys.h"
 
+extern const void *const		winput;
+extern const void *const		wmode;
+extern const void *const		wresult;
+extern const void *const *const current_window;
+
 bool do_press_any_key = false;
 
 static jmp_buf env;		 /* setjmp/longjmp buffer */
@@ -219,10 +224,10 @@ noredisp:
 static int global_input(const int c) {
 	switch(c) {
 		case '\t':
-			horswp_field();
+			horswp_window();
 			break;
 		case '%':
-			verswp_field();
+			verswp_window();
 			break;
 		case ctrl('K'):
 			field = (field + (FIELDS - 1)) % FIELDS;
@@ -251,32 +256,14 @@ static int global_input(const int c) {
 			window_change |= CH_RESULT;
 			break;
 		case '>':	  /* write or append the lines to a file */
-			break;	  // XXX
-			// char filename[PATHLEN + 1];
-			// char* s;
-			// char ch;
-			// FILE* file;
-			// if (totallines == 0) {
-			//     postmsg("There are no lines to write to a file");
-			//     return(NO);
-			// }
-			// move(PRLINE, 0);
-			////addstr("Write to file: ");        // XXX
-			// s = "w";
-			// if ((ch = getch()) == '>') {
-			// move(PRLINE, 0);
-			////addstr(appendprompt);    // XXX fix
-			////ch = '\0';
-			////s = "a";
-			////}
-			////if (ch != '\r' && mygetline("", newpat, COLS - sizeof(appendprompt), c,
-			///NO) > 0) { /    shellpath(filename, sizeof(filename), newpat); /    if
-			///((file = myfopen(filename, s)) == NULL) { /        cannotopen(filename); /
-			///} else { /        seekline(1); /        while ((ch = getc(refsfound)) !=
-			///EOF) { /        putc(ch, file); /        } /        seekline(topline); /
-			///fclose(file); /    }
-			////}
-			////clearprompt();
+			if (totallines == 0) {
+			    postmsg("There are no lines to write to a file");
+			    break;
+			}
+			if(*current_window == wresult){ horswp_window(); }
+			if(*current_window == wmode){ verswp_window(); }
+			input_mode = INPUT_APPEND;
+			window_change |= CH_INPUT;
 			break;
 		case '<':	  /* read lines from a file */
 			break;	  // XXX
@@ -369,11 +356,6 @@ static int global_input(const int c) {
 	return 1;
 }
 
-extern const void *const		winput;
-extern const void *const		wmode;
-extern const void *const		wresult;
-extern const void *const *const current_window;
-
 int change_input(const int c) {
 	MOUSE *p; /* mouse data */
 
@@ -412,7 +394,7 @@ int change_input(const int c) {
 		case ctrl('D'):
 			changestring(input_line, newpat, change, totallines);
 			input_mode = INPUT_NORMAL;
-			horswp_field();
+			horswp_window();
 			search(newpat);
 			break;
 		default:
@@ -425,6 +407,8 @@ int change_input(const int c) {
 				}
 			}
 	}
+
+	input_mode = INPUT_NORMAL;
 
 	return 0;
 }
@@ -538,6 +522,7 @@ int handle_input(const int c) {
 			assert("'current_window' dangling.");
 			break; /* NOTREACHED */
 		case INPUT_CHANGE_TO:
+		case INPUT_APPEND:
 			return interpret(c);
 		case INPUT_CHANGE:
 			return change_input(c);

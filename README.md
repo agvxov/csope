@@ -106,6 +106,7 @@ All can be configured sucklessly under "config/colors.h". Hopefully the comments
 | int window_change | Bit mask type of the CH_\* macros. Keeps track of the windows to be refresed on the next run of display(). Could be better utalized.
 
 # TODO /*move soon*/
+1. create a step in the mean loop where the cursor us forced into the right window based on mode
 + sort out constants.h
 + scrollbar() uses magic int literals?
 + lineflagafterfile is stupid
@@ -125,6 +126,7 @@ All can be configured sucklessly under "config/colors.h". Hopefully the comments
 	Aborted
 + Changing text can crash without replacing text and leaving the console ncursed
 + After an attempted change malloc *can* cry and crash
++ Changing text fucks up redisplaying
 
 # Future features / contributor wishlist
 + providing support for other languages by integrating new lexers (e.g. ctag's)

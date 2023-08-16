@@ -75,6 +75,8 @@ struct cmd {					 /* command history struct */
 		char	   *text;		 /* input field text */
 };
 
+ /* bitmask type to mark which windows have to be rerendered by
+    display() */
 enum {
 	CH_NONE	  = 0x0000,
 	CH_RESULT = 0x0001 << 0,
@@ -84,6 +86,7 @@ enum {
 	CH_HELP	  = 0x0001 << 4, /* do NOT add to CH_ALL */
 	CH_ALL	  = CH_RESULT | CH_INPUT | CH_MODE | CH_CASE
 };
+extern int window_change;
 
 enum {
 	INPUT_NORMAL,
@@ -93,6 +96,7 @@ enum {
 	INPUT_CHANGE_TO,
 	INPUT_CHANGE
 };
+extern int input_mode;
 
 #ifndef DFLT_INCDIR
 # define DFLT_INCDIR "/usr/include"
@@ -181,8 +185,6 @@ extern unsigned int mdisprefs;	  /* maximum displayed references */
 extern unsigned int nextline;	  /* next line to be shown */
 extern long			searchcount;  /* count of files searched */
 extern unsigned int totallines;	  /* total reference lines */
-extern int window_change; /* bitmask type to mark which windows have to be rerendered by
-							 display() */
 
 /* find.c global data */
 extern char	 block[];	  /* cross-reference file block */
@@ -237,13 +239,12 @@ extern char *reflines;		   /* symbol reference lines file */
 extern bool	 do_press_any_key; /* wait for any key to continue */
 extern int	 current_page;
 #define topref (current_page * mdisprefs)
-void	   verswp_field(void);
-void	   horswp_field(void);
+void	   horswp_window(void);
+void	   verswp_window(void);
 bool	   interpret(int c);	// XXX: probably rename
 int		   handle_input(const int c);
 int		   dispchar2int(const char c);
 int		   process_mouse();
-extern int input_mode;
 int		   changestring(const char *from, const char *to, const bool *const change,
 		   const int change_len);
 

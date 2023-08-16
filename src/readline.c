@@ -80,7 +80,7 @@ static void redisplay_function() {
 }
 
 static void callback_handler(char *line) {
-	if(!line) { return; }
+	if(!line) { return; } // XXX; should behave differently with different modes
 
 	add_history(line);
 
@@ -88,7 +88,7 @@ static void callback_handler(char *line) {
 		case INPUT_NORMAL:
 			strncpy(input_line, line, PATLEN);
 			search(input_line);
-			horswp_field();
+			horswp_window();
 			curdispline = 0;
 			current_page = 0;
 			PCS_reset();
@@ -97,12 +97,27 @@ static void callback_handler(char *line) {
 			strncpy(newpat, line, PATLEN);
 			change	   = calloc(totallines, sizeof(*change));
 			input_mode = INPUT_CHANGE;
-			horswp_field();
+			horswp_window();
 			return;
+		case INPUT_APPEND: {
+			char filename[PATHLEN + 1];
+			FILE* file;
+			char ch;
+			shellpath(filename, sizeof(filename), line);
+			file = fopen(filename, "a+");
+			seekpage(0);
+			while ((ch = getc(refsfound)) != EOF) {
+				putc(ch, file);
+			}
+			fclose(file);
+			input_mode = INPUT_NORMAL;
+			return;
+		}
 	}
 
 	switch(field) {
 		case CHANGE:
+			if(totallines == 0){ return; }
 			input_mode = INPUT_CHANGE_TO;
 			break;
 		case DEFINITION:
