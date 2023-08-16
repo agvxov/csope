@@ -260,10 +260,9 @@ static int global_input(const int c) {
 			    postmsg("There are no lines to write to a file");
 			    break;
 			}
-			if(*current_window == wresult){ horswp_window(); }
-			if(*current_window == wmode){ verswp_window(); }
 			input_mode = INPUT_APPEND;
 			window_change |= CH_INPUT;
+			force_window();
 			break;
 		case '<':	  /* read lines from a file */
 			break;	  // XXX

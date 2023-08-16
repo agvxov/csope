@@ -224,6 +224,7 @@ void dispinit(void) {
 
 	refresh();
 
+	last_window = &winput;
 	current_window = &winput;
 }
 
@@ -258,6 +259,18 @@ void exitcurses(void) {
 	/* restore the mouse */
 	mousecleanup();
 	fflush(stdout);
+}
+
+void force_window(){
+	switch(input_mode){
+		case INPUT_CHANGE:
+			current_window = &wresult;
+		break;
+		case INPUT_CHANGE_TO:
+		case INPUT_APPEND:
+			current_window = &winput;
+		break;
+	}
 }
 
 static inline void display_help() {

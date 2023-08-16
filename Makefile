@@ -43,6 +43,9 @@ obj/%.h.gch: src/%.h
 obj/%.h.gch: config/%.h
 	${CC} $< -o $@
 
+install: ${OUTPUT}
+	cp ${OUTPUT} /usr/bin/
+
 clean:
 	-rm ${CHDR}
 	-rm ${GENLEX}

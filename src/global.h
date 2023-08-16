@@ -271,6 +271,7 @@ void		editall(void);
 void		editref(int);
 void		entercurses(void);
 void		exitcurses(void);
+void		force_window(void);
 void		findcleanup(void);
 void		freesrclist(void);
 void		freeinclist(void);

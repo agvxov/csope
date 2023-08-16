@@ -97,7 +97,7 @@ static void callback_handler(char *line) {
 			strncpy(newpat, line, PATLEN);
 			change	   = calloc(totallines, sizeof(*change));
 			input_mode = INPUT_CHANGE;
-			horswp_window();
+			force_window();
 			return;
 		case INPUT_APPEND: {
 			char filename[PATHLEN + 1];
