@@ -328,9 +328,6 @@ static int global_input(const int c) {
 			execute(shell, shell, NULL);
 			current_page = 0;
 			break;
-		case KEY_RESIZE:
-			/* XXX: fill in*/
-			break;
 		case ctrl('U'): /* redraw screen */
 		case KEY_CLEAR:
 			window_change = CH_ALL;
@@ -505,6 +502,17 @@ int handle_input(const int c) {
 		do_press_any_key = false;
 		return 0;
 	}
+	/* - Resize - */
+	/* it's treated specially because curses treat it specially.
+	   as far as i can tell this is the only key that does not
+	   flush after itself.
+	*/
+	if(c == KEY_RESIZE) {
+		redisplay();
+		flushinp();
+		return 0;
+	}
+
 	/* --- global --- */
 	const int r = global_input(c);
 	if(r) { return 0; }

@@ -105,15 +105,7 @@ static inline void readenv(void);
 static inline void linemode_event_loop(void);
 static inline void screenmode_event_loop(void);
 
-#if defined(KEY_RESIZE) && !defined(__DJGPP__)
-void sigwinch_handler(int sig, siginfo_t *info, void *unused) {
-	UNUSED(sig);
-	UNUSED(info);
-	UNUSED(unused);
 
-	if(incurses == true) { ungetch(KEY_RESIZE); }
-}
-#endif
 
 static inline void siginit(void) {
 	/* if running in the foreground */
@@ -134,7 +126,7 @@ static inline void siginit(void) {
 	 */
 	signal(SIGPIPE, SIG_IGN);
 
-	if(linemode == false) { signal(SIGWINCH, sigwinch_handler); }
+	//if(linemode == false) { signal(SIGWINCH, redisplay); }
 }
 
 void cannotopen(const char *const file) {

@@ -106,12 +106,11 @@ All can be configured sucklessly under "config/colors.h". Hopefully the comments
 | int window_change | Bit mask type of the CH_\* macros. Keeps track of the windows to be refresed on the next run of display(). Could be better utalized.
 
 # TODO /*move soon*/
-1. create a step in the mean loop where the cursor us forced into the right window based on mode
++ sort out the global hell
 + sort out constants.h
-+ scrollbar() uses magic int literals?
 + lineflagafterfile is stupid
 + library.h...; "private library", in a program using 90 globals; ffs
-+ sort out the global hell
++ scrollbar() uses magic int literals?
 + was there really ever a scrollbar?
 + handle resizing
 + a search struct could be great for caching and could ease the global situation

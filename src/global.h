@@ -265,6 +265,7 @@ void		countrefs(void);
 void		crossref(char *srcfile);
 void		dispinit(void);
 void		display(void);
+void		redisplay(void);
 void		drawscrollbar(int top, int bot);
 void		edit(char *file, const char *const linenum);
 void		editall(void);

@@ -854,3 +854,20 @@ void display(void) {
 
 	window_change = CH_NONE;
 }
+
+void redisplay(void) {
+	delwin(winput);
+	delwin(wmode);
+	delwin(wresult);
+	delwin(whelp );
+	delwin(wtooltip);
+	delwin(wcase);
+
+	endwin();
+
+	dispinit();
+
+	window_change = CH_ALL;
+
+	display();
+}
