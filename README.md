@@ -9,6 +9,7 @@ Csope is alive and well.
 # Before/After
 ## After
 ![after](docs/after.jpg)
+## Before
 ![after](docs/before.jpg)
 
 # Features
