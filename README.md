@@ -7,7 +7,9 @@ Csope is alive and well.
  TODO: fill in
 
 # Before/After
- TODO: fill in
+## After
+![after](docs/after.jpg)
+![after](docs/before.jpg)
 
 # Features
 #### Search for
