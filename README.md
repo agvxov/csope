@@ -74,7 +74,9 @@ After you made sure you have the following (dev) libraries installed:
 	GNU History (should come with Readline)
 Just run:
 	make
-This will yield the executable "scope", which you are free to do whatever with.
+This will yield the executable "csope", which you are free to do whatever with.
+Hint:
+	cp csope /usr/bin/
 
 # Configuration
 ## Readline
@@ -115,7 +117,6 @@ All can be configured sucklessly under "config/colors.h". Hopefully the comments
 + library.h...; "private library", in a program using 90 globals; ffs
 + scrollbar() uses magic int literals?
 + was there really ever a scrollbar?
-+ handle resizing
 + a search struct could be great for caching and could ease the global situation
 ## Original
 + Same capabilities as interactive in non interactive (one shot) mode
@@ -128,7 +129,6 @@ All can be configured sucklessly under "config/colors.h". Hopefully the comments
 	Aborted
 + Changing text can crash without replacing text and leaving the console ncursed
 + After an attempted change malloc *can* cry and crash
-+ Changing text fucks up redisplaying
 
 # Future features / contributor wishlist
 + providing support for other languages by integrating new lexers (e.g. ctag's)
