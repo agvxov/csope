@@ -377,6 +377,7 @@ int change_input(const int c) {
 			break;
 		case ctrl('D'):
 			changestring(input_line, newpat, change, totallines);
+			free(change);
 			input_mode = INPUT_NORMAL;
 			horswp_window();
 			search(newpat);
