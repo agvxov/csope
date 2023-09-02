@@ -403,6 +403,7 @@ int change_input(const int c) {
 			free(change);
 			input_mode = INPUT_NORMAL;
 			horswp_window();
+			rebuild_reference();
 			search(newpat);
 			break;
 		default:
