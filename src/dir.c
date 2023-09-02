@@ -499,7 +499,7 @@ static bool issrcfile(char *path) {
 	bool		looks_like_source = false;
 
 	/* ensure there is some file suffix */
-	if(s == NULL || *++s == '\0') return false;
+	if(s == NULL || *(++s) == '\0') { return false; }
 
 	/* if an SCCS or versioned file */
 	if(file[1] == '.' && file + 2 != s) { /* 1 character prefix */
