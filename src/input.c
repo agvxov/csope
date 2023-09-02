@@ -248,7 +248,6 @@ static int global_input(const int c) {
 			}
 			break;
 		case '+':
-		case ctrl('L'):
 		case KEY_NPAGE:
 			if(totallines == 0) { return 0; } /* don't redisplay if there are no lines */
 			curdispline = 0;
@@ -386,7 +385,7 @@ int change_input(const int c) {
 			{
 				/* if a line was selected */
 				const int cc = dispchar2int(c);
-				if(cc != -1) {
+				if(cc != -1 && cc < totallines) {
 					change[cc] = !change[cc];
 					window_change |= CH_RESULT;
 				}
