@@ -268,6 +268,7 @@ void force_window(){
 		break;
 		case INPUT_CHANGE_TO:
 		case INPUT_APPEND:
+		case INPUT_READ:
 			current_window = &winput;
 		break;
 	}

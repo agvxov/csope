@@ -80,7 +80,10 @@ static void redisplay_function() {
 }
 
 static void callback_handler(char *line) {
-	if(!line) { return; } // XXX; should behave differently with different modes
+	if(!line) {
+		input_mode = INPUT_NORMAL;
+		return;
+	}
 
 	add_history(line);
 
@@ -127,6 +130,7 @@ static void callback_handler(char *line) {
 		case CHANGE:
 			if(totallines == 0){ return; }
 			input_mode = INPUT_CHANGE_TO;
+			force_window();
 			break;
 		case DEFINITION:
 		case FILENAME:

@@ -393,8 +393,6 @@ int change_input(const int c) {
 			}
 	}
 
-	input_mode = INPUT_NORMAL;
-
 	return 0;
 }
 
@@ -406,7 +404,8 @@ int changestring(const char *from, const char *to, const bool *const change,
 	char  msg[MSGLEN + 1];		/* message */
 	FILE *script;				/* shell script file */
 
-								/* Return early */
+
+	// Return early
 	bool anymarked = false; /* any line marked */
 	for(int i = 0; i < change_len; i++) {
 		if(change[i]) {
