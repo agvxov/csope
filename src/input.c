@@ -345,7 +345,7 @@ int change_input(const int c) {
 
 	switch(c) {
 		case '*': /* invert page */
-			for(int i = 0; topref + i < nextline; i++) {
+			for(int i = 0; i < nextline-1; i++) {
 				change[topref + i] = !change[topref + i];
 			}
 			window_change |= CH_RESULT;
