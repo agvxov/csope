@@ -118,17 +118,15 @@ All can be configured sucklessly under "config/colors.h". Hopefully the comments
 + scrollbar() uses magic int literals?
 + was there really ever a scrollbar?
 + a search struct could be great for caching and could ease the global situation
-## Original
+## From the original
 + Same capabilities as interactive in non interactive (one shot) mode
 + Provide some how-do-I-use-this-thing doc.
 
 
 # BUGS
-+ Changing text double frees:
++ Changing text double frees (NOTE: this problem is inherited):
 	free(): double free detected in tcache 2
 	Aborted
-+ Changing text can crash without replacing text and leaving the console ncursed
-+ After an attempted change malloc *can* cry and crash
 
 # Future features / contributor wishlist
 + providing support for other languages by integrating new lexers (e.g. ctag's)
