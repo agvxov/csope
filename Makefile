@@ -1,5 +1,4 @@
-DEBUG:=1
-GCC:=0
+DEBUG:=0
 
 LIBS:=ncurses readline history
 
