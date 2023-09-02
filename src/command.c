@@ -40,11 +40,7 @@
 
 
 #include <stdlib.h>
-#if defined(USE_NCURSES) && !defined(RENAMED_NCURSES)
-# include <ncurses.h>
-#else
-# include <curses.h>
-#endif
+#include <ncurses.h>
 #include <ctype.h>
 
 /* These are strictly used to test how keys are suppose to behave.
@@ -52,7 +48,7 @@
  *  with the history, while in _mode mode_ it selects what operation
  *  to perform with the user input.
  * In the original version this was handled by
- *  "int selecting // whether the (upper) symbol list is being browsed".
+ *  `int selecting // whether the (upper) symbol list is being browsed`.
  */
 extern const void *const		winput;
 extern const void *const		wmode;
@@ -71,13 +67,13 @@ bool readrefs(char *filename) {
 	FILE *file;
 	int	  c;
 
-	if((file = myfopen(filename, "rb")) == NULL) {
+	if((file = myfopen(filename, "r")) == NULL) {
 		cannotopen(filename);
-		return (false);
+		return false;
 	}
 	if((c = getc(file)) == EOF) { /* if file is empty */
 		fclose(file);
-		return (false);
+		return false;
 	}
 	totallines = 0;
 	disprefs   = 0;
@@ -94,13 +90,15 @@ bool readrefs(char *filename) {
 			return (false);
 		}
 		countrefs();
-	} else
+	} else {
 		fclose(file);
+	}
 	return (true);
 }
 
 /* scrollbar actions */
 static void scrollbar(MOUSE *p) {
+	// XXX
 	///* reposition list if it makes sense */
 	// if (totallines == 0) {
 	// return;

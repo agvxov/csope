@@ -85,20 +85,20 @@ static void callback_handler(char *line) {
 	add_history(line);
 
 	switch(input_mode) {
-		case INPUT_NORMAL:
+		case INPUT_NORMAL: {
 			strncpy(input_line, line, PATLEN);
 			search(input_line);
 			horswp_window();
 			curdispline = 0;
 			current_page = 0;
 			PCS_reset();
-			break;
-		case INPUT_CHANGE_TO:
+		} break;
+		case INPUT_CHANGE_TO: {
 			strncpy(newpat, line, PATLEN);
 			change	   = calloc(totallines, sizeof(*change));
 			input_mode = INPUT_CHANGE;
 			force_window();
-			return;
+		} return;
 		case INPUT_APPEND: {
 			char filename[PATHLEN + 1];
 			FILE* file;
@@ -111,8 +111,16 @@ static void callback_handler(char *line) {
 			}
 			fclose(file);
 			input_mode = INPUT_NORMAL;
-			return;
-		}
+		} return;
+		case INPUT_READ: {
+			char filename[PATHLEN + 1];
+			shellpath(filename, sizeof(filename), line);
+			if (!readrefs(filename)) {
+				postmsg("Ignoring an empty file");
+			}
+			window_change |= CH_INPUT | CH_RESULT;
+			input_mode = INPUT_NORMAL;
+		} return;
 	}
 
 	switch(field) {

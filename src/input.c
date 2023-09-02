@@ -265,21 +265,10 @@ static int global_input(const int c) {
 			force_window();
 			break;
 		case '<':	  /* read lines from a file */
-			break;	  // XXX
-			// move(PRLINE, 0);
-			// addstr(readprompt); // XXX fix
-			// if (mygetline("", newpat, COLS - sizeof(readprompt), '\0', NO) > 0) {
-			//     clearprompt();
-			//     shellpath(filename, sizeof(filename), newpat);
-			//     if (readrefs(filename) == NO) {
-			//         postmsg2("Ignoring an empty file");
-			//         return(NO);
-			//     }
-			//     window_change |= CH_INPUT;
-			//     return(YES);
-			// }
-			// clearprompt();
-			return 0;
+			input_mode = INPUT_READ;
+			window_change |= CH_INPUT;
+			force_window();
+			break;
 		case '|':	  /* pipe the lines to a shell command */
 		case '^':
 			break;	  // XXX fix
@@ -503,9 +492,10 @@ int handle_input(const int c) {
 		return 0;
 	}
 	/* - Resize - */
-	/* it's treated specially because curses treat it specially.
-	   as far as i can tell this is the only key that does not
-	   flush after itself.
+	/* it's treated specially because curses treat it specially:
+	   + its valid without keypad()
+	   + as far as i can tell this is the only key that does not
+	      flush after itself
 	*/
 	if(c == KEY_RESIZE) {
 		redisplay();
@@ -530,6 +520,7 @@ int handle_input(const int c) {
 			break; /* NOTREACHED */
 		case INPUT_CHANGE_TO:
 		case INPUT_APPEND:
+		case INPUT_READ:
 			return interpret(c);
 		case INPUT_CHANGE:
 			return change_input(c);
