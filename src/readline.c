@@ -44,9 +44,6 @@ bool interpret(int c) {
 		case KEY_DOWN:
 			next_history_proxy();
 			break;
-		case ctrl('R'):	
-			rebuild_reference();
-			break;
 		case ESC:
 		case ctrl('X'):
 			process_mouse();
@@ -137,26 +134,6 @@ static void callback_handler(char *line) {
 			if(totallines == 1) { editref(0); }
 			break;
 	}
-}
-
-static inline int rebuild_reference() {
-	if(isuptodate == true) {
-		postmsg("The -d option prevents rebuilding the symbol database");
-		return (false);
-	}
-	exitcurses();
-	freefilelist(); /* remake the source file list */
-	makefilelist();
-	rebuild();
-	if(errorsfound == true) {
-		errorsfound = false;
-		askforreturn();
-	}
-	entercurses();
-	postmsg(""); /* clear any previous message */
-	totallines = 0;
-	disprefs   = 0;
-	return (true);
 }
 
 static inline void previous_history_proxy(){

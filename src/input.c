@@ -68,6 +68,26 @@ static void catchint(int sig) {
 	longjmp(env, 1);
 }
 
+static inline bool rebuild_reference() {
+	if(isuptodate == true) {
+		postmsg("The -d option prevents rebuilding the symbol database");
+		return false;
+	}
+	exitcurses();
+	freefilelist(); /* remake the source file list */
+	makefilelist();
+	rebuild();
+	if(errorsfound == true) {
+		errorsfound = false;
+		askforreturn();
+	}
+	entercurses();
+	postmsg(""); /* clear any previous message */
+	totallines = 0;
+	disprefs   = 0;
+	return true;
+}
+
 /* unget a character */
 void myungetch(int c) {
 	prevchar = c;
@@ -228,6 +248,9 @@ static int global_input(const int c) {
 			break;
 		case '%':
 			verswp_window();
+			break;
+		case ctrl('R'):	
+			rebuild_reference();
 			break;
 		case ctrl('K'):
 			field = (field + (FIELDS - 1)) % FIELDS;
