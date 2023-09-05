@@ -93,13 +93,14 @@ FILE *myfopen(char *path, char *mode) {
 	if(fp && !strchr(mode, 'b')) { SETMODE(fileno(fp), O_TEXT); }
 #endif /* SETMODE */
 
-	if(fp && (fcntl(fileno(fp), F_SETFD, CLOSE_ON_EXEC) != -1))
+	if(fp && (fcntl(fileno(fp), F_SETFD, CLOSE_ON_EXEC) != -1)) {
 		return (fp);
-
-	else {
-		if(fp) fclose(fp);
-		return (NULL);
 	}
+
+	if(fp) {
+		fclose(fp);
+	}
+	return (NULL);
 }
 
 FILE *mypopen(char *cmd, char *mode) {
@@ -126,16 +127,17 @@ FILE *mypopen(char *cmd, char *mode) {
 		close(yourside);
 		execlp(shell, basename(shell), "-c", cmd, (void *)0);
 		_exit(1);
-	} else if(pid > 0)
+	} else if(pid > 0) {
 		tstat = signal(SIGTSTP, SIG_DFL);
-	if(pid == -1) return (NULL);
+	}
+	if(pid == -1) {
+		return (NULL);
+	}
 	popen_pid[myside] = pid;
 	(void)close(yourside);
 	return (fdopen(myside, mode));
 }
 
-/* HBB 20010705: renamed from 'pclose', which would collide with
- * system-supplied function of same name */
 int mypclose(FILE *ptr) {
 	int			 f;
 	pid_t		 r;
@@ -143,17 +145,17 @@ int mypclose(FILE *ptr) {
 	sighandler_t hstat, istat, qstat;
 
 	f = fileno(ptr);
-	(void)fclose(ptr);
+	UNUSED(fclose(ptr));
 	istat = signal(SIGINT, SIG_IGN);
 	qstat = signal(SIGQUIT, SIG_IGN);
 	hstat = signal(SIGHUP, SIG_IGN);
 	while((r = wait(&status)) != popen_pid[f] && r != -1)
 		; /* nothing */
 	if(r == -1) status = -1;
-	(void)signal(SIGINT, istat);
-	(void)signal(SIGQUIT, qstat);
-	(void)signal(SIGHUP, hstat);
-	(void)signal(SIGTSTP, tstat);
+	UNUSED(signal(SIGINT, istat));
+	UNUSED(signal(SIGQUIT, qstat));
+	UNUSED(signal(SIGHUP, hstat));
+	UNUSED(signal(SIGTSTP, tstat));
 	/* mark this pipe closed */
 	popen_pid[f] = 0;
 	return (status);

@@ -102,12 +102,9 @@ static struct keystruct *hashtab[HASHMOD]; /* pointer table */
 /* put the keywords into the symbol table */
 
 void initsymtab(void) {
-	unsigned int	  i, j;
-	struct keystruct *p;
-
-	for(i = 1; i < KEYWORDS; ++i) {
-		p		   = keyword + i;
-		j		   = hash(p->text) % HASHMOD;
+	for(unsigned i = 1; i < KEYWORDS; ++i) {
+		struct keystruct *p	= keyword + i;
+		int j		        = hash(p->text) % HASHMOD;
 		p->next	   = hashtab[j];
 		hashtab[j] = p;
 	}

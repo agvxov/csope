@@ -368,7 +368,7 @@ int change_input(const int c) {
 
 	switch(c) {
 		case '*': /* invert page */
-			for(int i = 0; i < nextline-1; i++) {
+			for(int i = 0; i < (nextline-1); i++) {
 				change[topref + i] = !change[topref + i];
 			}
 			window_change |= CH_RESULT;
@@ -401,6 +401,7 @@ int change_input(const int c) {
 		case ctrl('D'):
 			changestring(input_line, newpat, change, totallines);
 			free(change);
+			change = NULL;
 			input_mode = INPUT_NORMAL;
 			horswp_window();
 			rebuild_reference();
@@ -420,8 +421,8 @@ int change_input(const int c) {
 	return 0;
 }
 
-int changestring(const char *from, const char *to, const bool *const change,
-	const int change_len) {
+// XXX: move this
+int changestring(const char *from, const char *to, const bool *const change, const int change_len) {
 	char  newfile[PATHLEN + 1]; /* new file name */
 	char  oldfile[PATHLEN + 1]; /* old file name */
 	char  linenum[NUMLEN + 1];	/* file line number */
