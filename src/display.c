@@ -378,6 +378,7 @@ static inline void display_results() {
 	char  linenum[NUMLEN + 1];	/* line number */
 
 	werase(wresult);
+	nextline   = 1;
 
 	/* --- Display the message --- */
 	if(totallines == 0) {	 // Its a real message
@@ -559,7 +560,7 @@ static inline void display_results() {
 
 				/* if this is the first displayed line,
 				   display what will fit on the screen */
-				if(topref == nextline - 1) {
+				if(topref == (nextline-1)) {
 					disprefs++;
 					/* break out of two loops */
 					goto endrefs;

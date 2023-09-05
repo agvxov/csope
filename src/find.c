@@ -1278,7 +1278,6 @@ bool search(const char *query) {
 		cannotopen(temp1);
 		return (false);
 	}
-	nextline   = 1;
 	totallines = 0;
 	disprefs   = 0;
 
