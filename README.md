@@ -4,7 +4,7 @@ While the original's mainentence seems abandoned and as far as I can tell you ne
 Csope is alive and well.
 
 # Demo
- TODO: fill in
+![demo](docs/csope.GIF)
 
 # Before/After
 ## After
