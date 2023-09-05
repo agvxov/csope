@@ -68,14 +68,21 @@ fixing it would have been a lost cause, if not for Cscope itself. Well, Csope no
 
 # Installation
 You will have to compile from source.
+
 After you made sure you have the following (dev) libraries installed:
+
 	ncurses
 	GNU Readline
 	GNU History (should come with Readline)
+
 Just run:
+
 	make
+
 This will yield the executable "csope", which you are free to do whatever with.
+
 Hint:
+
 	cp csope /usr/bin/
 
 # Configuration
@@ -88,45 +95,6 @@ The rl_readline_name variable will be set to "Csope", so you may have conditiona
 	$endif
 ## Colors
 All can be configured sucklessly under "config/colors.h". Hopefully the comments are self evident.
-
-
-# Control flow
-...
-
-# Project structure	/*probably move to documentation*/
-| Component | Purpose |
-| :-------: | :-----: |
-| main.c | generic init functions, main() and primary event loops (and junk) |
-| display.c | all functions directly dealing with NCurses |
-| input.c | top layer of functions dealing with user input; migth dispatch to readline |
-| find.c | searching functions |
-| globals.h | an inherited curse; global var/prototype hell |
-| readline.c | all functions directly dealing with GNU Readline; responsible for line editing in *input mode* |
-| help.c | all functions dealing with help messages |
-
-# Key Symbols
-| Global | Role |
-| :----: | :--: |
-| int input_mode | Responsible of keeping track how current input should be handled. Not only does  the readline handler depend on it, its also used to determine what types of inputs all legal (e.g. swapping to another window). Takes up on of the values of the INPUT_\* macros.
-| int window_change | Bit mask type of the CH_\* macros. Keeps track of the windows to be refresed on the next run of display(). Could be better utalized.
-
-# TODO /*move soon*/
-+ sort out the global hell
-+ sort out constants.h
-+ lineflagafterfile is stupid
-+ library.h...; "private library", in a program using 90 globals; ffs
-+ scrollbar() uses magic int literals?
-+ was there really ever a scrollbar?
-+ a search struct could be great for caching and could ease the global situation
-## From the original
-+ Same capabilities as interactive in non interactive (one shot) mode
-+ Provide some how-do-I-use-this-thing doc.
-
-
-# BUGS
-+ Changing text double frees (NOTE: this problem is inherited):
-	free(): double free detected in tcache 2
-	Aborted
 
 # Future features / contributor wishlist
 + providing support for other languages by integrating new lexers (e.g. ctag's)

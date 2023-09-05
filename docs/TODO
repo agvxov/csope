@@ -1,0 +1,10 @@
++ sort out the global hell
++ sort out constants.h
++ lineflagafterfile is stupid
++ library.h...; "private library", in a program using 90 globals; ffs
++ scrollbar() uses magic int literals?
++ was there really ever a scrollbar?
++ a search struct could be great for caching and could ease the global situation
+// From the original
++ Same capabilities as interactive in non interactive (one shot) mode
++ Provide some how-do-I-use-this-thing doc.
