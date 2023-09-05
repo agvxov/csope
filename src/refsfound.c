@@ -43,36 +43,3 @@ long seekrelline(unsigned i) {
 void PCS_reset(void) {
 	PCS_top = 0;
 }
-
-///* position references found file at specified line */
-// void
-// seekline(unsigned int line)
-//{
-//     /* verify that there is a references found file */
-//     if (refsfound == NULL) {
-//         return;
-//     }
-//     /* go to the beginning of the file */
-//     rewind(refsfound);
-//	/**/
-//	seekrelline(line);
-// }
-//
-///* XXX: this is just dodging the problem */
-// void
-// seekrelline(unsigned int line){
-//     int    c;
-//
-//     /* verify that there is a references found file */
-//     if (refsfound == NULL) {
-//         return;
-//     }
-//
-//     /* find the requested line */
-//     nextline = 1;
-//     while (nextline < line && (c = getc(refsfound)) != EOF) {
-//         if (c == '\n') {
-//             nextline++;
-//         }
-//     }
-// }
