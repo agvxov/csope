@@ -95,7 +95,7 @@ static void callback_handler(char *line) {
 		} break;
 		case INPUT_CHANGE_TO: {
 			strncpy(newpat, line, PATLEN);
-			change	   = calloc(totallines, sizeof(*change));
+			change	   = (bool *)calloc(totallines, sizeof(*change));
 			input_mode = INPUT_CHANGE;
 			force_window();
 		} return;
