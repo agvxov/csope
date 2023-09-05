@@ -66,7 +66,6 @@ unsigned int disprefs;						/* displayed references */
 int			 field;							/* input field */
 unsigned int mdisprefs;						/* maximum displayed references */
 unsigned int nextline;						/* next line to be shown */
-static int	 bottomline;					/* bottom line of page */
 long		 searchcount;					/* count of files searched */
 unsigned int totallines;					/* total reference lines */
 unsigned int curdispline  = 0;
@@ -599,12 +598,11 @@ endrefs:
 	wattron(wresult, COLOR_PAIR(COLOR_PAIR_PAGER_MSG));
 	/* check for more references */
 	i		   = totallines - nextline + 1;
-	bottomline = nextline;
 	if(i > 0) {
 		wprintw(wresult,
 			"* Lines %d-%d of %d, %d more. *",
 			topref,
-			bottomline,
+			topref + nextline,
 			totallines,
 			i);
 	}
