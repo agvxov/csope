@@ -14,7 +14,7 @@ Csope is alive and well.
 
 # Features
 #### Search for
- + C symbol
+ + symbol
  + global definition
  + assignments to specified symbol
  + functions called by specified function
@@ -26,6 +26,13 @@ Csope is alive and well.
 #### ...and open with your editor.
 #### Batch change search results **interactively**.
 #### Save/load/pipe results.
+#### It fully supports:
+ + C
+ + Lex
+ + Yacc
+#### Partially supports
+ + C++
+ + Java
 
 # Interface
 	            <-- Tab -->
