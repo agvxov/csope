@@ -97,10 +97,12 @@ static char changeing_help_msg[] =
 	"?\t\tDisplay this list of commands.\n";
 
 const char *help(void) {
-	if(input_mode == INPUT_CHANGE) {
-		return help_msg;
-	} else {
-		return changeing_help_msg;
+	switch (input_mode) {
+		case INPUT_CHANGE:
+		case INPUT_CHANGE_TO:
+			return changeing_help_msg;
+		default:
+			return help_msg;
 	}
 }
 
