@@ -102,7 +102,7 @@ static int myexecvp(char *a, char **args) {
 	char msg[MSGLEN + 1];
 
 	/* modify argv[0] to reference the last component of its path name */
-	args[0] = basename(args[0]);
+	args[0] = (char *)basename(args[0]);
 
 	/* execute the program or shell script */
 	execvp(a, args); /* returns only on failure */

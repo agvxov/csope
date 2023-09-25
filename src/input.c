@@ -356,6 +356,7 @@ static int global_input(const int c) {
 			break;
 		case EOF:
 			myexit(0);
+			break;
 		default:
 			return 0;
 	}
@@ -368,7 +369,7 @@ int change_input(const int c) {
 
 	switch(c) {
 		case '*': /* invert page */
-			for(int i = 0; i < (nextline-1); i++) {
+			for(unsigned i = 0; i < (nextline-1); i++) {
 				change[topref + i] = !change[topref + i];
 			}
 			window_change |= CH_RESULT;

@@ -24,7 +24,6 @@ static struct PARTIAL_LINE {
 
 static inline void previous_history_proxy(void);
 static inline void next_history_proxy(void);
-static inline int rebuild_reference(void);
 											 		
 
 bool interpret(int c) {

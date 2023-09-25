@@ -418,7 +418,7 @@ void makefilelist(void) {
 					if((s = inviewpath(newpath)) != NULL) {
 						addsrcfile(s);
 					} else {
-						fprintf(stderr, PROGRAM_NAME, ": cannot find file %s\n", newpath);
+						fprintf(stderr, PROGRAM_NAME ": cannot find file %s\n", newpath);
 						errorsfound = true;
 					}
 				}
@@ -494,7 +494,7 @@ static void scan_dir(const char *adir, bool recurse_dir) {
 /* see if this is a source file */
 static bool issrcfile(char *path) {
 	struct stat statstruct;
-	char	   *file			  = basename(path);
+	const char *file			  = basename(path);
 	char	   *s				  = strrchr(file, '.');
 	bool		looks_like_source = false;
 
