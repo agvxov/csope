@@ -943,9 +943,6 @@ POSTING *boolfile(INVCONTROL *invcntl, long *num, int boolarg) {
 				}
 				newitem = item2;
 			}
-#if 0 /* this write is only need by commented-out code later */
-        set1p = item;
-#endif
 			newsetp = newitem;
 	}
 	file = invcntl->postfile;
@@ -994,103 +991,6 @@ POSTING *boolfile(INVCONTROL *invcntl, long *num, int boolarg) {
 			}
 			item = newitem;
 			break; /* end of bool_OR */
-#if 0
-    case AND:
-        for (set1c = 0, set2c = 0; set1c < numitems && set2c < *num; ) {
-        	if (set1p->lineoffset < posting.lineoffset) {
-        		set1p++;
-        		set1c++;
-        	}
-        	else if (set1p->lineoffset > posting.lineoffset) {
-        		fread(&posting, (int) sizeof(posting), 1, file);
-        		set2c++;
-        	}
-        	else if (set1p->type < posting.type)  {
-        		*set1p++;
-        		set1c++;
-        	}
-        	else if (set1p->type > posting.type) {
-        		fread(&posting, (int) sizeof(posting), 1, file);
-        		set2c++;
-        	}
-        	else {	/* identical postings */
-        		*newsetp++ = *set1p++;
-        		newsetc++;
-        		set1c++;
-        		fread(&posting, (int) sizeof(posting), 1, file);
-        		set2c++;
-        	}
-        }
-        break; /* end of AND */
-
-    case falseT:
-        for (set1c = 0, set2c = 0; set1c < numitems && set2c < *num; ) {
-        	if (set1p->lineoffset < posting.lineoffset) {
-        		*newsetp++ = *set1p++;
-        		newsetc++;
-        		set1c++;
-        	}
-        	else if (set1p->lineoffset > posting.lineoffset) {
-        		fread(&posting, (int) sizeof(posting), 1, file);
-        		set2c++;
-        	}
-        	else if (set1p->type < posting.type) {
-        		*newsetp++ = *set1p++;
-        		newsetc++;
-        		set1c++;
-        	}
-        	else if (set1p->type > posting.type) {
-        		fread(&posting, (int) sizeof(posting), 1, file);
-        		set2c++;
-        	}
-        	else {	/* identical postings */
-        		set1c++;
-        		set1p++;
-        		fread(&posting, (int) sizeof(posting), 1, file);
-        		set2c++;
-        	}
-        }
-        newsetc += numitems - set1c;
-        while (set1c++ < numitems) {
-        	*newsetp++ = *set1p++;
-        }
-        break; /* end of falseT */
-
-    case REVERSEfalseT:  /* core falseT incoming set */
-        for (set1c = 0, set2c = 0; set1c < numitems && set2c < *num; ) {
-        	if (set1p->lineoffset < posting.lineoffset) {
-        		set1p++;
-        		set1c++;
-        	}
-        	else if (set1p->lineoffset > posting.lineoffset) {
-        		*newsetp++ = posting;
-        		fread(&posting, (int) sizeof(posting), 1, file);
-        		set2c++;
-        	}
-        	else if (set1p->type < posting.type) {
-        		set1p++;
-        		set1c++;
-        	}
-        	else if (set1p->type > posting.type) {
-        		*newsetp++ = posting;
-        		fread(&posting, (int) sizeof(posting), 1, file);
-        		set2c++;
-        	}
-        	else {	/* identical postings */
-        		set1c++;
-        		set1p++;
-        		fread(&posting, (int) sizeof(posting), 1, file);
-        		set2c++;
-        	}
-        }
-        while (set2c++ < *num) {
-        	*newsetp++ = posting;
-        	newsetc++;
-        	fread(&posting, (int) sizeof(posting), 1, file);
-        }
-        item = newitem;
-        break; /* end of REVERSEfalseT  */
-#endif
 	}
 	numitems = newsetc;
 	*num	 = newsetc;
@@ -1098,50 +998,12 @@ POSTING *boolfile(INVCONTROL *invcntl, long *num, int boolarg) {
 	return ((POSTING *)item);
 }
 
-#if 0
-POSTING *
-boolsave(int clear)        /* flag about whether to clear core  */
-{
-    int    i;
-    POSTING    *ptr;
-    POSTING    *oldstuff, *newstuff;
-
-    if (numitems == 0) {
-        if (clear)
-        	boolclear();
-        return(NULL);
-    }
-    /* if clear then give them what we have and use boolready to realloc  */
-    if (clear) {
-        ptr = item;
-        /* free up the space we didn't give them */
-        if (item == item1)
-        	item1 = NULL;
-        else
-        	item2 = NULL;
-        boolready();
-        return(ptr);
-    }
-    i = (enditem - item) * sizeof(*ptr) + 100;
-    if ((ptr = malloc(i)) == NULL) {
-        invcannotalloc(i);
-        return(ptr);
-    }
-    /* move present set into place  */
-    oldstuff = item;
-    newstuff = ptr;
-    while (oldstuff < enditem)
-        *newstuff++ = *oldstuff++;
-    return(ptr);
-}
-#endif
-
 static void invcannotalloc(unsigned n) {
 	fprintf(stderr, PROGRAM_NAME ": cannot allocate %u bytes\n", n);
 }
 
 static void invcannotopen(char *file) {
-	fprintf(stderr, PROGRAM_NAME "%s: cannot open file %s\n", file);
+	fprintf(stderr, PROGRAM_NAME ": cannot open file %s\n", file);
 }
 
 static void invcannotwrite(char *file) {
