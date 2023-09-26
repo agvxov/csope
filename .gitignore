@@ -1,6 +1,6 @@
-obj/*.o
-obj/*.gch
+*.o
+*.gch
+*.out
 csope
-**/*.out
-src/lex.yy.c
+source/lex.yy.c
 main.plist
