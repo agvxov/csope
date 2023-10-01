@@ -210,7 +210,7 @@ static char *find_symbol_or_assignment(const char *pattern, bool assign_flag) {
 		return NULL;
 	}
 
-	(void)scanpast('\t');	  /* find the end of the header */
+	scanpast('\t');	  /* find the end of the header */
 	skiprefchar();			  /* skip the file marker */
 	fetch_string_from_dbase(file, sizeof(file));
 	strcpy(function, global); /* set the dummy global function name */
@@ -427,7 +427,6 @@ char *finddef(const char *pattern) {
 }
 
 /* find all function definitions (used by samuel only) */
-
 char *findallfcns(const char *dummy) {
 	char file[PATHLEN + 1];	   /* source file name */
 	char function[PATLEN + 1]; /* function name */
@@ -890,7 +889,7 @@ static void putline(FILE *output) {
 			else if(c < ' ') {
 				fputs(keyword[c].text, output);
 				if(keyword[c].delim != '\0') { putc(' ', output); }
-				if(keyword[c].delim == '(') { (putc('(', output); }
+				if(keyword[c].delim == '(') { putc('(', output); }
 			} else {
 				putc((int)c, output);
 			}
@@ -940,11 +939,10 @@ char *scanpast(char c) {
 	} while(*(cp + 1) == '\0' && (cp = read_block()) != NULL);
 	blockp = cp;
 	if(cp != NULL) { skiprefchar(); /* skip the found character */ }
-	return (blockp);
+	return blockp;
 }
 
 /* read a block of the cross-reference */
-/* HBB 20040430: renamed from readblock(), to avoid name clash on QNX */
 char *read_block(void) {
 	/* read the next block */
 	blocklen = read(symrefs, block, BUFSIZ);
@@ -977,16 +975,10 @@ static char *lcasify(const char *s) {
 }
 
 /* find the functions called by this function */
-
-/* HBB 2000/05/05: for consitency of calling interface between the
- * different 'find...()' functions, this now returns a char pointer,
- * too. Implemented as a pointer to static storage containing 'y' or
- * 'n', for the boolean result values true and false */
-
 char *findcalledby(const char *pattern) {
-	char		file[PATHLEN + 1];	/* source file name */
-	static char found_caller = 'n'; /* seen calling function? */
-	bool		macro		 = false;
+	char   file[PATHLEN + 1];	/* source file name */
+	char * found_caller = NULL; /* seen calling function? */
+	bool   macro        = false;
 
 	if(invertedindex == true) {
 		POSTING *p;
@@ -998,12 +990,12 @@ char *findcalledby(const char *pattern) {
 				case FCNDEF:
 					if(dbseek(p->lineoffset) != -1 &&
 						scanpast('\t') != NULL) { /* skip def */
-						found_caller = 'y';
+						found_caller = 0x01;
 						findcalledbysub(srcfiles[p->fileindex], macro);
 					}
 			}
 		}
-		return (&found_caller);
+		return found_caller;
 	}
 	/* find the function definition(s) */
 	while(scanpast('\t') != NULL) {
@@ -1013,7 +1005,7 @@ char *findcalledby(const char *pattern) {
 				skiprefchar();		/* save file name */
 				fetch_string_from_dbase(file, sizeof(file));
 				if(*file == '\0') { /* if end of symbols */
-					return (&found_caller);
+					return found_caller;
 				}
 				progress("Search", searchcount, nsrcfiles);
 				break;
@@ -1026,14 +1018,14 @@ char *findcalledby(const char *pattern) {
 			case FCNDEF:
 				skiprefchar(); /* match name to pattern */
 				if(match()) {
-					found_caller = 'y';
+					found_caller = 0x01;
 					findcalledbysub(file, macro);
 				}
 				break;
 		}
 	}
 
-	return (&found_caller);
+	return found_caller;
 }
 
 /* find this term, which can be a regular expression */
@@ -1256,7 +1248,9 @@ bool search(const char *query) {
 			if((rc = findinit(query)) == NOERROR) {
 				UNUSED(dbseek(0L)); /* read the first block */
 				findresult = (*f)(query);
-				if(f == findcalledby) funcexist = (*findresult == 'y');
+				if(f == findcalledby){
+					funcexist = (bool)(findresult);
+				}
 				findcleanup();
 
 				/* append the non-global references */
