@@ -144,7 +144,9 @@ static bool check_for_assignment(void) {
 		if(asgn_char[0] == '\0') {
 			/* get the next block when we reach the end of
 			 * the current block */
-			if(NULL == (asgn_char = read_block())) return false;
+			if(NULL == (asgn_char = read_block())){
+				return false;
+			}
 		}
 	}
 	/* check for digraph starting with = */
@@ -159,12 +161,13 @@ static bool check_for_assignment(void) {
 	}
 
 	/* check for operator assignments: +=, ... ^= ? */
-	if(((asgn_char[0] == '+') || (asgn_char[0] == '-') || (asgn_char[0] == '*') ||
+	if((asgn_char[1] == '=')
+	    || ((asgn_char[1] & 0x80)
+	       && (dichar1[(asgn_char[1] & 0177) / 8] == '='))
+	&&
+	((asgn_char[0] == '+') || (asgn_char[0] == '-') || (asgn_char[0] == '*') ||
 		   (asgn_char[0] == '/') || (asgn_char[0] == '%') || (asgn_char[0] == '&') ||
-		   (asgn_char[0] == '|') || (asgn_char[0] == '^')) &&
-		((asgn_char[1] == '=') ||
-			((asgn_char[1] & 0x80) && (dichar1[(asgn_char[1] & 0177) / 8] == '=')))
-
+		   (asgn_char[0] == '|') || (asgn_char[0] == '^'))
 	) {
 		return true;
 	}
@@ -173,8 +176,10 @@ static bool check_for_assignment(void) {
 	if(((asgn_char[0] == '<') || (asgn_char[0] == '>')) &&
 		(asgn_char[1] == asgn_char[0]) &&
 		((asgn_char[2] == '=') ||
-			((asgn_char[2] & 0x80) && (dichar1[(asgn_char[2] & 0177) / 8] == '='))))
+			((asgn_char[2] & 0x80) && (dichar1[(asgn_char[2] & 0177) / 8] == '=')))
+	) {
 		return true;
+	}
 	return false;
 }
 
@@ -589,9 +594,9 @@ char *findregexp(const char *egreppat) {
 /* find matching file names */
 
 char *findfile(const char *dummy) {
-	unsigned int i;
+	UNUSED(dummy);
 
-	(void)dummy; /* unused argument */
+	unsigned int i;
 
 	for(i = 0; i < nsrcfiles; ++i) {
 		char *s;
@@ -706,7 +711,7 @@ int findinit(const char *pattern_) {
 		   characters) on a database not built with -T */
 		if(trun_syms == true && isuptodate == true && dbtruncated == false &&
 			s - pattern >= 8) {
-			(void)strcpy(pattern + 8, ".*");
+			strcpy(pattern + 8, ".*");
 			isregexp = true;
 		}
 	}
@@ -717,8 +722,8 @@ int findinit(const char *pattern_) {
 		/* remove a leading ^ */
 		s = pattern;
 		if(*s == '^') {
-			(void)strcpy(newpat, s + 1);
-			(void)strcpy(s, newpat);
+			strcpy(newpat, s + 1);
+			strcpy(s, newpat);
 		}
 		/* remove a trailing $ */
 		i = strlen(s) - 1;
@@ -731,7 +736,7 @@ int findinit(const char *pattern_) {
 		/* must be an exact match */
 		/* note: regcomp doesn't recognize ^*keypad$ as a syntax error
 				 unless it is given as a single arg */
-		(void)snprintf(buf, sizeof(buf), "^%s$", s);
+		snprintf(buf, sizeof(buf), "^%s$", s);
 		if(regcomp(&regexp, buf, REG_EXTENDED | REG_NOSUB) != 0) {
 			r = REGCMPERROR;
 			goto end;
@@ -807,7 +812,7 @@ static void putref(int seemore, const char *file, const char *func) {
 	} else {
 		output = nonglobalrefs;
 	}
-	(void)fprintf(output, "%s %s ", file, func);
+	fprintf(output, "%s %s ", file, func);
 	putsource(seemore, output);
 }
 
@@ -819,9 +824,9 @@ static void putsource(int seemore, FILE *output) {
 	bool  Change = false, retreat = false;
 
 	if(fileversion <= 5) {
-		(void)scanpast(' ');
+		scanpast(' ');
 		putline(output);
-		(void)putc('\n', output);
+		putc('\n', output);
 		return;
 	}
 	/* scan back to the beginning of the source line */
@@ -831,7 +836,7 @@ static void putsource(int seemore, FILE *output) {
 		if(--cp < block) {
 			retreat = true;
 			/* read the previous block */
-			(void)dbseek((blocknumber - 1) * BUFSIZ);
+			dbseek((blocknumber - 1) * BUFSIZ);
 			cp = block + (BUFSIZ - 1);
 		}
 	}
@@ -860,7 +865,7 @@ static void putsource(int seemore, FILE *output) {
 		putline(output);
 		if(retreat == true) retreat = false;
 	} while(blockp != NULL && getrefchar() != '\n');
-	(void)putc('\n', output);
+	putc('\n', output);
 	if(Change == true) blockp = cp;
 }
 
@@ -878,16 +883,16 @@ static void putline(FILE *output) {
 			/* check for a compressed digraph */
 			if(c > '\177') {
 				c &= 0177;
-				(void)putc(dichar1[c / 8], output);
-				(void)putc(dichar2[c & 7], output);
+				putc(dichar1[c / 8], output);
+				putc(dichar2[c & 7], output);
 			}
 			/* check for a compressed keyword */
 			else if(c < ' ') {
-				(void)fputs(keyword[c].text, output);
-				if(keyword[c].delim != '\0') { (void)putc(' ', output); }
-				if(keyword[c].delim == '(') { (void)putc('(', output); }
+				fputs(keyword[c].text, output);
+				if(keyword[c].delim != '\0') { putc(' ', output); }
+				if(keyword[c].delim == '(') { (putc('(', output); }
 			} else {
-				(void)putc((int)c, output);
+				putc((int)c, output);
 			}
 			++cp;
 		}
@@ -1044,7 +1049,7 @@ static void findterm(const char *pattern) {
 	boolclear();	   /* clear the posting set */
 
 	/* get the string prefix (if any) of the regular expression */
-	(void)strcpy(prefix, pattern);
+	strcpy(prefix, pattern);
 	if((s = strpbrk(prefix, ".[{*+")) != NULL) { *s = '\0'; }
 	/* if letter case is to be ignored */
 	if(caseless == true) {
@@ -1058,16 +1063,16 @@ static void findterm(const char *pattern) {
 		}
 	}
 	/* find the term lexically >= the prefix */
-	(void)invfind(&invcontrol, prefix);
+	UNUSED(invfind(&invcontrol, prefix));
 	if(caseless == true) { /* restore lower case */
-		(void)strcpy(prefix, lcasify(prefix));
+		UNUSED(strcpy(prefix, lcasify(prefix)));
 	}
 	/* a null prefix matches the null term in the inverted index,
 	   so move to the first real term */
-	if(*prefix == '\0') { (void)invforward(&invcontrol); }
+	if(*prefix == '\0') { invforward(&invcontrol); }
 	len = strlen(prefix);
 	do {
-		(void)invterm(&invcontrol, term); /* get the term */
+		UNUSED(invterm(&invcontrol, term)); /* get the term */
 		s = term;
 		if(caseless == true) { s = lcasify(s); /* make it lower case */ }
 		/* if it matches */
@@ -1108,7 +1113,7 @@ static POSTING *getposting(void) {
 	if(++searchcount % 100 == 0) {
 		progress("Possible references retrieved", searchcount, postingsfound);
 	}
-	return (postingp++);
+	return postingp++;
 }
 
 /* put the posting reference into the file */
@@ -1150,14 +1155,14 @@ long dbseek(long offset) {
 	if((n = offset / BUFSIZ) != blocknumber) {
 		if((rc = lseek(symrefs, n * BUFSIZ, 0)) == -1) {
 			myperror("Lseek failed");
-			(void)sleep(3);
-			return (rc);
+			sleep(3);
+			return rc;
 		}
-		(void)read_block();
+		read_block();
 		blocknumber = n;
 	}
 	blockp = block + offset % BUFSIZ;
-	return (rc);
+	return rc;
 }
 
 static void findcalledbysub(const char *file, bool macro) {
@@ -1175,12 +1180,12 @@ static void findcalledbysub(const char *file, bool macro) {
 			case FCNCALL: /* function call */
 
 				/* output the file name */
-				(void)fprintf(refsfound, "%s ", file);
+				UNUSED(fprintf(refsfound, "%s ", file));
 
 				/* output the function name */
 				skiprefchar();
 				putline(refsfound);
-				(void)putc(' ', refsfound);
+				UNUSED(putc(' ', refsfound));
 
 				/* output the source line */
 				putsource(1, refsfound);
@@ -1211,16 +1216,16 @@ bool writerefsfound(void) {
 	if(refsfound == NULL) {
 		if((refsfound = myfopen(temp1, "wb")) == NULL) {
 			cannotopen(temp1);
-			return (false);
+			return false;
 		}
 	} else {
-		(void)fclose(refsfound);
+		fclose(refsfound);
 		if((refsfound = myfopen(temp1, "wb")) == NULL) {
 			postmsg("Cannot reopen temporary file");
-			return (false);
+			return false;
 		}
 	}
-	return (true);
+	return true;
 }
 
 /* Perform token search based on "field" */
@@ -1249,31 +1254,31 @@ bool search(const char *query) {
 				return (false);
 			}
 			if((rc = findinit(query)) == NOERROR) {
-				(void)dbseek(0L); /* read the first block */
+				UNUSED(dbseek(0L)); /* read the first block */
 				findresult = (*f)(query);
 				if(f == findcalledby) funcexist = (*findresult == 'y');
 				findcleanup();
 
 				/* append the non-global references */
-				(void)fclose(nonglobalrefs);
+				UNUSED(fclose(nonglobalrefs));
 				if((nonglobalrefs = myfopen(temp2, "rb")) == NULL) {
 					cannotopen(temp2);
 					return (false);
 				}
 				while((c = getc(nonglobalrefs)) != EOF) {
-					(void)putc(c, refsfound);
+					UNUSED(putc(c, refsfound));
 				}
 			}
-			(void)fclose(nonglobalrefs);
+			UNUSED(fclose(nonglobalrefs));
 		}
 	}
 	signal(SIGINT, savesig);
 
 	/* rewind the cross-reference file */
-	(void)lseek(symrefs, (long)0, 0);
+	lseek(symrefs, (long)0, 0);
 
 	/* reopen the references found file for reading */
-	(void)fclose(refsfound);
+	fclose(refsfound);
 	if((refsfound = myfopen(temp1, "rb")) == NULL) {
 		cannotopen(temp1);
 		return (false);
@@ -1284,26 +1289,26 @@ bool search(const char *query) {
 	/* see if it is empty */
 	if((c = getc(refsfound)) == EOF) {
 		if(findresult != NULL) {
-			(void)snprintf(msg,
+			snprintf(msg,
 				sizeof(msg),
 				"Egrep %s in this pattern: %s",
 				findresult,
 				query);
 		} else if(rc == NOTSYMBOL) {
-			(void)snprintf(msg, sizeof(msg), "This is not a C symbol: %s", query);
+			snprintf(msg, sizeof(msg), "This is not a C symbol: %s", query);
 		} else if(rc == REGCMPERROR) {
-			(void)snprintf(msg,
+			snprintf(msg,
 				sizeof(msg),
 				"Error in this regcomp(3) regular expression: %s",
 				query);
 
 		} else if(funcexist == false) {
-			(void)snprintf(msg,
+			snprintf(msg,
 				sizeof(msg),
 				"Function definition does not exist: %s",
 				query);
 		} else {
-			(void)snprintf(msg,
+			snprintf(msg,
 				sizeof(msg),
 				"Could not find the %s: %s",
 				fields[field].text2,
@@ -1313,7 +1318,7 @@ bool search(const char *query) {
 		return (false);
 	}
 	/* put back the character read */
-	(void)ungetc(c, refsfound);
+	ungetc(c, refsfound);
 
 	countrefs();
 
