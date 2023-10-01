@@ -14,7 +14,7 @@ LEXD:=source/
 LEXF:=$(shell find ${LEXD} -iname '*.l')
 GENLEX:=$(subst .l,.c,${LEXF})
 
-SRCD:=source//
+SRCD:=source/
 OBJD:=object/
 source:=$(shell find ${SRCD} -iname '*.c') ${GENLEX}
 object:=$(subst .c,.o,$(subst ${SRCD},${OBJD},${source}))
