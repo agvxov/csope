@@ -10,14 +10,14 @@ CPPFLAGS:=-I config/ -I ${CHDRD} ${shell pkg-config --cflags ${LIBS}}
 LDLIBS=${shell pkg-config --libs ${LIBS}}
 LEX:=flex
 
-LEXD:=src/
+LEXD:=source/
 LEXF:=$(shell find ${LEXD} -iname '*.l')
 GENLEX:=$(subst .l,.c,${LEXF})
 
-SRCD:=src/
-OBJD:=obj/
-SRC:=$(shell find ${SRCD} -iname '*.c') ${GENLEX}
-OBJ:=$(subst .c,.o,$(subst ${SRCD},${OBJD},${SRC}))
+SRCD:=source//
+OBJD:=object/
+source:=$(shell find ${SRCD} -iname '*.c') ${GENLEX}
+object:=$(subst .c,.o,$(subst ${SRCD},${OBJD},${source}))
 
 HDRD:=${SRCD}
 CONFD:=config/
@@ -27,19 +27,19 @@ CHDR:=$(addsuffix .gch,$(subst ${HDRD},${CHDRD},$(subst ${CONFD}, ${CHDRD}, ${HD
 
 OUTPUT:=csope
 
-main: ${CHDR} ${OBJ}
-	${LINK.c} ${OBJ} -o ${OUTPUT} ${LDLIBS}
+main: ${CHDR} ${object}
+	${LINK.c} ${object} -o ${OUTPUT} ${LDLIBS}
 
-obj/%.o: src/%.c
+object/%.o: source/%.c
 	${COMPILE.c} $< -o $@
 
-src/%.c: src/%.l
+source/%.c: source/%.l
 	${LEX} -o $@ $<
 
-obj/%.h.gch: src/%.h
+object/%.h.gch: source/%.h
 	${CC} $< -o $@
 
-obj/%.h.gch: config/%.h
+object/%.h.gch: config/%.h
 	${CC} $< -o $@
 
 install: ${OUTPUT}
@@ -48,5 +48,5 @@ install: ${OUTPUT}
 clean:
 	-rm ${CHDR}
 	-rm ${GENLEX}
-	-rm ${OBJ}
+	-rm ${object}
 	-rm ${OUTPUT}
