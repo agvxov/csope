@@ -4,13 +4,13 @@ While the original's mainentence seems abandoned and as far as I can tell you ne
 Csope is alive and well.
 
 # Demo
-![demo](docs/csope.GIF)
+![demo](documentation/csope.GIF)
 
 # Before/After
 ## After
-![after](docs/after.jpg)
+![after](documentation/after.jpg)
 ## Before
-![after](docs/before.jpg)
+![after](documentation/before.jpg)
 
 # Features
 #### Search for
