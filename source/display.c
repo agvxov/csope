@@ -845,11 +845,12 @@ void display(void) {
 		if(window_change & CH_MODE) { display_mode(); }
 
 		refresh();
-		wrefresh(winput);
-		wrefresh(wmode);
-		wrefresh(wresult);
-		wrefresh(wtooltip);
-		wrefresh(wcase);
+		wnoutrefresh(winput);
+		wnoutrefresh(wmode);
+		wnoutrefresh(wresult);
+		wnoutrefresh(wtooltip);
+		wnoutrefresh(wcase);
+		doupdate();
 	}
 
 	window_change = CH_NONE;
