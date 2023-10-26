@@ -805,7 +805,7 @@ static inline void display_tooltip(void) {
 	wattron(wtooltip, COLOR_PAIR(COLOR_PAIR_TOOLTIP));
 	waddstr(wtooltip, tooltip);
 	// XXX: cheap hack
-	for(int i = 0; i < (tooltip_width - strlen(tooltip)); i++) {
+	for(size_t i = 0; i < (tooltip_width - strlen(tooltip)); i++) {
 		waddch(wtooltip, ' ');
 	}
 	wattroff(wtooltip, COLOR_PAIR(COLOR_PAIR_TOOLTIP));
