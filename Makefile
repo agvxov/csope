@@ -53,8 +53,8 @@ install: ${OUTPUT}
 	cp ${OUTPUT} /usr/bin/
 
 clean:
-	-rm ${CHDR}
-	-rm ${GENLEX}
-	-rm ${GENYACC}
-	-rm ${object}
-	-rm ${OUTPUT}
+	-${RM} ${CHDR}
+	-${RM} ${GENLEX}
+	-${RM} ${GENYACC}
+	-${RM} ${object}
+	-${RM} ${OUTPUT}
