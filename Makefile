@@ -14,9 +14,13 @@ LEXD:=source/
 LEXF:=$(shell find ${LEXD} -iname '*.l')
 GENLEX:=$(subst .l,.c,${LEXF})
 
+YACCD:=source/
+YACCF:=$(shell find ${YACCD} -iname '*.y')
+GENYACC:=$(subst .y,.c,${YACCF})
+
 SRCD:=source/
 OBJD:=object/
-source:=$(shell find ${SRCD} -iname '*.c') ${GENLEX}
+source:=$(shell find ${SRCD} -iname '*.c') ${GENLEX} ${GENYACC}
 object:=$(subst .c,.o,$(subst ${SRCD},${OBJD},${source}))
 
 HDRD:=${SRCD}
@@ -36,6 +40,9 @@ object/%.o: source/%.c
 source/%.c: source/%.l
 	${LEX} -o $@ $<
 
+source/%.c: source/%.y
+	${YACC} -o $@ $<
+
 object/%.h.gch: source/%.h
 	${CC} $< -o $@
 
@@ -48,5 +55,6 @@ install: ${OUTPUT}
 clean:
 	-rm ${CHDR}
 	-rm ${GENLEX}
+	-rm ${GENYACC}
 	-rm ${object}
 	-rm ${OUTPUT}
