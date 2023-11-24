@@ -41,6 +41,8 @@ extern int LINES;
 
 #include "global.h"
 
+#include <ncurses.h>
+
 bool mouse = false;				/* mouse interface */
 
 #ifdef UNIXPC					/* build command requires #ifdef instead of #if */
