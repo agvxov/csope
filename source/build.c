@@ -120,14 +120,13 @@ static bool samelist(FILE *oldrefs, char **names, int count) {
 }
 
 /* create the file name(s) used for a new cross-referene */
-
 void setup_build_filenames(char *reffile) {
 	char *path; /* file pathname */
 	char *s;	/* pointer to basename in path */
 
 	path = malloc(strlen(reffile) + 10u);
 	strcpy(path, reffile);
-	s  = basename(path);
+	s  = (char *)basename(path);	// this is save because the returned pointer is inside $path, and we know we can edit it
 	*s = '\0';
 	strcat(path, "n");
 	++s;
