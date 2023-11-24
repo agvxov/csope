@@ -517,7 +517,7 @@ int handle_input(const int c) {
 		return 0;
 	}
 	/* - Resize - */
-	/* it's treated specially because curses treat it specially:
+	/* it's treated specially here because curses treat it specially:
 	   + its valid without keypad()
 	   + as far as i can tell this is the only key that does not
 	      flush after itself
