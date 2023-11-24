@@ -1,14 +1,16 @@
-DEBUG:=0
-
 LIBS:=ncurses readline history
 
 CC:=gcc
-CFLAGS:=-Wall -Wextra -Wpedantic
-CFLAGS +=$(if $(DEBUG),-O0 -ggdb -Wall -Wpedantic,-O3 -flto=auto -fomit-frame-pointer)
-CFLAGS +=$(if $(SAN),-fsanitize=${SAN})
+CFLAGS += $(if $(SAN),-fsanitize=${SAN})
 CPPFLAGS:=-I config/ -I ${CHDRD} ${shell pkg-config --cflags ${LIBS}}
 LDLIBS=${shell pkg-config --libs ${LIBS}}
 LEX:=flex
+
+ifeq (${DEBUG}, 1)
+  CFLAGS += -O0 -ggdb -Wall -Wpedantic
+else
+  CFLAGS += -O3 -flto=auto -fomit-frame-pointer
+endif
 
 LEXD:=source/
 LEXF:=$(shell find ${LEXD} -iname '*.l')
