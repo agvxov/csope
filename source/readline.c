@@ -43,6 +43,16 @@ bool interpret(int c) {
 		case KEY_DOWN:
 			next_history_proxy();
 			break;
+		case KEY_LEFT:
+			if(rl_point) {
+				--rl_point;
+			}
+			break;
+		case KEY_RIGHT:
+			if(rl_point < rl_end) {
+				++rl_point;
+			}
+			break;
 		case ESC:
 		case ctrl('X'):
 			process_mouse();
