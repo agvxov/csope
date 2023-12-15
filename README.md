@@ -97,6 +97,11 @@ Hint:
 
 	cp csope /usr/bin/
 
+# Quick start
+Start browsing your project by running csope over it's source dir.
+
+    csope -s source/
+
 # Configuration
 ## Readline
 The readline integratoin should be complete -please let us know if not-, except for your prompt being used, which could easily break the TUIs display.
