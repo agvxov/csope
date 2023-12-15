@@ -71,12 +71,14 @@ unsigned int totallines;					/* total reference lines */
 unsigned int curdispline  = 0;
 int			 current_page = 0;
 int			 input_mode	  = INPUT_NORMAL;
-const char	*prompts[]	  = {[INPUT_NORMAL] = "$ ",
+const char	*prompts[]	  = {
+		[INPUT_NORMAL] = "$ ",
 		[INPUT_APPEND]						= "Append to file: ",
 		[INPUT_PIPE]						= "Pipe to shell command: ",
 		[INPUT_READ]						= "Read from file: ",
 		[INPUT_CHANGE_TO]					= "To: ",
-		[INPUT_CHANGE]						= "###"};
+		[INPUT_CHANGE]						= "###"
+};
 
 unsigned int topline = 1; /* top line of page */
 
