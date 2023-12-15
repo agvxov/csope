@@ -42,7 +42,7 @@
 #ifdef CCS
 # include "sgs.h"	  /* ESG_PKG and ESG_REL */
 #else
-# include "version.h" /* FILEVERSION and FIXVERSION */
+# include "version.inc"
 #endif
 
 #include <ncurses.h>

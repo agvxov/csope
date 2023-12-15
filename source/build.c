@@ -43,7 +43,7 @@
 #include "library.h"
 
 #include "scanner.h"
-#include "version.h" /* for FILEVERSION */
+#include "version.inc"
 #include "vp.h"
 
 #if defined(USE_NCURSES) && !defined(RENAMED_NCURSES)

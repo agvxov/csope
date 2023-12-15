@@ -40,7 +40,7 @@
 
 #include "build.h"
 #include "vp.h"
-#include "version.h" /* FILEVERSION and FIXVERSION */
+#include "version.inc"
 #include "scanner.h"
 
 #include <stdlib.h>	   /* atoi */

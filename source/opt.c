@@ -2,7 +2,7 @@
 
 #include "build.h"
 #include "vp.h"
-#include "version.h" /* FILEVERSION and FIXVERSION */
+#include "version.inc"
 
 #include <stdlib.h>	 /* atoi */
 #include <getopt.h>
