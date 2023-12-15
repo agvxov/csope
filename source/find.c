@@ -173,8 +173,10 @@ static bool check_for_assignment(void) {
 	if(((asgn_char[0] == '<') || (asgn_char[0] == '>')) &&
 		(asgn_char[1] == asgn_char[0]) &&
 		((asgn_char[2] == '=') ||
-			((asgn_char[2] & 0x80) && (dichar1[(asgn_char[2] & 0177) / 8] == '='))))
+			((asgn_char[2] & 0x80) && (dichar1[(asgn_char[2] & 0177) / 8] == '=')))) {
 		return true;
+	}
+
 	return false;
 }
 

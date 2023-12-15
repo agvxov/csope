@@ -41,7 +41,6 @@
 #define RDR		  0
 #define WTR		  1
 
-/* HBB 20010312: make this a bit safer --- don't blindly assume it's 1 */
 #ifdef FD_CLOEXEC
 # define CLOSE_ON_EXEC FD_CLOEXEC
 #else

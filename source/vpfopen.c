@@ -42,8 +42,8 @@ FILE *vpfopen(char *filename, char *type) {
 	FILE *returncode;
 	int	  i;
 
-	if((returncode = myfopen(filename, type)) == NULL &&
-		filename[0] != '/'
+	if((returncode = myfopen(filename, type)) == NULL
+		&& filename[0] != '/'
 		/* && strcmp(type, "r") == 0 */ /* HBB: this breaks if type=="rb" */
 		&& type[0] == 'r') {
 		vpinit(NULL);
@@ -52,5 +52,5 @@ FILE *vpfopen(char *filename, char *type) {
 			if((returncode = myfopen(buf, type)) != NULL) { break; }
 		}
 	}
-	return (returncode);
+	return returncode;
 }
