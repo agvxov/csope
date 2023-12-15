@@ -79,11 +79,13 @@ fixing it would have been a lost cause, if not for Cscope itself. Well, Csope no
 # Installation
 You will have to compile from source.
 
-After you made sure you have the following (dev) libraries installed:
+After you made sure you have the following installed:
 
 	ncurses
 	GNU Readline
 	GNU History (should come with Readline)
+	Lex (or GNU Flex)
+	Yacc (or GNU Bison)
 
 Just run:
 
