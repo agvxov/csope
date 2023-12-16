@@ -354,6 +354,10 @@ static int global_input(const int c) {
 			egrepcaseless(caseless);
 			window_change |= CH_CASE;
 			break;
+		case ctrl('M'):	// toggle caseless
+			backend_mode = !backend_mode;
+			window_change |= CH_BACKEND;
+			break;
 		case EOF:
 			myexit(0);
 			break;
