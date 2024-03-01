@@ -707,7 +707,6 @@ void myperror(char *text) {
 }
 
 /* postmsg clears the message line and prints the message */
-
 void postmsg(char *msg) {
 	if(linemode == true || incurses == false) {
 		printf("%s\n", msg);
