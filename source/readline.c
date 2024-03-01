@@ -129,7 +129,7 @@ static void callback_handler(char *line) {
 			char filename[PATHLEN + 1];
 			shellpath(filename, sizeof(filename), line);
 			if (!readrefs(filename)) {
-				postmsg("Ignoring an empty file");
+				postmsg2("Ignoring an empty file");
 			}
 			window_change |= CH_INPUT | CH_RESULT;
 			input_mode = INPUT_NORMAL;
