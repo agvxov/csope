@@ -68,6 +68,7 @@ static void catchint(int sig) {
 	longjmp(env, 1);
 }
 
+/* XXX: move */
 static inline bool rebuild_reference() {
 	if(isuptodate == true) {
 		postmsg("The -d option prevents rebuilding the symbol database");
@@ -178,10 +179,10 @@ void shellpath(char *out, int limit, char *in) {
 
 static int wmode_input(const int c) {
 	switch(c) {
+		case ctrl('N'): /* go to next input field */
 		case KEY_ENTER:
 		case '\r':
 		case '\n':
-		case ctrl('N'): /* go to next input field */
 		case KEY_DOWN:
 		case KEY_RIGHT:
 			field = (field + 1) % FIELDS;
