@@ -114,11 +114,15 @@ static void callback_handler(char *line) {
 			char ch;
 			shellpath(filename, sizeof(filename), line);
 			file = fopen(filename, "a+");
-			seekpage(0);
-			while ((ch = getc(refsfound)) != EOF) {
-				putc(ch, file);
+			if (file) {
+				seekpage(0);
+				while ((ch = getc(refsfound)) != EOF) {
+					putc(ch, file);
+				}
+				fclose(file);
+			} else {
+				postmsg2("Failed to open file.");
 			}
-			fclose(file);
 			input_mode = INPUT_NORMAL;
 		} return;
 		case INPUT_READ: {
