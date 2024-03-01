@@ -30,9 +30,9 @@
  DAMAGE.
  =========================================================================*/
 
-/*    cscope - interactive C symbol cross-reference
+/*	cscope - interactive C symbol cross-reference
  *
- *    terminal input functions
+ *	terminal input functions
  */
 
 #include "global.h"
@@ -277,64 +277,6 @@ static int global_input(const int c) {
 			++current_page;
 			window_change |= CH_RESULT;
 			break;
-		case '>':	  /* write or append the lines to a file */
-			if (totallines == 0) {
-			    postmsg("There are no lines to write to a file");
-			    break;
-			}
-			input_mode = INPUT_APPEND;
-			window_change |= CH_INPUT;
-			force_window();
-			break;
-		case '<':	  /* read lines from a file */
-			input_mode = INPUT_READ;
-			window_change |= CH_INPUT;
-			force_window();
-			break;
-		case '|':	  /* pipe the lines to a shell command */
-		case '^':
-			break;	  // XXX fix
-			if(totallines == 0) {
-				postmsg("There are no lines to pipe to a shell command");
-				return 0;
-			}
-			/* get the shell command */
-			// move(PRLINE, 0);
-			// addstr(pipeprompt);
-			// if (mygetline("", newpat, COLS - sizeof(pipeprompt), '\0', NO) == 0) {
-			//     clearprompt();
-			//     return(NO);
-			// }
-			///* if the ^ command, redirect output to a temp file */
-			// if (commandc == '^') {
-			//     strcat(strcat(newpat, " >"), temp2);
-			//     /* HBB 20020708: somebody might have even
-			//      * their non-interactive default shells
-			//      * complain about clobbering
-			//      * redirections... --> delete before
-			//      * overwriting */
-			//     remove(temp2);
-			// }
-			// exitcurses();
-			// if ((file = mypopen(newpat, "w")) == NULL) {
-			//     fprintf(stderr, "cscope: cannot open pipe to shell command: %s\n",
-			//     newpat);
-			// } else {
-			//     seekline(1);
-			//     while ((c = getc(refsfound)) != EOF) {
-			//     putc(c, file);
-			//     }
-			//     seekline(topline);
-			//     mypclose(file);
-			// }
-			// if (commandc == '^') {
-			//     if (readrefs(temp2) == NO) {
-			//     postmsg("Ignoring empty output of ^ command");
-			//     }
-			// }
-			// askforreturn();
-			// entercurses();
-			break;
 		case '!': /* shell escape */
 			execute(shell, shell, NULL);
 			current_page = 0;
@@ -356,6 +298,73 @@ static int global_input(const int c) {
 			break;
 		case EOF:
 			myexit(0);
+			break;
+		default:
+			return 0;
+	}
+
+	return 1;
+}
+
+int normal_global_input(const int c) {
+	switch(c) {
+		case '>':	  /* write or append the lines to a file */
+			if (totallines == 0) {
+				postmsg("There are no lines to write to a file");
+				break;
+			}
+			input_mode = INPUT_APPEND;
+			window_change |= CH_INPUT;
+			force_window();
+			break;
+		case '<':	  /* read lines from a file */
+			input_mode = INPUT_READ;
+			window_change |= CH_INPUT;
+			force_window();
+			break;
+		case '|':	  /* pipe the lines to a shell command */
+		case '^':
+			break;	  // XXX fix
+			if(totallines == 0) {
+				postmsg("There are no lines to pipe to a shell command");
+				break;
+			}
+			/* get the shell command */
+			// move(PRLINE, 0);
+			// addstr(pipeprompt);
+			// if (mygetline("", newpat, COLS - sizeof(pipeprompt), '\0', NO) == 0) {
+			//	   clearprompt();
+			//	   return(NO);
+			// }
+			///* if the ^ command, redirect output to a temp file */
+			// if (commandc == '^') {
+			//	   strcat(strcat(newpat, " >"), temp2);
+			//	   /* HBB 20020708: somebody might have even
+			//		* their non-interactive default shells
+			//		* complain about clobbering
+			//		* redirections... --> delete before
+			//		* overwriting */
+			//	   remove(temp2);
+			// }
+			// exitcurses();
+			// if ((file = mypopen(newpat, "w")) == NULL) {
+			//	   fprintf(stderr, "cscope: cannot open pipe to shell command: %s\n",
+			//	   newpat);
+			// } else {
+			//	   seekline(1);
+			//	   while ((c = getc(refsfound)) != EOF) {
+			//	   putc(c, file);
+			//	   }
+			//	   seekline(topline);
+			//	   mypclose(file);
+			// }
+			// if (commandc == '^') {
+			//	   if (readrefs(temp2) == NO) {
+			//	   postmsg("Ignoring empty output of ^ command");
+			//	   }
+			// }
+			// askforreturn();
+			// entercurses();
 			break;
 		default:
 			return 0;
@@ -534,6 +543,9 @@ int handle_input(const int c) {
 	/* --- mode specific --- */
 	switch(input_mode) {
 		case INPUT_NORMAL:
+			const int r = normal_global_input(c);
+			if(r) { return 0; }
+			//
 			if(*current_window == winput) {
 				return interpret(c);
 			} else if(*current_window == wmode) {
