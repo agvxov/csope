@@ -530,14 +530,16 @@ static bool issrcfile(char *path) {
 					 || (s[0] == 'h' && s[1] == 'h'))) {			  /* C++ header */
 		looks_like_source = true;
 
-	} else if((s[3] == '\0') /* 3 char suffix */
-			  /* C++ template source */
-			  && ((s[0] == 't' && s[1] == 'c' && s[2] == 'c')
-					 /* C++ source: */
-					 || (s[0] == 'c' && s[1] == 'p' && s[2] == 'p') ||
-					 (s[0] == 'c' && s[1] == 'x' && s[2] == 'x') ||
-					 (s[0] == 'h' && s[1] == 'p' && s[2] == 'p') ||
-					 (s[0] == 'h' && s[1] == 'x' && s[2] == 'x'))) {
+	} else if(s[3] == '\0' && ( /* 3 char suffix */
+		      /* C++ template source */
+              (s[0] == 't' && s[1] == 'c' && s[2] == 'c')
+		      /* C++ source: */
+		      || (s[0] == 'c' && s[1] == 'p' && s[2] == 'p')
+		      || (s[0] == 'c' && s[1] == 'x' && s[2] == 'x')
+		      || (s[0] == 'h' && s[1] == 'p' && s[2] == 'p')
+		      || (s[0] == 'h' && s[1] == 'x' && s[2] == 'x')
+		      || (s[0] == 'i' && s[1] == 'n' && s[2] == 'c')
+    )) {
 		looks_like_source = true;
 	}
 
