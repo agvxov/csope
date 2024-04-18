@@ -184,7 +184,7 @@ void build(void) {
 	char		  olddir[PATHLEN + 1];	/* directory in old cross-reference */
 	char		  oldname[PATHLEN + 1]; /* name in old cross-reference */
 	unsigned long oldnum;				/* number in old cross-ref */
-	struct stat	  statstruct;			/* file status */
+	struct stat	  file_status;
 	unsigned long firstfile;			/* first source file in pass */
 	unsigned long lastfile;				/* last source file in pass */
 	int			  built	 = 0;			/* built crossref for these files */
@@ -211,8 +211,8 @@ void build(void) {
 		(strcmp(olddir, currentdir) == 0 /* remain compatible */
 			|| strcmp(olddir, newdir) == 0)) {
 		/* get the cross-reference file's modification time */
-		fstat(fileno(oldrefs), &statstruct);
-		reftime = statstruct.st_mtime;
+		fstat(fileno(oldrefs), &file_status);
+		reftime = file_status.st_mtime;
 		if(fileversion >= 8) {
 			bool oldcompress	  = true;
 			bool oldinvertedindex = false;
@@ -279,8 +279,8 @@ void build(void) {
 		for(i = 0; i < nsrcfiles; ++i) {
 			if((1 != fscanf(oldrefs, " %[^\n]", oldname)) ||
 				strnotequal(oldname, srcfiles[i]) ||
-				(lstat(srcfiles[i], &statstruct) != 0) ||
-				(statstruct.st_mtime > reftime)) {
+				(lstat(srcfiles[i], &file_status) != 0) ||
+				(file_status.st_mtime > reftime)) {
 				goto outofdate;
 			}
 		}
@@ -360,7 +360,7 @@ void build(void) {
 			if(oldfile == NULL || strcmp(file, oldfile) < 0) {
 				crossref(file);
 				++built;
-			} else if(lstat(file, &statstruct) == 0 && statstruct.st_mtime > reftime) {
+			} else if(lstat(file, &file_status) == 0 && file_status.st_mtime > reftime) {
 				/* if this file was modified */
 				crossref(file);
 				++built;
@@ -418,7 +418,7 @@ void build(void) {
 			cannotwrite(temp1);
 			/* NOTREACHED */
 		}
-		fstat(fileno(postings), &statstruct);
+		fstat(fileno(postings), &file_status);
 		fclose(postings);
 		snprintf(sortcommand,
 			sizeof(sortcommand),
