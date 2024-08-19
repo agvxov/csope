@@ -151,31 +151,28 @@ static void callback_handler(char *line) {
 
 static inline void previous_history_proxy(){
 	HIST_ENTRY* i = previous_history();
-	if(i){
-		if(partial_line.is_active){
-			free(partial_line.line);
-			partial_line = (struct PARTIAL_LINE){
-				.line = rl_line_buffer,
-				.pos = rl_point,
-				.is_active = false
-			};
-		}else{
-			free(rl_line_buffer);
-		}
-		//
-		rl_line_buffer = strdup(i->line);
-		rl_point = strlen(rl_line_buffer);
+    if(!i) { return; }
+
+	if(partial_line.is_active){
+		free(partial_line.line);
+		partial_line = (struct PARTIAL_LINE){
+			.line = strdup(rl_line_buffer),
+			.pos = rl_point,
+			.is_active = false
+		};
 	}
+	//
+    rl_replace_line(i->line, 0);
+	rl_point = strlen(i->line);
 }
 
 static inline void next_history_proxy(){
 	HIST_ENTRY* i = next_history();
 	if(i){
-		free(rl_line_buffer);
-		rl_line_buffer = strdup(i->line);
-		rl_point = strlen(rl_line_buffer);
+        rl_replace_line(i->line, 0);
+		rl_point = strlen(i->line);
 	}else if(!partial_line.is_active){
-		rl_line_buffer = strdup(partial_line.line);
+        rl_replace_line(partial_line.line, 0);
 		rl_point = partial_line.pos;
 		partial_line.is_active = true;
 	}
