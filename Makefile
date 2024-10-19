@@ -1,4 +1,4 @@
-LIBS:=ncurses readline history
+LIBS:=ncurses readline
 
 CC:=gcc
 CFLAGS += $(if $(SAN),-fsanitize=${SAN})
