@@ -11,6 +11,29 @@ bool  remove_symfile_onexit = false;
 bool  onesearch; /* one search only in line mode */
 char *reflines;	 /* symbol reference lines file */
 
+int option_sanity_check(void) {
+	/* XXX remove if/when clearerr() in dir.c does the right thing. */
+	if(namefile && strcmp(namefile, "-") == 0 && !buildonly) {
+		postfatal(PROGRAM_NAME ": Must use -b if file list comes from stdin\n");
+	}
+
+	/* make sure that tmpdir exists */
+	struct stat	stat_buf;
+	if(lstat(tmpdir, &stat_buf)) {
+		fprintf(stderr,
+			PROGRAM_NAME
+			": Temporary directory %s does not exist or cannot be accessed\n",
+			tmpdir);
+		fprintf(stderr,
+			PROGRAM_NAME
+			": Please create the directory or set the environment variable\n" PROGRAM_NAME
+			": TMPDIR to a valid directory\n");
+		myexit(1);
+	}
+
+    return 0;
+}
+
 char **parse_options(int *argc, char **argv) {
 	int	  opt;
 	int	  longind;
@@ -30,7 +53,6 @@ char **parse_options(int *argc, char **argv) {
 			   lopts,
 			   &longind)) != -1) {
 		switch(opt) {
-
 			case '?':
 				usage();
 				myexit(1);
@@ -129,7 +151,6 @@ char **parse_options(int *argc, char **argv) {
 				/*coverity[overwrite_var]*/
 				invpost = strdup(path);
 				break;
-
 			case 'F': /* symbol reference lines file */
 				reflines = optarg;
 				break;
@@ -150,6 +171,7 @@ char **parse_options(int *argc, char **argv) {
 				break;
 		}
 	}
+
 	/*
 	 * This adjusts argv so that we only see the remaining
 	 * args.  Its ugly, but we need to do it so that the rest

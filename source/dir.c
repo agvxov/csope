@@ -72,7 +72,7 @@ static struct listitem {				/* source file names without view pathing */
 } *srcnames[HASHMOD];
 
 /* Internal prototypes: */
-static bool accessible_file(char *file);
+static bool is_file_accessible(char *file);
 static bool issrcfile(char *file);
 static void addsrcdir(char *dir);
 static void addincdir(char *name, char *path);
@@ -256,7 +256,7 @@ void makefilelist(void) {
 
 	makevpsrcdirs(); /* make the view source directory list */
 
-	/* if -i was falseT given and there are source file arguments */
+	/* if -i was NOT given and there are source file arguments */
 	if(namefile == NULL && fileargc > 0) {
 
 		/* put them in a list that can be expanded */
@@ -601,7 +601,7 @@ bool infilelist(char *path) {
 
 /* check if a file is readable enough to be allowed in the
  * database */
-static bool accessible_file(char *file) {
+static bool is_file_accessible(char *file) {
 	if(access(compath(file), READ) == 0) {
 		struct stat stats;
 
@@ -616,7 +616,7 @@ char *inviewpath(char *file) {
 	unsigned int i;
 
 	/* look for the file */
-	if(accessible_file(file)) { return (file); }
+	if(is_file_accessible(file)) { return (file); }
 
 	/* if it isn't a full path name and there is a multi-directory
 	 * view path */
@@ -631,7 +631,7 @@ char *inviewpath(char *file) {
 				PATHLEN - 2 - file_len,
 				srcdirs[i],
 				file);
-			if(accessible_file(path)) { return (path); }
+			if(is_file_accessible(path)) { return (path); }
 		}
 	}
 	return (NULL);

@@ -62,6 +62,7 @@ extern INVCONTROL invcontrol; /* inverted file control structure */
 
 void build(void);
 void free_newbuildfiles(void);
+void initdatabase(void);
 void opendatabase(void);
 void rebuild(void);
 void setup_build_filenames(char *reffile);

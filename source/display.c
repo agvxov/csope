@@ -38,6 +38,7 @@
 #include "global.h"
 #include "build.h"
 #include "colors.h"
+#include "backend.h"
 
 #ifdef CCS
 # include "sgs.h"	  /* ESG_PKG and ESG_REL */
@@ -305,7 +306,7 @@ static
 inline void display_backend(){
 	wmove(wbackend, 0, 0);
 	wattron(wbackend, COLOR_PAIR(COLOR_PAIR_BACKEND));
-	waddstr(wbackend, (backend_mode ? "Backend:  Ctags" : "Backend: CScope"));
+	waddstr(wbackend, backend.name);
 	wattroff(wbackend, COLOR_PAIR(COLOR_PAIR_BACKEND));
 }
 

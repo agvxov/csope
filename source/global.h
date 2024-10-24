@@ -99,15 +99,6 @@ enum {
 };
 extern int input_mode;
 
-enum {
-	CSCOPE_BACKEND = 0,
-	CTAGS_BACKEND  = 1,
-	/* if you plan to add more, you will have to modify logic,
-	 *  because we depend on value flipping
-	 */
-};
-extern int backend_mode;
-
 #ifndef DFLT_INCDIR
 # define DFLT_INCDIR "/usr/include"
 #endif
@@ -239,7 +230,9 @@ char *pathcomponents(char *path, int components);
 char *read_block(void);
 char *scanpast(char c);
 
-char	   **parse_options(int *argc, char **argv);
+char **parse_options(int *argc, char **argv);
+int	option_sanity_check(void);
+
 void		 error_usage(void);
 void		 longusage(void);
 void		 usage(void);

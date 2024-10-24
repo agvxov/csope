@@ -46,16 +46,9 @@
 #include "version.inc"
 #include "vp.h"
 
-#if defined(USE_NCURSES) && !defined(RENAMED_NCURSES)
 # include <ncurses.h>
-#else
-# include <curses.h>
-#endif
 
 /* Exported variables: */
-
-int backend_mode = CSCOPE_BACKEND;
-
 bool buildonly	   = false; /* only build the database */
 bool unconditional = false; /* unconditionally build database */
 bool fileschanged;			/* assume some files changed */
@@ -80,6 +73,7 @@ INVCONTROL invcontrol;			   /* inverted file control structure */
 static char *newinvname;	/* new inverted index file name */
 static char *newinvpost;	/* new inverted index postings file name */
 static long	 traileroffset; /* file trailer offset */
+static char path[PATHLEN + 1];				 /* file path */
 
 
 /* Internal prototypes: */
@@ -93,6 +87,36 @@ static void	 putheader(char *dir);
 static void	 fetch_include_from_dbase(char *, size_t);
 static void	 putlist(char **names, int count);
 static bool	 samelist(FILE *oldrefs, char **names, int count);
+static void  skiplist(FILE *oldrefs);
+static void  initcompress(void);
+
+/* set up the digraph character tables for text compression */
+static void initcompress(void) {
+	if(compress == true) {
+		for(int i = 0; i < 16; ++i) {
+			dicode1[(unsigned char)(dichar1[i])] = i * 8 + 1;
+		}
+		for(int i = 0; i < 8; ++i) {
+			dicode2[(unsigned char)(dichar2[i])] = i + 1;
+		}
+	}
+}
+
+/* skip the list in the cross-reference file */
+static void skiplist(FILE *oldrefs) {
+	int i;
+
+	if(fscanf(oldrefs, "%d", &i) != 1) {
+		postfatal(PROGRAM_NAME ": cannot read list size from file %s\n", reffile);
+		/* NOTREACHED */
+	}
+	while(--i >= 0) {
+		if(fscanf(oldrefs, "%*s") != 0) {
+			postfatal(PROGRAM_NAME ": cannot read list name from file %s\n", reffile);
+			/* NOTREACHED */
+		}
+	}
+}
 
 /* Error handling routine if inverted index creation fails */
 static void cannotindex(void) {
@@ -108,12 +132,11 @@ static void cannotindex(void) {
 static bool samelist(FILE *oldrefs, char **names, int count) {
 	char oldname[PATHLEN + 1]; /* name in old cross-reference */
 	int	 oldcount;
-	int	 i;
 
 	/* see if the number of names is the same */
 	if(fscanf(oldrefs, "%d", &oldcount) != 1 || oldcount != count) { return (false); }
 	/* see if the name list is the same */
-	for(i = 0; i < count; ++i) {
+	for(int i = 0; i < count; ++i) {
 		if((1 != fscanf(oldrefs, " %[^\n]", oldname)) || strnotequal(oldname, names[i])) {
 			return (false);
 		}
@@ -141,13 +164,174 @@ void setup_build_filenames(char *reffile) {
 	free(path);
 }
 
-/* open the database */
+void initdatabase(void) {
+    FILE * oldrefs;
+	int oldnum;  /* number in old cross-ref */
+	/* if the cross-reference is to be considered up-to-date */
+	if(isuptodate) {
+		if((oldrefs = vpfopen(reffile, "rb")) == NULL) {
+			postfatal(PROGRAM_NAME ": cannot open file %s\n", reffile);
+			/* NOTREACHED */
+		}
+		/* get the crossref file version but skip the current directory */
+		if(fscanf(oldrefs, PROGRAM_NAME " %d %*s", &fileversion) != 1) {
+			postfatal(PROGRAM_NAME ": cannot read file version from file %s\n", reffile);
+			/* NOTREACHED */
+		}
+		if(fileversion >= 8) {
+
+			/* override these command line options */
+			compress	  = true;
+			invertedindex = false;
+
+			/* see if there are options in the database */
+			for(int c;;) {
+				getc(oldrefs); /* skip the blank */
+				if((c = getc(oldrefs)) != '-') {
+					ungetc(c, oldrefs);
+					break;
+				}
+				switch(getc(oldrefs)) {
+					case 'c': /* ASCII characters only */
+						compress = false;
+						break;
+					case 'q': /* quick search */
+						invertedindex = true;
+						fscanf(oldrefs, "%ld", &totalterms);
+						break;
+					case 'T': /* truncate symbols to 8 characters */
+						dbtruncated = true;
+						trun_syms	= true;
+						break;
+				}
+			}
+			initcompress();
+			seek_to_trailer(oldrefs);
+		}
+		/* skip the source and include directory lists */
+		skiplist(oldrefs);
+		skiplist(oldrefs);
+
+		/* get the number of source files */
+		if(fscanf(oldrefs, "%lu", &nsrcfiles) != 1) {
+			postfatal(PROGRAM_NAME ": cannot read source file size from file %s\n",
+				reffile);
+			/* NOTREACHED */
+		}
+		/* get the source file list */
+		srcfiles = malloc(nsrcfiles * sizeof(*srcfiles));
+		if(fileversion >= 9) {
+
+			/* allocate the string space */
+			if(fscanf(oldrefs, "%d", &oldnum) != 1) {
+				postfatal(PROGRAM_NAME ": cannot read string space size from file %s\n",
+					reffile);
+				/* NOTREACHED */
+			}
+			char * s = malloc(oldnum);
+			getc(oldrefs); /* skip the newline */
+
+			/* read the strings */
+			if(fread(s, oldnum, 1, oldrefs) != 1) {
+				postfatal(PROGRAM_NAME ": cannot read source file names from file %s\n",
+					reffile);
+				/* NOTREACHED */
+			}
+			/* change newlines to nulls */
+			for(unsigned i = 0; i < nsrcfiles; ++i) {
+				srcfiles[i] = s;
+				for(++s; *s != '\n'; ++s) {
+					;
+				}
+				*s = '\0';
+				++s;
+			}
+			/* if there is a file of source file names */
+	        FILE * names;	  /* name file pointer */
+			if((namefile != NULL && (names = vpfopen(namefile, "r")) != NULL) ||
+				(names = vpfopen(NAMEFILE, "r")) != NULL) {
+
+				/* read any -p option from it */
+				while(fgets(path, sizeof(path), names) != NULL && *path == '-') {
+					int i = path[1];
+					s = path + 2;	 /* for "-Ipath" */
+					if(*s == '\0') { /* if "-I path" */
+						fgets(path, sizeof(path), names);
+						s = path;
+					}
+					switch(i) {
+						case 'p': /* file path components to display */
+							if(*s < '0' || *s > '9') {
+								posterr(PROGRAM_NAME
+									": -p option in file %s: missing or invalid numeric value\n",
+									namefile);
+							}
+							dispcomponents = atoi(s);
+					}
+				}
+				fclose(names);
+			}
+		} else {
+			for(int i = 0; i < nsrcfiles; ++i) {
+				if(!fgets(path, sizeof(path), oldrefs)) {
+					postfatal(PROGRAM_NAME
+						": cannot read source file name from file %s\n",
+						reffile);
+					/* NOTREACHED */
+				}
+				srcfiles[i] = strdup(path);
+			}
+		}
+		fclose(oldrefs);
+	} else {
+        char * s;
+		/* get source directories from the environment */
+		if((s = getenv("SOURCEDIRS")) != NULL) { sourcedir(s); }
+		/* make the source file list */
+		srcfiles = malloc(msrcfiles * sizeof(*srcfiles));
+		makefilelist();
+		if(nsrcfiles == 0) {
+			postfatal(PROGRAM_NAME ": no source files found\n");
+			/* NOTREACHED */
+		}
+		/* get include directories from the environment */
+		if((s = getenv("INCLUDEDIRS")) != NULL) { includedir(s); }
+		/* add /usr/include to the #include directory list,
+		   but not in kernelmode... kernels tend not to use it. */
+		if(kernelmode == false) {
+			if(NULL != (s = getenv("INCDIR"))) {
+				includedir(s);
+			} else {
+				includedir(DFLT_INCDIR);
+			}
+		}
+
+		/* initialize the C keyword table */
+		initsymtab();
+
+		/* Tell build.c about the filenames to create: */
+		setup_build_filenames(reffile);
+
+		/* build the cross-reference */
+		initcompress();
+		if(linemode == false || verbosemode == true) { /* display if verbose as well */
+			postmsg("Building cross-reference...");
+		}
+		build();
+		if(linemode == false) { postmsg(""); /* clear any build progress message */ }
+		if(buildonly == true) {
+			myexit(0);
+			/* NOTREACHED */
+		}
+	}
+}
 
 void opendatabase(void) {
 	if((symrefs = vpopen(reffile, O_BINARY | O_RDONLY)) == -1) {
 		cannotopen(reffile);
 		myexit(1);
 	}
+
 	blocknumber = -1; /* force next seek to read the first block */
 
 	/* open any inverted index */
@@ -523,18 +707,18 @@ static void putheader(char *dir) {
 
 /* put the name list into the cross-reference file */
 static void putlist(char **names, int count) {
-	int i, size = 0;
+	int size = 0;
 
 	fprintf(newrefs, "%d\n", count);
 	if(names == srcfiles) {
 
 		/* calculate the string space needed */
-		for(i = 0; i < count; ++i) {
+		for(int i = 0; i < count; ++i) {
 			size += strlen(names[i]) + 1;
 		}
 		fprintf(newrefs, "%d\n", size);
 	}
-	for(i = 0; i < count; ++i) {
+	for(int i = 0; i < count; ++i) {
 		if(fputs(names[i], newrefs) == EOF || putc('\n', newrefs) == EOF) {
 			cannotwrite(newreffile);
 			/* NOTREACHED */
