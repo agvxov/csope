@@ -35,6 +35,7 @@
  *	terminal input functions
  */
 
+#include "build.h"
 #include "global.h"
 #include <ncurses.h>
 #include <setjmp.h> /* jmp_buf */
