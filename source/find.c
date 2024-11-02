@@ -990,7 +990,8 @@ char *findcalledby(const char *pattern) {
 				case FCNDEF:
 					if(dbseek(p->lineoffset) != -1 &&
 						scanpast('\t') != NULL) { /* skip def */
-						found_caller = 0x01;
+						 /* Assign valid str */
+						found_caller = srcfiles[p->fileindex];
 						findcalledbysub(srcfiles[p->fileindex], macro);
 					}
 			}
@@ -1018,7 +1019,7 @@ char *findcalledby(const char *pattern) {
 			case FCNDEF:
 				skiprefchar(); /* match name to pattern */
 				if(match()) {
-					found_caller = 0x01;
+					found_caller = strdup(file);
 					findcalledbysub(file, macro);
 				}
 				break;
@@ -1249,7 +1250,7 @@ bool search(const char *query) {
 				UNUSED(dbseek(0L)); /* read the first block */
 				findresult = (*f)(query);
 				if(f == findcalledby){
-					funcexist = (bool)(findresult);
+					funcexist = (findresult != NULL);
 				}
 				findcleanup();
 
@@ -1288,6 +1289,10 @@ bool search(const char *query) {
 				"Egrep %s in this pattern: %s",
 				findresult,
 				query);
+		if (f == findcalledby) {
+			free(findresult);
+			findresult = NULL;
+		}
 		} else if(rc == NOTSYMBOL) {
 			snprintf(msg, sizeof(msg), "This is not a C symbol: %s", query);
 		} else if(rc == REGCMPERROR) {
@@ -1317,6 +1322,12 @@ bool search(const char *query) {
 	countrefs();
 
 	window_change |= CH_RESULT;
+
+  /* Free findresult if still allocated */
+  if (findresult != NULL && f == findcalledby) {
+	free(findresult);
+	findresult = NULL;
+  }
 
 	return (true);
 }
