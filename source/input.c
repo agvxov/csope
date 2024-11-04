@@ -36,6 +36,7 @@
  */
 
 #include "global.h"
+#include "build.h"
 #include <ncurses.h>
 #include <setjmp.h> /* jmp_buf */
 #include <stdlib.h>

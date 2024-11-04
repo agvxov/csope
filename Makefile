@@ -1,6 +1,5 @@
 LIBS:=ncurses readline
 
-CC:=gcc
 CFLAGS += $(if $(SAN),-fsanitize=${SAN})
 CPPFLAGS:=-I config/ ${shell pkg-config --cflags ${LIBS}}
 LDLIBS=${shell pkg-config --libs ${LIBS}}

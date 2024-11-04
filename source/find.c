@@ -975,7 +975,7 @@ static char *lcasify(const char *s) {
 }
 
 /* find the functions called by this function */
-char *findcalledby(const char *pattern) {
+char * findcalledby(const char *pattern) {
 	char   file[PATHLEN + 1];	/* source file name */
 	char * found_caller = NULL; /* seen calling function? */
 	bool   macro        = false;
@@ -990,7 +990,7 @@ char *findcalledby(const char *pattern) {
 				case FCNDEF:
 					if(dbseek(p->lineoffset) != -1 &&
 						scanpast('\t') != NULL) { /* skip def */
-						found_caller = 0x01;
+						found_caller = (char*)0x01;
 						findcalledbysub(srcfiles[p->fileindex], macro);
 					}
 			}
@@ -1018,7 +1018,7 @@ char *findcalledby(const char *pattern) {
 			case FCNDEF:
 				skiprefchar(); /* match name to pattern */
 				if(match()) {
-					found_caller = 0x01;
+					found_caller = (char*)0x01;
 					findcalledbysub(file, macro);
 				}
 				break;
