@@ -2,7 +2,7 @@ LIBS:=ncurses readline
 
 CC:=gcc
 CFLAGS += $(if $(SAN),-fsanitize=${SAN})
-CPPFLAGS:=-I config/ -I ${CHDRD} ${shell pkg-config --cflags ${LIBS}}
+CPPFLAGS:=-I config/ ${shell pkg-config --cflags ${LIBS}}
 LDLIBS=${shell pkg-config --libs ${LIBS}}
 LEX:=flex
 
@@ -25,15 +25,9 @@ OBJD:=object/
 source:=$(shell find ${SRCD} -iname '*.c') ${GENLEX} ${GENYACC}
 object:=$(subst .c,.o,$(subst ${SRCD},${OBJD},${source}))
 
-HDRD:=${SRCD}
-CONFD:=config/
-CHDRD:=${OBJD}
-HDR:=$(shell find ${HDRD} ${CONFD} -iname '*.h')
-CHDR:=$(addsuffix .gch,$(subst ${HDRD},${CHDRD},$(subst ${CONFD}, ${CHDRD}, ${HDR})))
-
 OUTPUT:=csope
 
-main: ${CHDR} ${object}
+main: ${object}
 	${LINK.c} ${object} -o ${OUTPUT} ${LDLIBS}
 
 object/%.o: source/%.c
@@ -45,17 +39,10 @@ source/%.c: source/%.l
 source/%.c: source/%.y
 	${YACC} -o $@ $<
 
-object/%.h.gch: source/%.h
-	${CC} $< -o $@
-
-object/%.h.gch: config/%.h
-	${CC} $< -o $@
-
 install: ${OUTPUT}
 	cp ${OUTPUT} /usr/bin/
 
 clean:
-	-${RM} ${CHDR}
 	-${RM} ${GENLEX}
 	-${RM} ${GENYACC}
 	-${RM} ${object}
