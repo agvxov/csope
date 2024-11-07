@@ -224,7 +224,7 @@ char *findinclude(const char *pattern);
 char *findassign(const char *pattern);
 char *findallfcns(const char *dummy);
 char *inviewpath(char *file);
-char *lookup(char *ident);
+char *lookup(char *ident, bool do_compressed);
 char *pathcomponents(char *path, int components);
 char *read_block(void);
 char *scanpast(char c);

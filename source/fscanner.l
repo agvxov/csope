@@ -601,7 +601,7 @@ if{wsnl}*\(	{ 	/* ignore 'if' */
 			}
 
 			/* if found word was a keyword: */
-			if ((s = lookup(my_yytext + first)) != NULL) {
+			if ((s = lookup(my_yytext + first, compress)) != NULL) {
 				first = my_yyleng;
 
 				/* if the start of a typedef */

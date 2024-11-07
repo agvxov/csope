@@ -112,7 +112,7 @@ void initsymtab(void) {
 
 /* see if this identifier is a keyword */
 
-char *lookup(char *ident) {
+char * lookup(char *ident, bool do_compressed) {
 	struct keystruct *p;
 	int				  c;
 
