@@ -80,10 +80,7 @@ static void scan_dir(const char *dirfile, bool recurse);
 static void makevpsrcdirs(void);
 
 /* make the view source directory list */
-
 static void makevpsrcdirs(void) {
-	int i;
-
 	/* return if this function has already been called */
 	if(nsrcdirs > 0) { return; }
 	/* get the current directory name */
@@ -102,7 +99,7 @@ static void makevpsrcdirs(void) {
 	msrcdirs = nsrcdirs + DIRINC;
 	srcdirs	 = malloc(msrcdirs * sizeof(*srcdirs));
 	*srcdirs = "."; /* first source dir is always current dir */
-	for(i = 1; i < vpndirs; ++i) {
+	for(int i = 1; i < vpndirs; ++i) {
 		srcdirs[i] = vpdirs[i];
 	}
 	/* save the number of original source directories in the view path */
@@ -110,11 +107,9 @@ static void makevpsrcdirs(void) {
 }
 
 /* add a source directory to the list for each view path source directory */
-
 void sourcedir(char *dirlist) {
 	char		 path[PATHLEN + 1];
 	char		*dir;
-	unsigned int i;
 
 	makevpsrcdirs();		   /* make the view source directory list */
 	dirlist = strdup(dirlist); /* don't change environment variable text */
@@ -131,7 +126,7 @@ void sourcedir(char *dirlist) {
 		if(*dirlist != '/' && vpndirs > 1) {
 
 			/* compute its path from higher view path source dirs */
-			for(i = 1; i < nvpsrcdirs; ++i) {
+			for(unsigned i = 1; i < nvpsrcdirs; ++i) {
 				snprintf(path,
 					sizeof(path),
 					"%.*s/%s",
@@ -147,7 +142,6 @@ void sourcedir(char *dirlist) {
 }
 
 /* add a source directory to the list */
-
 static void addsrcdir(char *dir) {
 	struct stat statstruct;
 
@@ -163,21 +157,10 @@ static void addsrcdir(char *dir) {
 	}
 }
 
-/* HBB 20000421: new function, for avoiding leaks */
-/* free list of src directories */
-void freesrclist() {
-	if(!srcdirs) return;
-	while(nsrcdirs > 1)
-		free(srcdirs[--nsrcdirs]);
-	free(srcdirs);
-}
-
 /* add a #include directory to the list for each view path source directory */
-
 void includedir(char *dirlist) {
 	char		 path[PATHLEN + 1];
 	char		*dir;
-	unsigned int i;
 
 	makevpsrcdirs();		   /* make the view source directory list */
 	dirlist = strdup(dirlist); /* don't change environment variable text */
@@ -194,7 +177,7 @@ void includedir(char *dirlist) {
 		if(*dirlist != '/' && vpndirs > 1) {
 
 			/* compute its path from higher view path source dirs */
-			for(i = 1; i < nvpsrcdirs; ++i) {
+			for(unsigned i = 1; i < nvpsrcdirs; ++i) {
 				snprintf(path,
 					sizeof(path),
 					"%.*s/%s",
@@ -210,7 +193,6 @@ void includedir(char *dirlist) {
 }
 
 /* add a #include directory to the list */
-
 static void addincdir(char *name, char *path) {
 	struct stat statstruct;
 
@@ -229,21 +211,7 @@ static void addincdir(char *name, char *path) {
 	}
 }
 
-/* HBB 2000421: new function, for avoiding memory leaks */
-/* free the list of include files, if wanted */
-
-void freeinclist() {
-	if(!incdirs) return;
-	while(nincdirs > 0) {
-		free(incdirs[--nincdirs]);
-		free(incnames[nincdirs]);
-	}
-	free(incdirs);
-	free(incnames);
-}
-
 /* make the source file list */
-
 void makefilelist(void) {
 	static bool	 firstbuild = true; /* first time through */
 	FILE		*names;				/* name file pointer */
@@ -690,4 +658,22 @@ void freefilelist(void) {
 		}
 		srcnames[i] = NULL;
 	}
+}
+
+void freeinclist() {
+	if(!incdirs) return;
+	while(nincdirs > 0) {
+		free(incdirs[--nincdirs]);
+		free(incnames[nincdirs]);
+	}
+	free(incdirs);
+	free(incnames);
+}
+
+void freesrclist() {
+	if(!srcdirs) { return; }
+	while(nsrcdirs > 1) {
+        free(srcdirs[--nsrcdirs]);
+    }
+	free(srcdirs);
 }
