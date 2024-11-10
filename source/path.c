@@ -57,7 +57,7 @@ char *pathcomponents(char *path, int components) {
 }
 
 /*
- *    compath(pathname)
+ *    compress_path(pathname)
  *
  *    This compresses pathnames.  All strings of multiple slashes are
  *    changed to a single slash.  All occurrences of "./" are removed.
@@ -69,8 +69,7 @@ char *pathcomponents(char *path, int components) {
  *         of accidently changing strings obtained from makefiles
  *         and stored in global structures.
  */
-
-char *compath(char *pathname) /*FDEF*/
+char *compress_path(char *pathname) /*FDEF*/
 {
 	char *nextchar;
 	char *lastchar;
