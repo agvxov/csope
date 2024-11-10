@@ -90,6 +90,14 @@ char **parse_options(int *argc, char **argv) {
 				usage();
 				myexit(1);
 				break;
+			case 'h':
+				longusage();
+				myexit(1);
+				break;
+			case 'V':
+				fprintf(stderr, PROGRAM_NAME ": version %d%s\n", FILEVERSION, FIXVERSION);
+				myexit(0);
+				break;
 			case 'X':
 				remove_symfile_onexit = true;
 				break;
@@ -130,10 +138,6 @@ char **parse_options(int *argc, char **argv) {
 			case 'e': /* suppress ^E prompt between files */
 				editallprompt = false;
 				break;
-			case 'h':
-				longusage();
-				myexit(1);
-				break;
 			case 'k': /* ignore DFLT_INCDIR */
 				kernelmode = true;
 				break;
@@ -145,10 +149,6 @@ char **parse_options(int *argc, char **argv) {
 				break;
 			case 'v':
 				verbosemode = true;
-				break;
-			case 'V':
-				fprintf(stderr, PROGRAM_NAME ": version %d%s\n", FILEVERSION, FIXVERSION);
-				myexit(0);
 				break;
 			case 'q': /* quick search */
 				invertedindex = true;
