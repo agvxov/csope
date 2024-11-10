@@ -1,6 +1,6 @@
 LIBS:=ncurses readline
 
-CFLAGS += $(if $(SAN),-fsanitize=${SAN})
+CFLAGS += $(if $(SAN),-fsanitize=${SAN}) -Wno-unused-result
 CPPFLAGS:=-I config/ ${shell pkg-config --cflags ${LIBS}}
 LDLIBS=${shell pkg-config --libs ${LIBS}}
 LEX:=flex
