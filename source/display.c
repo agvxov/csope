@@ -239,7 +239,7 @@ void entercurses(void) {
 	noecho();	 /* don't echo input characters */
 	curs_set(0);
 	clear();	 /* clear the screen */
-	mouseinit(); /* initialize any mouse interface */
+	// mouseinit(); /* initialize any mouse interface */
 	// drawscrollbar(topline, nextline);
 	keypad(stdscr, TRUE); /* enable the keypad */
 	// fixkeypad();    /* fix for getch() intermittently returning garbage */
@@ -258,7 +258,7 @@ void exitcurses(void) {
 	incurses = false;
 
 	/* restore the mouse */
-	mousecleanup();
+	// mousecleanup();
 	fflush(stdout);
 }
 
