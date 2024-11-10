@@ -135,8 +135,6 @@ static void scrollbar(MOUSE *p) {
 
 /* count the references found */
 void countrefs(void) {
-	char *subsystem;			/* OGS subsystem name */
-	char *book;					/* OGS book name */
 	char  file[PATHLEN + 1];	/* file name */
 	char  function[PATLEN + 1]; /* function name */
 	char  linenum[NUMLEN + 1];	/* line number */
@@ -163,11 +161,6 @@ void countrefs(void) {
 			return;
 		}
 		if((i = strlen(pathcomponents(file, dispcomponents))) > filelen) { filelen = i; }
-		if(ogs == true) {
-			ogsnames(file, &subsystem, &book);
-			if((i = strlen(subsystem)) > subsystemlen) { subsystemlen = i; }
-			if((i = strlen(book)) > booklen) { booklen = i; }
-		}
 		if((i = strlen(function)) > fcnlen) { fcnlen = i; }
 		if((i = strlen(linenum)) > numlen) { numlen = i; }
 		++totallines;
@@ -177,9 +170,6 @@ void countrefs(void) {
 	/* restrict the width of displayed columns */
 	/* HBB FIXME 20060419: magic number alert! */
 	i = (COLS - 5) / 3;
-	if(ogs == true) { i = (COLS - 7) / 5; }
 	if(filelen > i && i > 4) { filelen = i; }
-	if(subsystemlen > i && i > 9) { subsystemlen = i; }
-	if(booklen > i && i > 4) { booklen = i; }
 	if(fcnlen > i && i > 8) { fcnlen = i; }
 }

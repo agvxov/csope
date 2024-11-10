@@ -138,7 +138,6 @@ extern bool			linemode;		/* use line oriented user interface */
 extern bool			verbosemode;	/* print extra information on line mode */
 extern bool			recurse_dir;	/* recurse dirs when searching for src files */
 extern char		   *namefile;		/* file of file names */
-extern bool			ogs;			/* display OGS book and subsystem names */
 extern char		   *prependpath;	/* prepend path to file names */
 extern FILE		   *refsfound;		/* references found file */
 extern long			totalterms;		/* total inverted index terms */
@@ -291,7 +290,6 @@ void		mouseinit(void);
 void		mousereinit(void);
 void		myexit(int sig);
 void		myperror(char *text);
-void		ogsnames(char *file, char **subsystem, char **book);
 void		progress(char *what, long current, long max);
 void		putfilename(char *srcfile);
 void		postmsg(char *msg);

@@ -74,7 +74,6 @@ bool		 linemode	 = false;		/* use line oriented user interface */
 bool		 verbosemode = false;		/* print extra information on line mode */
 bool		 recurse_dir = false;		/* recurse dirs when searching for src files */
 char		*namefile;					/* file of file names */
-bool		 ogs = false;				/* display OGS book and subsystem names */
 char		*prependpath;				/* prepend path to file names */
 FILE		*refsfound;					/* references found file */
 char		 temp1[PATHLEN + 1];		/* temporary file name */

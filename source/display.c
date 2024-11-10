@@ -55,8 +55,6 @@
 #define MSGLINE 0							/* message line */
 #define MSGCOL	0							/* message column */
 
-int subsystemlen = sizeof("Subsystem") - 1; /* OGS subsystem name display field length */
-int booklen		 = sizeof("Book") - 1;		/* OGS book name display field length */
 int filelen		 = sizeof("File") - 1;		/* file name display field length */
 int fcnlen		 = sizeof("Function") - 1;	/* function name display field length */
 int numlen		 = 0;						/* line number display field length */
@@ -373,8 +371,6 @@ static inline void display_results() {
 								 * because of selections
 								 */
 								/* column headings */
-	char *subsystem;			/* OGS subsystem name */
-	char *book;					/* OGS book name */
 	char  file[PATHLEN + 1];	/* file name */
 	char  function[PATLEN + 1]; /* function name */
 	char  linenum[NUMLEN + 1];	/* line number */
@@ -408,10 +404,6 @@ static inline void display_results() {
 	/* --- Display the column headings --- */
 	wattron(wresult, COLOR_PAIR(COLOR_PAIR_TABLE_HEADER));
 	wmove(wresult, 2, 2);
-	if(ogs == true && field != FILENAME) {
-		wprintw(wresult, "%-*s ", subsystemlen, "Subsystem");
-		wprintw(wresult, "%-*s ", booklen, "Book");
-	}
 	if(dispcomponents > 0) wprintw(wresult, "%-*s ", filelen, "File");
 
 	if(field == SYMBOL || field == CALLEDBY || field == CALLING) {
@@ -427,7 +419,6 @@ static inline void display_results() {
 	/* NOTE: the +1s are column gaps */
 	srctxtw = second_col_width;
 	srctxtw -= 1 + 1;	 // dispchars
-	if(ogs == true) { srctxtw -= subsystemlen + 1 + booklen + 1; }
 	if(dispcomponents > 0) { srctxtw -= filelen + 1; }
 	if(field == SYMBOL || field == CALLEDBY || field == CALLING) {
 		srctxtw -= fcnlen + 1;
@@ -487,12 +478,6 @@ static inline void display_results() {
 		if(field == FILENAME) {
 			wprintw(wresult, "%-*s ", filelen, file);
 		} else {
-			/* if OGS, display the subsystem and book names */
-			if(ogs == true) {
-				ogsnames(file, &subsystem, &book);
-				wprintw(wresult, "%-*.*s ", subsystemlen, subsystemlen, subsystem);
-				wprintw(wresult, "%-*.*s ", booklen, booklen, book);
-			}
 			/* display the requested path components */
 			if(dispcomponents > 0) {
 				wprintw(wresult,
@@ -767,30 +752,6 @@ void postfatal(const char *msg, ...) {
 
 	/* shut down */
 	myexit(1);
-}
-
-/* get the OGS subsystem and book names */
-void ogsnames(char *file, char **subsystem, char **book) {
-	static char buf[PATHLEN + 1];
-	char	   *s, *slash;
-
-	*subsystem = *book = "";
-	(void)strcpy(buf, file);
-	s = buf;
-	if(*s == '/') { ++s; }
-	while((slash = strchr(s, '/')) != NULL) {
-		*slash = '\0';
-		if((int)strlen(s) >= 3 && strncmp(slash - 3, ".ss", 3) == 0) {
-			*subsystem = s;
-			s		   = slash + 1;
-			if((slash = strchr(s, '/')) != NULL) {
-				*book  = s;
-				*slash = '\0';
-			}
-			break;
-		}
-		s = slash + 1;
-	}
 }
 
 static inline
