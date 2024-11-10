@@ -225,7 +225,6 @@ void putcrossref(void) {
 	lineoffset = dboffset;
 	dboffset += fprintf(newrefs, "%d ", lineno);
 
-	/* HBB 20010425: added this line: */
 	my_yytext[my_yyleng] = '\0';
 
 	blank = false;

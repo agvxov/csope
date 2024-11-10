@@ -138,7 +138,7 @@ void sourcedir(char *dirlist) {
 		}
 		dir = strtok(NULL, DIRSEPS);
 	}
-	free(dirlist); /* HBB 20000421: avoid memory leaks */
+	free(dirlist);
 }
 
 /* add a source directory to the list */
@@ -224,7 +224,7 @@ void makefilelist(void) {
 
 	makevpsrcdirs(); /* make the view source directory list */
 
-	/* if -i was falseT given and there are source file arguments */
+	/* if -i was NOT given and there are source file arguments */
 	if(namefile == NULL && fileargc > 0) {
 
 		/* put them in a list that can be expanded */

@@ -128,9 +128,9 @@ void setup_build_filenames(char *reffile) {
 
 	path = malloc(strlen(reffile) + 10u);
 	strcpy(path, reffile);
-	s  = (char *)basename(path);	// this is save because the returned pointer is inside $path, and we know we can edit it
+	s  = (char *)basename(path);	// this is safe because the returned pointer is inside $path, and we know we can edit it
 	*s = '\0';
-	strcat(path, "n");
+	strcat(path, "n"); // XXX: prefix signalling "new"
 	++s;
 	strcpy(s, basename(reffile));
 	newreffile = strdup(path);
@@ -193,6 +193,8 @@ void build(void) {
 	unsigned long fileindex;			/* source file name index */
 	bool		  interactive = true;	/* output progress messages */
 
+    // XXX: find a safe way to remove this,
+    //       building is cheap, $HOME moves rarely
 	/* normalize the current directory relative to the home directory so
 	   the cross-reference is not rebuilt when the user's login is moved */
 	strcpy(newdir, currentdir);
