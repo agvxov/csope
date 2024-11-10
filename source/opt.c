@@ -3,13 +3,69 @@
 #include "build.h"
 #include "vp.h"
 #include "version.inc"
+#include "auto_vararg.h"
 
 #include <stdlib.h>	 /* atoi */
 #include <getopt.h>
 
+/* defaults for unset environment variables */
+#define DEFAULT_EDITOR	 "vi"
+#define DEFAULT_HOME	 "/"   /* no $HOME --> use root directory */
+#define DEFAULT_SHELL	 "sh"
+#define DEFAULT_LINEFLAG "+%s" /* default: used by vi and emacs */
+#define DEFAULT_TMPDIR	 "/tmp"
+
+/* environment variable holders */
+char * editor;
+char * home;
+char * shell;
+char * lineflag;
+char * tmpdir;
+bool lineflagafterfile;
+
 bool  remove_symfile_onexit = false;
 bool  onesearch; /* one search only in line mode */
 char *reflines;	 /* symbol reference lines file */
+
+/* From a list of envirnment variable names,
+ *  return the first valid variable value
+ *  or the user given default.
+ */
+#define coalesce_env(def, ...) _coalesce_env(def, PP_NARG(__VA_ARGS__), __VA_ARGS__)
+static inline
+char * _coalesce_env(char * mydefault, size_t argc, ...) {
+    char * r = mydefault;
+    va_list va;
+    va_start(va, argc);
+
+    for (int i = 0; i < argc; i++) {
+        char * value = va_arg(va, char*);
+        value = getenv(value);
+
+        if (value != NULL
+        &&  *value != '\0') {
+            r = value;
+            goto end;
+        }
+    }
+
+  end:
+    va_end(va);
+    return r;
+}
+
+/* XXX: Add CSOPE_* equivalents while preserving the originals.
+ *       DO NOT do it without writting documentation
+ */
+void readenv(void) {
+    editor   = coalesce_env(DEFAULT_EDITOR, "CSCOPE_EDITOR", "VIEWER", "EDITOR");
+    home     = coalesce_env(DEFAULT_HOME, "HOME");
+    shell    = coalesce_env(DEFAULT_SHELL, "SHELL");
+    lineflag = coalesce_env(DEFAULT_LINEFLAG, "CSCOPE_LINEFLAG");
+    tmpdir   = coalesce_env(DEFAULT_TMPDIR, "TMPDIR");
+
+    lineflagafterfile = getenv("CSCOPE_LINEFLAG_AFTER_FILE") ? 1 : 0;
+}
 
 char **parse_options(int *argc, char **argv) {
 	int	  opt;

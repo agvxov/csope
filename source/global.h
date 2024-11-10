@@ -229,7 +229,9 @@ char *pathcomponents(char *path, int components);
 char *read_block(void);
 char *scanpast(char c);
 
-char	   **parse_options(int *argc, char **argv);
+char **parse_options(int *argc, char **argv);
+void readenv(void);
+
 void		 error_usage(void);
 void		 longusage(void);
 void		 usage(void);

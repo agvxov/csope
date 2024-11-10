@@ -41,7 +41,6 @@ char	   *egrepinit(const char *egreppat);
 char	   *logdir(char *name);
 const char *basename(const char *path);
 FILE	   *myfopen(char *path, char *mode);
-char	   *mygetenv(char *variable, char *deflt);
 int			myopen(char *path, int flag, int mode);
 FILE	   *mypopen(char *cmd, char *mode);
 int			mypclose(FILE *ptr);

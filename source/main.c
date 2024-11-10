@@ -50,13 +50,6 @@
 #include <signal.h>
 #include <getopt.h>
 
-/* defaults for unset environment variables */
-#define EDITOR	 "vi"
-#define HOME	 "/"   /* no $HOME --> use root directory */
-#define SHELL	 "sh"
-#define LINEFLAG "+%s" /* default: used by vi and emacs */
-#define TMPDIR	 "/tmp"
-
 /* note: these digraph character frequencies were calculated from possible
    printable digraphs in the cross-reference for the C compiler */
 char dichar1[] = " teisaprnl(of)=c";	/* 16 most frequent first chars */
@@ -65,9 +58,6 @@ char dichar2[] = " tnerpla";			/* 8 most frequent second chars
 char dicode1[256];						/* digraph first character code */
 char dicode2[256];						/* digraph second character code */
 
-char		*editor, *shell, *lineflag; /* environment variables */
-char		*home;						/* Home directory */
-bool		 lineflagafterfile;
 char		*argv0;						/* command name */
 bool		 compress = true;			/* compress the characters in the crossref */
 bool		 dbtruncated;				/* database symbols are truncated to 8 chars */
@@ -94,14 +84,12 @@ long		 totalterms;				/* total inverted index terms */
 bool		 trun_syms;					/* truncate symbols to 8 characters */
 char		 tempstring[TEMPSTRING_LEN + 1]; /* use this as a buffer, instead of 'yytext',
 											  * which had better be left alone */
-char *tmpdir;								 /* temporary directory */
 
 static char path[PATHLEN + 1];				 /* file path */
 
 /* Internal prototypes: */
 static void		   skiplist(FILE *oldrefs);
 static void		   initcompress(void);
-static inline void readenv(void);
 static inline void linemode_event_loop(void);
 static inline void screenmode_event_loop(void);
 
@@ -205,17 +193,6 @@ void myexit(int sig) {
 	}
 
 	exit(sig);
-}
-
-static inline void readenv(void) {
-	editor			  = mygetenv("EDITOR", EDITOR);
-	editor			  = mygetenv("VIEWER", editor);		   /* use viewer if set */
-	editor			  = mygetenv("CSCOPE_EDITOR", editor); /* has last word */
-	home			  = mygetenv("HOME", HOME);
-	shell			  = mygetenv("SHELL", SHELL);
-	lineflag		  = mygetenv("CSCOPE_LINEFLAG", LINEFLAG);
-	lineflagafterfile = getenv("CSCOPE_LINEFLAG_AFTER_FILE") ? 1 : 0;
-	tmpdir			  = mygetenv("TMPDIR", TMPDIR);
 }
 
 static inline void linemode_event_loop(void) {
