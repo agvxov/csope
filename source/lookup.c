@@ -39,11 +39,11 @@
 #include "lookup.h"
 
 /* keyword text for fast testing of keywords in the scanner */
-char enumtext[]	   = "enum";
-char externtext[]  = "extern";
-char structtext[]  = "struct";
-char typedeftext[] = "typedef";
-char uniontext[]   = "union";
+const char enumtext[]	 = "enum";
+const char externtext[]  = "extern";
+const char structtext[]  = "struct";
+const char typedeftext[] = "typedef";
+const char uniontext[]   = "union";
 
 /* This keyword table is also used for keyword text compression.  Keywords
  * with an index less than the numeric value of a space are replaced with the

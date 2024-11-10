@@ -195,8 +195,8 @@ extern int	 blocklen;	  /* length of disk block read */
 
 /* lookup.c global data */
 extern struct keystruct {
-		char			 *text;
-		char			  delim;
+		const char * text;
+		const char delim;
 		struct keystruct *next;
 } keyword[];
 
@@ -315,7 +315,7 @@ int			findinit(const char *pattern_);
 MOUSE	   *getmouseaction(char leading_char);
 
 int	 egrep(char *file, FILE *output, char *format);
-int	 hash(char *ss);
+int	 hash(const char * ss);
 int	 execute(char *a, ...);
 long dbseek(long offset);
 

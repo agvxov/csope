@@ -36,10 +36,10 @@
 /* declarations for objects defined in lookup.c */
 
 /* keyword text for fast testing of keywords in the scanner */
-extern char enumtext[];
-extern char externtext[];
-extern char structtext[];
-extern char typedeftext[];
-extern char uniontext[];
+extern const char enumtext[];
+extern const char externtext[];
+extern const char structtext[];
+extern const char typedeftext[];
+extern const char uniontext[];
 
 #endif /* CSCOPE_LOOKUP_H */
