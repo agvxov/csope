@@ -205,6 +205,14 @@ char **parse_options(int *argc, char **argv) {
 				break;
 		}
 	}
+
+    // Sanity checks
+	/* XXX remove if/when clearerr() in dir.c does the right thing. */
+	if(namefile && strcmp(namefile, "-") == 0 && !buildonly) {
+		postfatal(PROGRAM_NAME ": Must use -b if file list comes from stdin\n");
+		/* NOTREACHED */
+	}
+
 	/*
 	 * This adjusts argv so that we only see the remaining
 	 * args. Its ugly, but we need to do it so that the rest

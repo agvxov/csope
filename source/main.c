@@ -318,12 +318,6 @@ int main(int argc, char **argv) {
 	/* read the environment */
 	readenv();
 
-	/* XXX remove if/when clearerr() in dir.c does the right thing. */
-	if(namefile && strcmp(namefile, "-") == 0 && !buildonly) {
-		postfatal(PROGRAM_NAME ": Must use -b if file list comes from stdin\n");
-		/* NOTREACHED */
-	}
-
 	/* make sure that tmpdir exists */
 	if(lstat(tmpdir, &stat_buf)) {
 		fprintf(stderr,
