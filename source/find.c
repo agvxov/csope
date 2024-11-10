@@ -107,8 +107,8 @@ FP field_searchers[FIELDS + 1] = {
 
 /**/
 struct TI {
-		char *text1;
-		char *text2;
+	char *text1;
+	char *text2;
 };
 extern struct TI fields[FIELDS + 1];
 

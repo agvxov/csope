@@ -46,11 +46,8 @@ const char *basename(const char *path) {
 
 /* get the requested path components */
 char *pathcomponents(char *path, int components) {
-	int	  i;
-	char *s;
-
-	s = path + strlen(path) - 1;
-	for(i = 0; i < components; ++i) {
+	char * s = path + strlen(path) - 1;
+	for(int i = 0; i < components; i++) {
 		while(s > path && *--s != '/') {
 			;
 		}
@@ -223,10 +220,9 @@ char *compath(char *pathname) /*FDEF*/
 
 static
 char *nextfield(char *p) {
-	while(*p && *p != ':')
-		++p;
-	if(*p) *p++ = 0;
-	return (p);
+	while(*p && *p != ':') { ++p; }
+	if(*p) { *p++ = 0; }
+	return p;
 }
 
 /*
@@ -251,8 +247,9 @@ char *logdir(char *name) {
 	do {
 		/* get the next line in the password file */
 		i = read(pwf, line, OURBUFSIZ);
-		for(j = 0; j < i; j++)
-			if(line[j] == '\n') break;
+		for(j = 0; j < i; j++) {
+			if(line[j] == '\n') { break; }
+        }
 		/* return a null pointer if the whole file has been read */
 		if(j >= i) return (0);
 		line[++j] = 0;						/* terminate the line */

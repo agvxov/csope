@@ -19,9 +19,9 @@ char **parse_options(int *argc, char **argv) {
 	int	  argcc = *argc;
 
 	struct option lopts[] = {
-		{"help",	 0, NULL, 'h'},
+		{"help",    0, NULL, 'h'},
 		{"version", 0, NULL, 'V'},
-		{0,			0, 0,	  0  }
+		{0,         0,    0,  0 },
 	};
 
 	while((opt = getopt_long(argcc,
@@ -152,7 +152,7 @@ char **parse_options(int *argc, char **argv) {
 	}
 	/*
 	 * This adjusts argv so that we only see the remaining
-	 * args.  Its ugly, but we need to do it so that the rest
+	 * args. Its ugly, but we need to do it so that the rest
 	 * of the main routine doesn't get all confused
 	 */
 	*argc = *argc - optind;
