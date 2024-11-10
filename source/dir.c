@@ -248,7 +248,7 @@ void makefilelist(void) {
 	if(namefile == NULL) {
 		/* No namefile --> make a list of all the source files
 		 * in the directories */
-		for(i = 0; i < nsrcdirs; ++i) {
+		for(unsigned i = 0; i < nsrcdirs; i++) {
 			scan_dir(srcdirs[i], recurse_dir);
 		}
 		return;

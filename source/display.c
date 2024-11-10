@@ -793,7 +793,8 @@ void ogsnames(char *file, char **subsystem, char **book) {
 	}
 }
 
-static inline void display_tooltip(void) {
+static inline
+void display_tooltip(void) {
 	wmove(wtooltip, 0, 0);
 	const char *tooltip;
 	if(*current_window == winput) {

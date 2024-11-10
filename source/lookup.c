@@ -100,9 +100,8 @@ struct keystruct keyword[] = {
 static struct keystruct *hashtab[HASHMOD]; /* pointer table */
 
 /* put the keywords into the symbol table */
-
 void initsymtab(void) {
-	for(unsigned i = 1; i < KEYWORDS; ++i) {
+	for(unsigned i = 1; i < KEYWORDS; i++) {
 		struct keystruct *p	= keyword + i;
 		int j		        = hash(p->text) % HASHMOD;
 		p->next	   = hashtab[j];
@@ -111,7 +110,6 @@ void initsymtab(void) {
 }
 
 /* see if this identifier is a keyword */
-
 char * lookup(char *ident, bool do_compressed) {
 	struct keystruct *p;
 	int				  c;
@@ -126,7 +124,7 @@ char * lookup(char *ident, bool do_compressed) {
 		}
 	}
 	/* this is an identifier */
-	return (NULL);
+	return NULL;
 }
 
 /* form hash value for string */

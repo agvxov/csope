@@ -95,17 +95,16 @@ static inline void screenmode_event_loop(void);
 
 
 
-static inline void siginit(void) {
+static inline
+void siginit(void) {
 	/* if running in the foreground */
 	if(signal(SIGINT, SIG_IGN) != SIG_IGN) {
 		/* cleanup on the interrupt and quit signals */
 		signal(SIGINT, myexit);
 		signal(SIGQUIT, myexit);
 	}
-	/* cleanup on the hangup signal */
-	signal(SIGHUP, myexit);
 
-	/* ditto the TERM signal */
+	signal(SIGHUP, myexit);
 	signal(SIGTERM, myexit);
 
 	/* ignore PIPE signal, so myexit() will have a chance to clean up in
@@ -134,7 +133,8 @@ void cannotwrite(const char *const file) {
 }
 
 /* set up the digraph character tables for text compression */
-static void initcompress(void) {
+static
+void initcompress(void) {
 	int i;
 
 	if(compress == true) {
@@ -194,7 +194,8 @@ void myexit(int sig) {
 	exit(sig);
 }
 
-static inline void linemode_event_loop(void) {
+static inline
+void linemode_event_loop(void) {
 	int c;
 
 	if(*input_line != '\0') { /* do any optional search */
@@ -203,14 +204,13 @@ static inline void linemode_event_loop(void) {
 			 * verbose mode */
 			if(verbosemode == true) printf(PROGRAM_NAME ": %d lines\n", totallines);
 
-			while((c = getc(refsfound)) != EOF)
+			while((c = getc(refsfound)) != EOF) {
 				putchar(c);
+            }
 		}
 	}
-	if(onesearch == true) {
-		myexit(0);
-		/* NOTREACHED */
-	}
+
+	if(onesearch == true) { myexit(0); }
 
 	for(char *s;;) {
 		char buf[PATLEN + 2];
@@ -290,7 +290,8 @@ static inline void linemode_event_loop(void) {
 	}
 }
 
-static inline void screenmode_event_loop(void) {
+static inline
+void screenmode_event_loop(void) {
 	for(;;) {
 		display();
 		handle_input(wgetch(stdscr));	 // NOTE: getch() does not return KEY_* codes
@@ -347,8 +348,8 @@ int main(int argc, char **argv) {
 	snprintf(temp2, sizeof(temp2), "%s/" PROGRAM_NAME ".2", tempdirpv);
 
 	/* if the database path is relative and it can't be created */
-	if(reffile[0] != '/' && access(".", WRITE) != 0) {
-
+	if(reffile[0] != '/'
+    && access(".", WRITE) != 0) {
 		/* put it in the home directory if the database may not be
 		 * up-to-date or doesn't exist in the relative directory,
 		 * so a database in the current directory will be

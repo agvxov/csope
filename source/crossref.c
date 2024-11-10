@@ -213,8 +213,8 @@ void putfilename(char *srcfile) {
 }
 
 /* output the symbols and source line */
-
-static void putcrossref(void) {
+static
+void putcrossref(void) {
 	unsigned int  i, j;
 	unsigned char c;
 	bool		  blank;	  /* blank indicator */

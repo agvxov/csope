@@ -88,8 +88,8 @@ static char			 *SUPFING, *supfing;
 static char			  thisterm[TERMMAX];
 
 typedef union logicalblk {
-		long invblk[BLOCKSIZE / sizeof(long)];
-		char chrblk[BLOCKSIZE];
+	long invblk[BLOCKSIZE / sizeof(long)];
+	char chrblk[BLOCKSIZE];
 } t_logicalblk;
 
 static t_logicalblk logicalblk;

@@ -93,12 +93,14 @@ static bool	 samelist(FILE *oldrefs, char **names, int count);
 
 /* Error handling routine if inverted index creation fails */
 static void cannotindex(void) {
-	fprintf(stderr, PROGRAM_NAME ": cannot create inverted index; ignoring -q option\n");
 	invertedindex = false;
 	errorsfound	  = true;
-	fprintf(stderr, PROGRAM_NAME ": removed files %s and %s\n", newinvname, newinvpost);
+
+	fprintf(stderr, PROGRAM_NAME ": cannot create inverted index; ignoring -q option\n");
+
 	unlink(newinvname);
 	unlink(newinvpost);
+	fprintf(stderr, PROGRAM_NAME ": removed files %s and %s\n", newinvname, newinvpost);
 }
 
 /* see if the name list is the same in the cross-reference file */
@@ -108,14 +110,15 @@ static bool samelist(FILE *oldrefs, char **names, int count) {
 	int	 i;
 
 	/* see if the number of names is the same */
-	if(fscanf(oldrefs, "%d", &oldcount) != 1 || oldcount != count) { return (false); }
+	if(fscanf(oldrefs, "%d", &oldcount) != 1 || oldcount != count) { return false; }
 	/* see if the name list is the same */
 	for(i = 0; i < count; ++i) {
-		if((1 != fscanf(oldrefs, " %[^\n]", oldname)) || strnotequal(oldname, names[i])) {
-			return (false);
+		if((1 != fscanf(oldrefs, " %[^\n]", oldname))
+        || strnotequal(oldname, names[i])) {
+			return false;
 		}
 	}
-	return (true);
+	return true;
 }
 
 /* create the file name(s) used for a new cross-referene */
@@ -139,7 +142,6 @@ void setup_build_filenames(char *reffile) {
 }
 
 /* open the database */
-
 void opendatabase(void) {
 	if((symrefs = vpopen(reffile, O_BINARY | O_RDONLY)) == -1) {
 		cannotopen(reffile);
@@ -204,11 +206,10 @@ void build(void) {
 
 	/* if there is an old cross-reference and its current directory matches */
 	/* or this is an unconditional build */
-	if((oldrefs = vpfopen(reffile, "rb")) != NULL && unconditional == false &&
-		fscanf(oldrefs, PROGRAM_NAME " %d %" PATHLEN_STR "s", &fileversion, olddir) ==
-			2 &&
-		(strcmp(olddir, currentdir) == 0 /* remain compatible */
-			|| strcmp(olddir, newdir) == 0)) {
+	if((oldrefs = vpfopen(reffile, "rb")) != NULL
+    && !unconditional
+    && fscanf(oldrefs, PROGRAM_NAME " %d %" PATHLEN_STR "s", &fileversion, olddir) == 2
+    && (strcmp(olddir, currentdir) == 0 /* remain compatible */ || strcmp(olddir, newdir) == 0)) {
 		/* get the cross-reference file's modification time */
 		fstat(fileno(oldrefs), &file_status);
 		reftime = file_status.st_mtime;
@@ -216,12 +217,10 @@ void build(void) {
 			bool oldcompress	  = true;
 			bool oldinvertedindex = false;
 			bool oldtruncate	  = false;
-			int	 c;
 
 			/* see if there are options in the database */
-			for(;;) {
-				while((c = getc(oldrefs)) == ' ')
-					; /* do nothing */
+			for(int c;;) {
+				while((c = getc(oldrefs)) == ' ') { ; }
 				if(c != '-') {
 					ungetc(c, oldrefs);
 					break;
@@ -452,7 +451,8 @@ void build(void) {
 }
 
 /* string comparison function for qsort */
-static int compare(const void *arg_s1, const void *arg_s2) {
+static
+int compare(const void *arg_s1, const void *arg_s2) {
 	const char **s1 = (const char **)arg_s1;
 	const char **s2 = (const char **)arg_s2;
 
@@ -472,7 +472,8 @@ void seek_to_trailer(FILE *f) {
 }
 
 /* get the next file name in the old cross-reference */
-static char *getoldfile(void) {
+static
+char *getoldfile(void) {
 	static char file[PATHLEN + 1]; /* file name in old crossref */
 
 	if(blockp != NULL) {
@@ -481,13 +482,14 @@ static char *getoldfile(void) {
 				skiprefchar();
 				fetch_string_from_dbase(file, sizeof(file));
 				if(file[0] != '\0') { /* if not end-of-crossref */
-					return (file);
+					return file;
 				}
-				return (NULL);
+				return NULL;
 			}
 		} while(scanpast('\t') != NULL);
 	}
-	return (NULL);
+
+	return NULL;
 }
 
 /* Free all storage allocated for filenames: */
@@ -499,7 +501,8 @@ void free_newbuildfiles(void) {
 
 /* output the cscope version, current directory, database format options, and
    the database trailer offset */
-static void putheader(char *dir) {
+static
+void putheader(char *dir) {
 	dboffset = fprintf(newrefs, PROGRAM_NAME " %d %s", FILEVERSION, dir);
 	if(compress == false) { dboffset += fprintf(newrefs, " -c"); }
 	if(invertedindex == true) {
@@ -519,8 +522,9 @@ static void putheader(char *dir) {
 }
 
 /* put the name list into the cross-reference file */
-static void putlist(char **names, int count) {
 	int i, size = 0;
+static
+void putlist(char **names, int count) {
 
 	fprintf(newrefs, "%d\n", count);
 	if(names == srcfiles) {
@@ -540,7 +544,8 @@ static void putlist(char **names, int count) {
 }
 
 /* copy this file's symbol data */
-static void copydata(void) {
+static
+void copydata(void) {
 	char *cp;
 
 	setmark('\t');
@@ -574,8 +579,8 @@ static void copydata(void) {
 }
 
 /* copy this file's symbol data and output the inverted index postings */
-
-static void copyinverted(void) {
+static
+void copyinverted(void) {
 	char *cp;
 	char  c;
 	int	  type; /* reference type (mark character) */
@@ -640,7 +645,8 @@ static void copyinverted(void) {
 }
 
 /* replace the old file with the new file */
-static void movefile(char *new, char *old) {
+static
+void movefile(char *new, char *old) {
 	unlink(old);
 	if(rename(new, old) == -1) {
 		myperror(PROGRAM_NAME);
@@ -650,7 +656,8 @@ static void movefile(char *new, char *old) {
 }
 
 /* process the #included file in the old database */
-static void fetch_include_from_dbase(char *s, size_t length) {
+static
+void fetch_include_from_dbase(char *s, size_t length) {
 	dbputc(INCLUDE);
 	skiprefchar();
 	fetch_string_from_dbase(s, length);
