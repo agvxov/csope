@@ -220,7 +220,6 @@ void makefilelist(void) {
 	char		 line[PATHLEN * 10];
 	char		*file;
 	char		*s;
-	unsigned int i;
 
 	makevpsrcdirs(); /* make the view source directory list */
 
@@ -228,7 +227,7 @@ void makefilelist(void) {
 	if(namefile == NULL && fileargc > 0) {
 
 		/* put them in a list that can be expanded */
-		for(i = 0; i < fileargc; ++i) {
+		for(unsigned i = 0; i < fileargc; i++) {
 			file = fileargv[i];
 			if(infilelist(file) == false) {
 				if((s = inviewpath(file)) != NULL) {
@@ -291,7 +290,7 @@ void makefilelist(void) {
 					unfinished_option = 0;
 				}
 
-				i = path[1];
+				int i = path[1];
 				switch(i) {
 					case 'c': /* ASCII characters only in crossref */
 						compress = false;
@@ -444,13 +443,15 @@ static void scan_dir(const char *adir, bool recurse_dir) {
 					PATHLEN - 2 - adir_len,
 					entry->d_name);
 
-				if(lstat(path, &buf) == 0) {
-					if(recurse_dir && S_ISDIR(buf.st_mode)) {
-						scan_dir(path, recurse_dir);
-					} else if(issrcfile(path) && infilelist(path) == false &&
-							  access(path, R_OK) == 0) {
-						addsrcfile(path);
-					}
+				if(lstat(path, &buf)) { continue; }
+
+				if(recurse_dir && S_ISDIR(buf.st_mode)) {
+					scan_dir(path, recurse_dir);
+				} else
+                if(issrcfile(path)
+                && !infilelist(path)
+                && access(path, R_OK) == 0) {
+					addsrcfile(path);
 				}
 			}
 		}

@@ -198,9 +198,9 @@ void build(void) {
 	/* normalize the current directory relative to the home directory so
 	   the cross-reference is not rebuilt when the user's login is moved */
 	strcpy(newdir, currentdir);
-	if(strcmp(currentdir, home) == 0) {
+	if(!strcmp(currentdir, home)) {
 		strcpy(newdir, "$HOME");
-	} else if(strncmp(currentdir, home, strlen(home)) == 0) {
+	} else if(!strncmp(currentdir, home, strlen(home))) {
 		snprintf(newdir, sizeof(newdir), "$HOME%s", currentdir + strlen(home));
 	}
 	/* sort the source file names (needed for rebuilding) */
@@ -521,21 +521,21 @@ void putheader(char *dir) {
 }
 
 /* put the name list into the cross-reference file */
-	int i, size = 0;
 static
 void putlist(char **names, int count) {
+	int size = 0;
 
 	fprintf(newrefs, "%d\n", count);
 	if(names == srcfiles) {
-
 		/* calculate the string space needed */
-		for(i = 0; i < count; ++i) {
+		for(int i = 0; i < count; ++i) {
 			size += strlen(names[i]) + 1;
 		}
 		fprintf(newrefs, "%d\n", size);
 	}
-	for(i = 0; i < count; ++i) {
-		if(fputs(names[i], newrefs) == EOF || putc('\n', newrefs) == EOF) {
+	for(int i = 0; i < count; i++) {
+		if(fputs(names[i], newrefs) == EOF
+        || putc('\n', newrefs) == EOF) {
 			cannotwrite(newreffile);
 			/* NOTREACHED */
 		}

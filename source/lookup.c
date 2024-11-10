@@ -128,11 +128,14 @@ char * lookup(char *ident, bool do_compressed) {
 }
 
 /* form hash value for string */
-int hash(char *ss) {
-	int			   i;
+int hash(const char * ss) {
+	int			   i = 0;
 	unsigned char *s = (unsigned char *)ss;
 
-	for(i = 0; *s != '\0';)
+    while (*s != '\0') {
 		i += *s++; /* += is faster than <<= for cscope */
+
+    }
+
 	return (i);
 }
