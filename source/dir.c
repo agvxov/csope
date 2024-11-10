@@ -608,7 +608,6 @@ char *inviewpath(char *file) {
 }
 
 /* add a source file to the list */
-
 void addsrcfile(char *path) {
 	struct listitem *p;
 	int				 i;
@@ -628,7 +627,6 @@ void addsrcfile(char *path) {
 }
 
 /* free the memory allocated for the source file list */
-
 void freefilelist(void) {
 	struct listitem *p, *nextp;
 	int				 i;

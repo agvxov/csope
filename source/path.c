@@ -81,20 +81,17 @@ char *compress_path(char *pathname) /*FDEF*/
 	/*
 	 *	do not change the path if it has no "/"
 	 */
-
 	if(strchr(pathname, '/') == NULL) return (pathname);
 
 	/*
 	 *	find all strings consisting of more than one '/'
 	 */
-
 	for(lastchar = pathname + 1; *lastchar != '\0'; lastchar++)
 		if((*lastchar == '/') && (*(lastchar - 1) == '/')) {
 
 			/*
 			 *	find the character after the last slash
 			 */
-
 			nextchar = lastchar;
 			while(*++lastchar == '/') { }
 
@@ -102,7 +99,6 @@ char *compress_path(char *pathname) /*FDEF*/
 			 *	eliminate the extra slashes by copying
 			 *	everything after the slashes over the slashes
 			 */
-
 			sofar = nextchar;
 			while((*nextchar++ = *lastchar++) != '\0')
 				;
@@ -112,7 +108,6 @@ char *compress_path(char *pathname) /*FDEF*/
 	/*
 	 *	find all strings of "./"
 	 */
-
 	for(lastchar = pathname + 1; *lastchar != '\0'; lastchar++)
 		if((*lastchar == '/') && (*(lastchar - 1) == '.') &&
 			((lastchar - 1 == pathname) || (*(lastchar - 2) == '/'))) {
@@ -120,7 +115,6 @@ char *compress_path(char *pathname) /*FDEF*/
 			/*
 			 *	copy everything after the "./" over the "./"
 			 */
-
 			nextchar = lastchar - 1;
 			sofar	 = nextchar;
 			while((*nextchar++ = *++lastchar) != '\0')

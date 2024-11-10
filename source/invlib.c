@@ -497,7 +497,6 @@ static int invnewterm(void) {
  * 'to' substring (which must be of the exact same length), and the function
  * returns 0. Otherwise, returns -1.
  */
-
 static int invflipname(char *invname, const char *from, const char *to) {
 	char *temp, *i = NULL;
 

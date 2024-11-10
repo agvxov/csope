@@ -86,7 +86,6 @@ char **parse_options(int *argc, char **argv) {
 			   lopts,
 			   &longind)) != -1) {
 		switch(opt) {
-
 			case '?':
 				usage();
 				myexit(1);
