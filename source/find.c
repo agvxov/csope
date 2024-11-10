@@ -162,13 +162,11 @@ static bool check_for_assignment(void) {
 
 	/* check for operator assignments: +=, ... ^= ? */
 	if((asgn_char[1] == '=')
-	    || ((asgn_char[1] & 0x80)
-	       && (dichar1[(asgn_char[1] & 0177) / 8] == '='))
-	&&
-	((asgn_char[0] == '+') || (asgn_char[0] == '-') || (asgn_char[0] == '*') ||
+    || (((asgn_char[1] & 0x80) && (dichar1[(asgn_char[1] & 0177) / 8] == '='))
+	   && ((asgn_char[0] == '+') || (asgn_char[0] == '-') || (asgn_char[0] == '*') ||
 		   (asgn_char[0] == '/') || (asgn_char[0] == '%') || (asgn_char[0] == '&') ||
 		   (asgn_char[0] == '|') || (asgn_char[0] == '^'))
-	) {
+	)) {
 		return true;
 	}
 
