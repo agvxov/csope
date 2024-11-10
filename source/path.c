@@ -233,8 +233,8 @@ char *nextfield(char *p) {
  *    storage allocation.
  */
 char *logdir(char *name) {
-	#define OURBUFSIZ 160 /* renamed: avoid conflict with <stdio.h> */
-	static char line[OURBUFSIZ + 1];
+	#define BUFFER_SIZE 160
+	static char line[BUFFER_SIZE];
 	char *p;
 	int	  i, j;
 	int	  pwf;
@@ -245,7 +245,7 @@ char *logdir(char *name) {
 	/* find the matching password entry */
 	do {
 		/* get the next line in the password file */
-		i = read(pwf, line, OURBUFSIZ);
+		i = read(pwf, line, BUFFER_SIZE-1);
 		for(j = 0; j < i; j++) {
 			if(line[j] == '\n') { break; }
         }
