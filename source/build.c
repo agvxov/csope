@@ -516,9 +516,6 @@ void putheader(char *dir) {
 	if(trun_syms == true) { dboffset += fprintf(newrefs, " -T"); }
 
 	dboffset += fprintf(newrefs, " %.10ld\n", traileroffset);
-#ifdef PRINTF_RETVAL_BROKEN
-	dboffset = ftell(newrefs);
-#endif
 }
 
 /* put the name list into the cross-reference file */

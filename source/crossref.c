@@ -224,9 +224,6 @@ void putcrossref(void) {
 	/* output the source line */
 	lineoffset = dboffset;
 	dboffset += fprintf(newrefs, "%d ", lineno);
-#ifdef PRINTF_RETVAL_BROKEN
-	dboffset = ftell(newrefs); /* fprintf doesn't return chars written */
-#endif
 
 	/* HBB 20010425: added this line: */
 	my_yytext[my_yyleng] = '\0';
