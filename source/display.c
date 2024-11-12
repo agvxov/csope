@@ -693,8 +693,9 @@ void myperror(char *text) {
 
 /* postmsg clears the message line and prints the message */
 void postmsg(char *msg) {
-	if(linemode == true || incurses == false) {
-		printf("%s\n", msg);
+	if (linemode == true
+    ||  incurses == false) {
+        puts(msg);
 		fflush(stdout);
 	} else {
 		window_change |= CH_RESULT;
