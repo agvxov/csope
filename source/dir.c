@@ -61,6 +61,8 @@ unsigned long nsrcdirs;				   /* number of source directories */
 unsigned long nsrcfiles;			   /* number of source files */
 unsigned long msrcfiles = SRCINC;	   /* maximum number of source files */
 
+static bool firstbuild = true;
+
 static char		   **incnames;		   /* #include directory names without view pathing */
 static unsigned long mincdirs = DIRINC; /* maximum number of #include directories */
 static unsigned long msrcdirs;			/* maximum number of source directories */
@@ -78,6 +80,166 @@ static void addsrcdir(char *dir);
 static void addincdir(char *name, char *path);
 static void scan_dir(const char *dirfile, bool recurse);
 static void makevpsrcdirs(void);
+static void read_listfile(FILE * listfile);
+
+static
+void read_listfile(FILE * names) {
+	char line[PATHLEN * 10];
+	char path[PATHLEN + 1];
+	char  dir[PATHLEN + 1];
+	char *s;
+	/* get the names in the file */
+	while(fgets(line, 10 * PATHLEN, names) != NULL) {
+		char  *point_in_line	 = line + (strlen(line) - 1);
+		size_t length_of_name	 = 0;
+		int	   unfinished_option = 0;
+		bool   done				 = false;
+
+		/* Kill away \n left at end of fgets()'d string: */
+		if(*point_in_line == '\n') *point_in_line = '\0';
+
+		/* Parse whitespace-terminated strings in line: */
+		point_in_line = line;
+		while(sscanf(point_in_line, "%" PATHLEN_STR "s", path) == 1) {
+			/* Have to store this length --- inviewpath() will
+			 * modify path, later! */
+			length_of_name = strlen(path);
+
+			if(*path == '-') { /* if an option */
+				if(unfinished_option) {
+					/* Can't have another option directly after an
+					 * -I or -p option with no name after it! */
+					fprintf(stderr,
+						PROGRAM_NAME
+						": Syntax error in namelist file %s: unfinished -I or -p option\n",
+						namefile);
+					unfinished_option = 0;
+				}
+
+				int i = path[1];
+				switch(i) {
+					case 'c': /* ASCII characters only in crossref */
+						compress = false;
+						break;
+					case 'k': /* ignore DFLT_INCDIR */
+						kernelmode = true;
+						break;
+					case 'q': /* quick search */
+						invertedindex = true;
+						break;
+					case 'T': /* truncate symbols to 8 characters */
+						trun_syms = true;
+						break;
+					case 'I': /* #include file directory */
+					case 'p': /* file path components to display */
+						/* coverity[overwrite_var] */
+						s = path + 2;	 /* for "-Ipath" */
+						if(*s == '\0') { /* if "-I path" */
+							unfinished_option = i;
+							break;
+						}
+
+						/* this code block used several times in here
+						 * --> make it a macro to avoid unnecessary
+						 * duplication */
+#define HANDLE_OPTION_ARGUMENT(i, s)                                                     \
+	switch(i) {                                                                          \
+		case 'I': /* #include file directory */                                          \
+			if(firstbuild == true) {                                                     \
+				/* expand $ and ~ */                                                     \
+				shellpath(dir, sizeof(dir), (s));                                        \
+				includedir(dir);                                                         \
+			}                                                                            \
+			unfinished_option = 0;                                                       \
+			done			  = true;                                                    \
+			break;                                                                       \
+		case 'p': /* file path components to display */                                  \
+			if(*(s) < '0' || *(s) > '9') {                                               \
+				fprintf(stderr,                                                          \
+					"csope: -p option in file %s: missing or invalid numeric value\n",   \
+					namefile);                                                           \
+			}                                                                            \
+			dispcomponents	  = atoi(s);                                                 \
+			unfinished_option = 0;                                                       \
+			done			  = true;                                                    \
+			break;                                                                       \
+		default:                                                                         \
+			done = false;                                                                \
+	} /* switch(i) */
+
+						/* ... and now call it for the first time */
+						HANDLE_OPTION_ARGUMENT(i, s)
+						break;
+					default:
+						fprintf(stderr,
+							PROGRAM_NAME
+							": only -I, -c, -k, -p, and -T options can be in file %s\n",
+							namefile);
+				} /* switch(i) */
+			}	  /* if('-') */
+			else if(*path == '"') {
+				/* handle quoted filenames... */
+				size_t in = 1, out = 0;
+				char  *newpath = malloc(PATHLEN + 1);
+
+				while(in < PATHLEN && point_in_line[in] != '\0') {
+					if(point_in_line[in] == '"') {
+						newpath[out] = '\0';
+						/* Tell outer loop to skip over this entire
+						 * quoted string */
+						length_of_name = in + 1;
+						break; /* found end of quoted string */
+					} else if(point_in_line[in] == '\\' && in < PATHLEN - 1 &&
+							  (point_in_line[in + 1] == '"' ||
+								  point_in_line[in + 1] == '\\')) {
+						/* un-escape \" or \\ sequence */
+						newpath[out++] = point_in_line[in + 1];
+						in += 2;
+					} else {
+						newpath[out++] = point_in_line[in++];
+					}
+				}					/* while(in) */
+				if(in >= PATHLEN) { /* safeguard against almost-overflow */
+					newpath[out] = '\0';
+				}
+
+				/* If an -I or -p arguments was missing before,
+				 * treat this name as the argument: */
+				HANDLE_OPTION_ARGUMENT(unfinished_option, newpath);
+				if(!done) {
+					/* coverity[overwrite_var] */
+					if((s = inviewpath(newpath)) != NULL) {
+						addsrcfile(s);
+					} else {
+						fprintf(stderr, PROGRAM_NAME ": cannot find file %s\n", newpath);
+						errorsfound = true;
+					}
+				}
+				free(newpath);
+			} /* if(quoted name) */
+			else {
+				/* ... so this is an ordinary file name, unquoted */
+
+				/* If an -I or -p arguments was missing before,
+				 * treat this name as the argument: */
+				HANDLE_OPTION_ARGUMENT(unfinished_option, path);
+				if(!done) {
+					if((s = inviewpath(path)) != NULL) {
+						addsrcfile(s);
+					} else {
+						fprintf(stderr, PROGRAM_NAME ": cannot find file %s\n", path);
+						errorsfound = true;
+					}
+				}
+			} /* else(ordinary name) */
+
+			point_in_line += length_of_name;
+			while(isspace((unsigned char)*point_in_line))
+				point_in_line++;
+		} /* while(sscanf(line)) */
+	}	  /* while(fgets(line)) */
+
+}
 
 /* make the view source directory list */
 static
@@ -340,24 +502,18 @@ void includedir(char *dirlist) {
 
 /* make the source file list */
 void makefilelist(void) {
-	static bool	 firstbuild = true; /* first time through */
-	FILE		*names;				/* name file pointer */
-	char		 dir[PATHLEN + 1];
-	char		 path[PATHLEN + 1];
-	char		 line[PATHLEN * 10];
-	char		*file;
-	char		*s;
+	char *file;
 
 	makevpsrcdirs(); /* make the view source directory list */
 
 	/* if -i was NOT given and there are source file arguments */
 	if(namefile == NULL && fileargc > 0) {
-
 		/* put them in a list that can be expanded */
 		for(unsigned i = 0; i < fileargc; i++) {
 			file = fileargv[i];
 			if(infilelist(file) == false) {
-				if((s = inviewpath(file)) != NULL) {
+                char * s = inviewpath(file);
+				if (s) {
 					addsrcfile(s);
 				} else {
 					fprintf(stderr, PROGRAM_NAME ": cannot find file %s\n", file);
@@ -381,6 +537,7 @@ void makefilelist(void) {
 	}
 
 	/* Came here --> there is a file of source file names */
+	FILE *names;				/* name file pointer */
 
 	if(strcmp(namefile, "-") == 0)
 		names = stdin;
@@ -389,161 +546,14 @@ void makefilelist(void) {
 		myexit(1);
 	}
 
-	/* get the names in the file */
-	while(fgets(line, 10 * PATHLEN, names) != NULL) {
-		char  *point_in_line	 = line + (strlen(line) - 1);
-		size_t length_of_name	 = 0;
-		int	   unfinished_option = 0;
-		bool   done				 = false;
+    read_listfile(names);
 
-		/* Kill away \n left at end of fgets()'d string: */
-		if(*point_in_line == '\n') *point_in_line = '\0';
-
-		/* Parse whitespace-terminated strings in line: */
-		point_in_line = line;
-		while(sscanf(point_in_line, "%" PATHLEN_STR "s", path) == 1) {
-			/* Have to store this length --- inviewpath() will
-			 * modify path, later! */
-			length_of_name = strlen(path);
-
-			if(*path == '-') { /* if an option */
-				if(unfinished_option) {
-					/* Can't have another option directly after an
-					 * -I or -p option with no name after it! */
-					fprintf(stderr,
-						PROGRAM_NAME
-						": Syntax error in namelist file %s: unfinished -I or -p option\n",
-						namefile);
-					unfinished_option = 0;
-				}
-
-				int i = path[1];
-				switch(i) {
-					case 'c': /* ASCII characters only in crossref */
-						compress = false;
-						break;
-					case 'k': /* ignore DFLT_INCDIR */
-						kernelmode = true;
-						break;
-					case 'q': /* quick search */
-						invertedindex = true;
-						break;
-					case 'T': /* truncate symbols to 8 characters */
-						trun_syms = true;
-						break;
-					case 'I': /* #include file directory */
-					case 'p': /* file path components to display */
-						/* coverity[overwrite_var] */
-						s = path + 2;	 /* for "-Ipath" */
-						if(*s == '\0') { /* if "-I path" */
-							unfinished_option = i;
-							break;
-						}
-
-						/* this code block used several times in here
-						 * --> make it a macro to avoid unnecessary
-						 * duplication */
-#define HANDLE_OPTION_ARGUMENT(i, s)                                                     \
-	switch(i) {                                                                          \
-		case 'I': /* #include file directory */                                          \
-			if(firstbuild == true) {                                                     \
-				/* expand $ and ~ */                                                     \
-				shellpath(dir, sizeof(dir), (s));                                        \
-				includedir(dir);                                                         \
-			}                                                                            \
-			unfinished_option = 0;                                                       \
-			done			  = true;                                                    \
-			break;                                                                       \
-		case 'p': /* file path components to display */                                  \
-			if(*(s) < '0' || *(s) > '9') {                                               \
-				fprintf(stderr,                                                          \
-					"csope: -p option in file %s: missing or invalid numeric value\n",   \
-					namefile);                                                           \
-			}                                                                            \
-			dispcomponents	  = atoi(s);                                                 \
-			unfinished_option = 0;                                                       \
-			done			  = true;                                                    \
-			break;                                                                       \
-		default:                                                                         \
-			done = false;                                                                \
-	} /* switch(i) */
-
-						/* ... and now call it for the first time */
-						HANDLE_OPTION_ARGUMENT(i, s)
-						break;
-					default:
-						fprintf(stderr,
-							PROGRAM_NAME
-							": only -I, -c, -k, -p, and -T options can be in file %s\n",
-							namefile);
-				} /* switch(i) */
-			}	  /* if('-') */
-			else if(*path == '"') {
-				/* handle quoted filenames... */
-				size_t in = 1, out = 0;
-				char  *newpath = malloc(PATHLEN + 1);
-
-				while(in < PATHLEN && point_in_line[in] != '\0') {
-					if(point_in_line[in] == '"') {
-						newpath[out] = '\0';
-						/* Tell outer loop to skip over this entire
-						 * quoted string */
-						length_of_name = in + 1;
-						break; /* found end of quoted string */
-					} else if(point_in_line[in] == '\\' && in < PATHLEN - 1 &&
-							  (point_in_line[in + 1] == '"' ||
-								  point_in_line[in + 1] == '\\')) {
-						/* un-escape \" or \\ sequence */
-						newpath[out++] = point_in_line[in + 1];
-						in += 2;
-					} else {
-						newpath[out++] = point_in_line[in++];
-					}
-				}					/* while(in) */
-				if(in >= PATHLEN) { /* safeguard against almost-overflow */
-					newpath[out] = '\0';
-				}
-
-				/* If an -I or -p arguments was missing before,
-				 * treat this name as the argument: */
-				HANDLE_OPTION_ARGUMENT(unfinished_option, newpath);
-				if(!done) {
-					/* coverity[overwrite_var] */
-					if((s = inviewpath(newpath)) != NULL) {
-						addsrcfile(s);
-					} else {
-						fprintf(stderr, PROGRAM_NAME ": cannot find file %s\n", newpath);
-						errorsfound = true;
-					}
-				}
-				free(newpath);
-			} /* if(quoted name) */
-			else {
-				/* ... so this is an ordinary file name, unquoted */
-
-				/* If an -I or -p arguments was missing before,
-				 * treat this name as the argument: */
-				HANDLE_OPTION_ARGUMENT(unfinished_option, path);
-				if(!done) {
-					if((s = inviewpath(path)) != NULL) {
-						addsrcfile(s);
-					} else {
-						fprintf(stderr, PROGRAM_NAME ": cannot find file %s\n", path);
-						errorsfound = true;
-					}
-				}
-			} /* else(ordinary name) */
-
-			point_in_line += length_of_name;
-			while(isspace((unsigned char)*point_in_line))
-				point_in_line++;
-		} /* while(sscanf(line)) */
-	}	  /* while(fgets(line)) */
-
-	if(names == stdin)
+	if(names == stdin) {
 		clearerr(stdin);
-	else
+    } else {
 		fclose(names);
+    }
+
 	firstbuild = false;
 	return;
 }
