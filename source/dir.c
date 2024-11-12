@@ -435,15 +435,13 @@ bool is_source_file(char *path) {
 }
 
 /* add a source directory to the list for each view path source directory */
-void sourcedir(char *dirlist) {
-	char		 path[PATHLEN + 1];
-	char		*dir;
-
+void sourcedir(const char * dirlist) {
+	char path[PATHLEN + 1];
 	make_vp_source_directories();		   /* make the view source directory list */
-	dirlist = strdup(dirlist); /* don't change environment variable text */
+	char * mdirlist = strdup(dirlist); /* don't change environment variable text */
 
 	/* parse the directory list */
-	dir = strtok(dirlist, DIRSEPS);
+	char * dir = strtok(mdirlist, DIRSEPS);
 	while(dir != NULL) {
 		int dir_len = strlen(dir);
 
@@ -451,7 +449,7 @@ void sourcedir(char *dirlist) {
 
 		/* if it isn't a full path name and there is a
 		   multi-directory view path */
-		if(*dirlist != '/' && vpndirs > 1) {
+		if(*mdirlist != '/' && vpndirs > 1) {
 
 			/* compute its path from higher view path source dirs */
 			for(unsigned i = 1; i < nvpsrcdirs; ++i) {
@@ -466,19 +464,20 @@ void sourcedir(char *dirlist) {
 		}
 		dir = strtok(NULL, DIRSEPS);
 	}
-	free(dirlist);
+	free(mdirlist);
 }
 
+// XXX: useless strdup
 /* add a #include directory to the list for each view path source directory */
-void includedir(char *dirlist) {
+void includedir(const char * dirlist) {
 	char		 path[PATHLEN + 1];
 	char		*dir;
 
 	make_vp_source_directories();		   /* make the view source directory list */
-	dirlist = strdup(dirlist); /* don't change environment variable text */
+	char * mdirlist = strdup(dirlist); /* don't change environment variable text */
 
 	/* parse the directory list */
-	dir = strtok(dirlist, DIRSEPS);
+	dir = strtok(mdirlist, DIRSEPS);
 	while(dir != NULL) {
 		size_t dir_len = strlen(dir);
 
@@ -486,7 +485,7 @@ void includedir(char *dirlist) {
 
 		/* if it isn't a full path name and there is a
 		   multi-directory view path */
-		if(*dirlist != '/' && vpndirs > 1) {
+		if(*mdirlist != '/' && vpndirs > 1) {
 
 			/* compute its path from higher view path source dirs */
 			for(unsigned i = 1; i < nvpsrcdirs; ++i) {
@@ -501,7 +500,7 @@ void includedir(char *dirlist) {
 		}
 		dir = strtok(NULL, DIRSEPS);
 	}
-	free(dirlist); /* HBB 20000421: avoid leaks */
+	free(mdirlist); /* HBB 20000421: avoid leaks */
 }
 
 /* make the source file list */
@@ -668,7 +667,7 @@ void freefilelist(void) {
 	int				 i;
 
 	/* if '-d' option is used a string space block is allocated */
-	if(isuptodate == false) {
+	if(preserve_database == false) {
 		while(nsrcfiles > 0) {
 			free(srcfiles[--nsrcfiles]);
 		}

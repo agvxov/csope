@@ -70,7 +70,7 @@ static void catchint(int sig) {
 }
 
 static inline bool rebuild_reference() {
-	if(isuptodate == true) {
+	if(preserve_database == true) {
 		postmsg("The -d option prevents rebuilding the symbol database");
 		return false;
 	}

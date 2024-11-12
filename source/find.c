@@ -706,7 +706,7 @@ int findinit(const char *pattern_) {
 		}
 		/* look for use of the -T option (truncate symbol to 8
 		   characters) on a database not built with -T */
-		if(trun_syms == true && isuptodate == true && dbtruncated == false &&
+		if(trun_syms == true && preserve_database == true && dbtruncated == false &&
 			s - pattern >= 8) {
 			strcpy(pattern + 8, ".*");
 			isregexp = true;

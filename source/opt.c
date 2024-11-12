@@ -22,10 +22,22 @@ char * shell;
 char * lineflag;
 char * tmpdir;
 bool lineflagafterfile;
+/* XXX: this might be a war crime;
+ *      its currently required for respecting kernel mode
+ */
+const char * incdir = NULL;
 
+/* option holders */
 bool  remove_symfile_onexit = false;
-bool  onesearch; /* one search only in line mode */
-char *reflines;	 /* symbol reference lines file */
+bool  onesearch;                        /* one search only in line mode */
+char *reflines;                         /* symbol reference lines file */
+bool  invertedindex;                    /* the database has an inverted index */
+bool  preserve_database = false;            /* consider the crossref up-to-date */
+bool  kernelmode;                       /* don't use DFLT_INCDIR - bad for kernels */
+bool  linemode     = false;             /* use line oriented user interface */
+bool  verbosemode = false;              /* print extra information on line mode */
+bool  recurse_dir = false;              /* recurse dirs when searching for src files */
+char *namefile;                         /* file of file names */
 
 /* From a list of envirnment variable names,
  *  return the first valid variable value
@@ -57,7 +69,7 @@ char * _coalesce_env(char * mydefault, size_t argc, ...) {
 /* XXX: Add CSOPE_* equivalents while preserving the originals.
  *       DO NOT do it without writting documentation
  */
-void readenv(void) {
+void readenv(bool preserve_database) {
     editor   = coalesce_env(DEFAULT_EDITOR, "CSCOPE_EDITOR", "VIEWER", "EDITOR");
     home     = coalesce_env(DEFAULT_HOME, "HOME");
     shell    = coalesce_env(DEFAULT_SHELL, "SHELL");
@@ -65,6 +77,16 @@ void readenv(void) {
     tmpdir   = coalesce_env(DEFAULT_TMPDIR, "TMPDIR");
 
     lineflagafterfile = getenv("CSCOPE_LINEFLAG_AFTER_FILE") ? 1 : 0;
+
+    if (!preserve_database) {
+        incdir = coalesce_env(DFLT_INCDIR, "INCDIR");
+        /* get source directories from the environment */
+        const char * const my_source_dirs = getenv("SOURCEDIRS");
+        if(my_source_dirs) { sourcedir(my_source_dirs); }
+        /* get include directories from the environment */
+        const char * const my_include_dirs = getenv("INCLUDEDIRS");
+        if(my_include_dirs) { includedir(my_source_dirs); }
+    }
 }
 
 char **parse_options(int *argc, char **argv) {
@@ -133,7 +155,7 @@ char **parse_options(int *argc, char **argv) {
 				egrepcaseless(caseless); /* simulate egrep -i flag */
 				break;
 			case 'd':					 /* consider crossref up-to-date */
-				isuptodate = true;
+				preserve_database = true;
 				break;
 			case 'e': /* suppress ^E prompt between files */
 				editallprompt = false;

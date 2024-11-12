@@ -67,13 +67,6 @@ unsigned int fileargc;					/* file argument count */
 char	   **fileargv;					/* file argument values */
 int			 fileversion;				/* cross-reference file version */
 bool		 incurses = false;			/* in curses */
-bool		 invertedindex;				/* the database has an inverted index */
-bool		 isuptodate;				/* consider the crossref up-to-date */
-bool		 kernelmode;				/* don't use DFLT_INCDIR - bad for kernels */
-bool		 linemode	 = false;		/* use line oriented user interface */
-bool		 verbosemode = false;		/* print extra information on line mode */
-bool		 recurse_dir = false;		/* recurse dirs when searching for src files */
-char		*namefile;					/* file of file names */
 char		*prependpath;				/* prepend path to file names */
 FILE		*refsfound;					/* references found file */
 long		 totalterms;				/* total inverted index terms */
@@ -295,9 +288,6 @@ int main(int argc, char **argv) {
 	FILE		*oldrefs; /* old cross-reference file */
 	char		*s;
 	unsigned int i;
-	pid_t		 pid;
-	struct stat	 stat_buf;
-	mode_t		 orig_umask;
 
 	yyin  = stdin;
 	yyout = stdout;
@@ -308,7 +298,9 @@ int main(int argc, char **argv) {
 	argv = parse_options(&argc, argv);
 
 	/* read the environment */
-	readenv();
+    /* NOTE: the envirnment under no condition can overwrite cli set variables
+     */
+	readenv(preserve_database);
 
     /* XXX */
     init_temp_files();
@@ -343,7 +335,7 @@ int main(int argc, char **argv) {
 
 
 	/* if the cross-reference is to be considered up-to-date */
-	if(isuptodate == true) {
+	if(preserve_database == true) {
 		if((oldrefs = vpfopen(reffile, "rb")) == NULL) {
 			postfatal(PROGRAM_NAME ": cannot open file %s\n", reffile);
 			/* NOTREACHED */
@@ -462,8 +454,6 @@ int main(int argc, char **argv) {
 		fileargc = argc;
 		fileargv = argv;
 
-		/* get source directories from the environment */
-		if((s = getenv("SOURCEDIRS")) != NULL) { sourcedir(s); }
 		/* make the source file list */
 		srcfiles = malloc(msrcfiles * sizeof(*srcfiles));
 		makefilelist();
@@ -471,16 +461,11 @@ int main(int argc, char **argv) {
 			postfatal(PROGRAM_NAME ": no source files found\n");
 			/* NOTREACHED */
 		}
-		/* get include directories from the environment */
-		if((s = getenv("INCLUDEDIRS")) != NULL) { includedir(s); }
+
 		/* add /usr/include to the #include directory list,
 		   but not in kernelmode... kernels tend not to use it. */
-		if(kernelmode == false) {
-			if(NULL != (s = getenv("INCDIR"))) {
-				includedir(s);
-			} else {
-				includedir(DFLT_INCDIR);
-			}
+		if(!kernelmode) {
+            includedir(incdir);
 		}
 
 		/* initialize the C keyword table */

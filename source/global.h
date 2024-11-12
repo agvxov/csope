@@ -101,6 +101,7 @@ extern int input_mode;
 #ifndef DFLT_INCDIR
 # define DFLT_INCDIR "/usr/include"
 #endif
+extern const char * incdir;
 
 /* digraph data for text compression */
 extern char dichar1[]; /* 16 most frequent first chars */
@@ -132,7 +133,7 @@ extern char		  **fileargv;		/* file argument values */
 extern int			fileversion;	/* cross-reference file version */
 extern bool			incurses;		/* in curses */
 extern bool			invertedindex;	/* the database has an inverted index */
-extern bool			isuptodate;		/* consider the crossref up-to-date */
+extern bool			preserve_database;		/* consider the crossref up-to-date */
 extern bool			kernelmode;		/* don't use DFLT_INCDIR - bad for kernels */
 extern bool			linemode;		/* use line oriented user interface */
 extern bool			verbosemode;	/* print extra information on line mode */
@@ -229,7 +230,7 @@ char *read_block(void);
 char *scanpast(char c);
 
 char **parse_options(int *argc, char **argv);
-void readenv(void);
+void readenv(bool preserve_database);
 
 void		 error_usage(void);
 void		 longusage(void);
@@ -284,7 +285,7 @@ void		freecrossref(void);
 void		freefilelist(void);
 const char *help(void);
 void		incfile(char *file, char *type);
-void		includedir(char *_dirname);
+void		includedir(const char *dirname);
 void		initsymtab(void);
 void		makefilelist(void);
 void		mousecleanup(void);
@@ -302,7 +303,7 @@ void		postfatal(const char *msg, ...);
 void		putposting(char *term, int type);
 void		fetch_string_from_dbase(char *, size_t);
 void		shellpath(char *out, int limit, char *in);
-void		sourcedir(char *dirlist);
+void		sourcedir(const char * dirlist);
 void		myungetch(int c);
 void		warning(char *text);
 void		writestring(char *s);
