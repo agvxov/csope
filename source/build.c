@@ -72,6 +72,9 @@ int	  symrefs = -1;				   /* cross-reference file */
 
 INVCONTROL invcontrol;			   /* inverted file control structure */
 
+char temp1[PATHLEN + 1];		/* temporary file name */
+char temp2[PATHLEN + 1];		/* temporary file name */
+
 
 /* Local variables: */
 static char *newinvname;	/* new inverted index file name */
@@ -661,4 +664,45 @@ void fetch_include_from_dbase(char *s, size_t length) {
 	skiprefchar();
 	fetch_string_from_dbase(s, length);
 	incfile(s + 1, s);
+}
+
+// -----------
+
+static char tempdirpv[PATHLEN + 1];	/* private temp directory */
+
+void init_temp_files(void) {
+	/* make sure that tmpdir exists */
+	struct stat	stat_buf;
+	if(lstat(tmpdir, &stat_buf)) {
+        postfatal(
+            PROGRAM_NAME ": Temporary directory %s does not exist or cannot be accessed\n"
+            PROGRAM_NAME ": Please create the directory or set the environment variable\n"
+            PROGRAM_NAME ": TMPDIR to a valid directory\n",
+			tmpdir
+        );
+	}
+
+	/* create the temporary file names */
+	mode_t orig_umask = umask(S_IRWXG | S_IRWXO);
+	pid_t pid		  = getpid();
+	snprintf(tempdirpv, sizeof(tempdirpv), "%s/" PROGRAM_NAME ".%d", tmpdir, pid);
+	if(mkdir(tempdirpv, S_IRWXU)) {
+        postfatal(
+            PROGRAM_NAME ": Could not create private temp dir %s\n",
+			tempdirpv
+        );
+	}
+	umask(orig_umask);
+
+	snprintf(temp1, sizeof(temp1), "%s/" PROGRAM_NAME ".1", tempdirpv);
+	snprintf(temp2, sizeof(temp2), "%s/" PROGRAM_NAME ".2", tempdirpv);
+}
+
+void deinit_temp_files(void) {
+	/* remove any temporary files */
+	if(temp1[0] != '\0') {
+		unlink(temp1);
+		unlink(temp2);
+		rmdir(tempdirpv);
+	}
 }

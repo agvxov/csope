@@ -249,6 +249,9 @@ int		   process_mouse();
 int		   changestring(const char *from, const char *to, const bool *const change,
 		   const int change_len);
 
+void init_temp_files(void);
+void deinit_temp_files(void);
+
 long seekpage(const size_t i);
 long seekrelline(unsigned i);
 void PCS_reset(void);

@@ -76,9 +76,6 @@ bool		 recurse_dir = false;		/* recurse dirs when searching for src files */
 char		*namefile;					/* file of file names */
 char		*prependpath;				/* prepend path to file names */
 FILE		*refsfound;					/* references found file */
-char		 temp1[PATHLEN + 1];		/* temporary file name */
-char		 temp2[PATHLEN + 1];		/* temporary file name */
-char		 tempdirpv[PATHLEN + 1];	/* private temp directory */
 long		 totalterms;				/* total inverted index terms */
 bool		 trun_syms;					/* truncate symbols to 8 characters */
 char		 tempstring[TEMPSTRING_LEN + 1]; /* use this as a buffer, instead of 'yytext',
@@ -166,12 +163,8 @@ void myexit(int sig) {
 	/* Close file before unlinking it. DOS absolutely needs it */
 	if(refsfound != NULL) { fclose(refsfound); }
 
-	/* remove any temporary files */
-	if(temp1[0] != '\0') {
-		unlink(temp1);
-		unlink(temp2);
-		rmdir(tempdirpv);
-	}
+    deinit_temp_files();
+
 	/* restore the terminal to its original mode */
 	if(incurses == true) { exitcurses(); }
 	/* dump core for debugging on the quit signal */
@@ -317,33 +310,8 @@ int main(int argc, char **argv) {
 	/* read the environment */
 	readenv();
 
-	/* make sure that tmpdir exists */
-	if(lstat(tmpdir, &stat_buf)) {
-		fprintf(stderr,
-			PROGRAM_NAME
-			": Temporary directory %s does not exist or cannot be accessed\n",
-			tmpdir);
-		fprintf(stderr,
-			PROGRAM_NAME
-			": Please create the directory or set the environment variable\n" PROGRAM_NAME
-			": TMPDIR to a valid directory\n");
-		myexit(1);
-	}
-
-	/* create the temporary file names */
-	orig_umask = umask(S_IRWXG | S_IRWXO);
-	pid		   = getpid();
-	snprintf(tempdirpv, sizeof(tempdirpv), "%s/" PROGRAM_NAME ".%d", tmpdir, pid);
-	if(mkdir(tempdirpv, S_IRWXU)) {
-		fprintf(stderr,
-			PROGRAM_NAME ": Could not create private temp dir %s\n",
-			tempdirpv);
-		myexit(1);
-	}
-	umask(orig_umask);
-
-	snprintf(temp1, sizeof(temp1), "%s/" PROGRAM_NAME ".1", tempdirpv);
-	snprintf(temp2, sizeof(temp2), "%s/" PROGRAM_NAME ".2", tempdirpv);
+    /* XXX */
+    init_temp_files();
 
 	/* if the database path is relative and it can't be created */
 	if(reffile[0] != '/'
