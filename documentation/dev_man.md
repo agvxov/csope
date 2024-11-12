@@ -4,13 +4,20 @@
 # Project structure	/*probably move to documentation*/
 | Component | Purpose |
 | :-------: | :-----: |
-| main.c | generic init functions, main() and primary event loops (and junk) |
+| main.c    | generic init functions, main() and primary event loops (and junk) |
 | display.c | all functions directly dealing with NCurses |
-| input.c | top layer of functions dealing with user input; migth dispatch to readline |
-| find.c | searching functions |
-| globals.h | an inherited curse; global var/prototype hell |
+| input.c   | top layer of functions dealing with user input; migth dispatch to readline |
+| opt.c     | reads initialization options from cli/env |
+| find.c    | searching functions |
 | readline.c | all functions directly dealing with GNU Readline; responsible for line editing in *input mode* |
-| help.c | all functions dealing with help messages |
+| help.c    | all functions dealing with help messages |
+| auto\_vararg.h | vararg argument counter macro hack |
+| vpath.c   | Make like VPATH support |
+| refsfound | XXX: ducktaping to page the cscope database |
+| build.c   | XXX: functions required for building the cscope database |
+| globals.h | XXX: an inherited curse; global var/prototype hell |
+| command.c | XXX: clusterfuck |
+| mouse.c   | XXX: legacy, non-functional (curses) mouse support
 
 # Key Symbols
 | Global | Role |
