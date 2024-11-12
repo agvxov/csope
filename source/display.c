@@ -739,18 +739,14 @@ void posterr(char *msg, ...) {
 
 /* display a fatal error mesg -- stderr *after* shutting down curses */
 void postfatal(const char *msg, ...) {
-	va_list ap;
-	char	errbuf[MSGLEN];
 
-	va_start(ap, msg);
-	vsnprintf(errbuf, sizeof(errbuf), msg, ap);
-	/* restore the terminal to its original mode */
 	if(incurses == true) { exitcurses(); }
 
-	/* display fatal error messages */
-	fprintf(stderr, "%s", errbuf);
+	va_list ap;
+	va_start(ap, msg);
+	vfprintf(stderr, msg, ap);
+	va_end(ap);
 
-	/* shut down */
 	myexit(1);
 }
 
