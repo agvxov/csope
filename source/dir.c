@@ -72,15 +72,16 @@ static struct listitem {				/* source file names without view pathing */
 } *srcnames[HASHMOD];
 
 /* Internal prototypes: */
-static bool accessible_file(char *file);
-static bool issrcfile(char *file);
+static bool is_accessible_file(char *file);
+static bool is_source_file(char *file);
 static void addsrcdir(char *dir);
 static void addincdir(char *name, char *path);
 static void scan_dir(const char *dirfile, bool recurse);
 static void makevpsrcdirs(void);
 
 /* make the view source directory list */
-static void makevpsrcdirs(void) {
+static
+void makevpsrcdirs(void) {
 	/* return if this function has already been called */
 	if(nsrcdirs > 0) { return; }
 	/* get the current directory name */
@@ -104,6 +105,167 @@ static void makevpsrcdirs(void) {
 	}
 	/* save the number of original source directories in the view path */
 	nvpsrcdirs = nsrcdirs;
+}
+
+/* add a source directory to the list */
+static
+void addsrcdir(char *dir) {
+	struct stat statstruct;
+
+	/* make sure it is a directory */
+	if(lstat(compress_path(dir), &statstruct) == 0 && S_ISDIR(statstruct.st_mode)) {
+
+		/* note: there already is a source directory list */
+		if(nsrcdirs == msrcdirs) {
+			msrcdirs += DIRINC;
+			srcdirs = realloc(srcdirs, msrcdirs * sizeof(*srcdirs));
+		}
+		srcdirs[nsrcdirs++] = strdup(dir);
+	}
+}
+
+/* add a #include directory to the list */
+static
+void addincdir(char *name, char *path) {
+	struct stat statstruct;
+
+	/* make sure it is a directory */
+	if(lstat(compress_path(path), &statstruct) == 0 && S_ISDIR(statstruct.st_mode)) {
+		if(incdirs == NULL) {
+			incdirs	 = malloc(mincdirs * sizeof(*incdirs));
+			incnames = malloc(mincdirs * sizeof(*incnames));
+		} else if(nincdirs == mincdirs) {
+			mincdirs += DIRINC;
+			incdirs	 = realloc(incdirs, mincdirs * sizeof(*incdirs));
+			incnames = realloc(incnames, mincdirs * sizeof(*incnames));
+		}
+		incdirs[nincdirs]	 = strdup(path);
+		incnames[nincdirs++] = strdup(name);
+	}
+}
+
+/* scan a directory (recursively?) for source files */
+static
+void scan_dir(const char *adir, bool recurse_dir) {
+	DIR *dirfile;
+	int	 adir_len = strlen(adir);
+
+	/* FIXME: no guards against adir_len > PATHLEN, yet */
+
+	if((dirfile = opendir(adir)) != NULL) {
+		struct dirent *entry;
+		char		   path[PATHLEN + 1];
+
+		while((entry = readdir(dirfile)) != NULL) {
+			if((strcmp(".", entry->d_name) != 0) && (strcmp("..", entry->d_name) != 0)) {
+				struct stat buf;
+
+				snprintf(path,
+					sizeof(path),
+					"%s/%.*s",
+					adir,
+					PATHLEN - 2 - adir_len,
+					entry->d_name);
+
+				if(lstat(path, &buf)) { continue; }
+
+				if(recurse_dir && S_ISDIR(buf.st_mode)) {
+					scan_dir(path, recurse_dir);
+				} else
+                if(is_source_file(path)
+                && !infilelist(path)
+                && access(path, R_OK) == 0) {
+					addsrcfile(path);
+				}
+			}
+		}
+		closedir(dirfile);
+	}
+	return;
+}
+
+/* check if a file is readable enough to be allowed in the
+ * database */
+static
+bool is_accessible_file(char *file) {
+	if(access(compress_path(file), READ) == 0) {
+		struct stat stats;
+
+		if(lstat(file, &stats) == 0 && S_ISREG(stats.st_mode)) { return true; }
+	}
+	return false;
+}
+
+/* see if this is a source file */
+/* NOTE: these macros are somewhat faster than calling strcmp(),
+ *        while not significantly uglier
+ */
+#define IS_SUFFIX_OF_2(s, suffix) (s[0] == suffix[0] && s[1] == suffix[1])
+#define IS_SUFFIX_OF_3(s, suffix) (s[0] == suffix[0] && s[1] == suffix[1] && s[2] == suffix[2])
+static
+bool is_source_file(char *path) {
+	struct stat statstruct;
+	const char *file              = basename(path);
+	char	   *suffix            = strrchr(file, '.');
+	bool		looks_like_source = false;
+
+	/* ensure there is some file suffix */
+	if(suffix == NULL || *(++suffix) == '\0') { return false; }
+
+	/* if an SCCS or versioned file */
+	if(file[1] == '.' && file + 2 != suffix) { /* 1 character prefix */
+		switch(*file) {
+			case 's':
+			case 'S':
+				return false;
+		}
+	}
+
+	if(suffix[1] == '\0') { /* 1 character suffix */
+		switch(*suffix) {
+			case 'c':
+			case 'h':
+			case 'l':
+			case 'y':
+			case 'C':
+			case 'G':
+			case 'H':
+			case 'L':
+				looks_like_source = true;
+		}
+	} else if((suffix[2] == '\0') /* 2 char suffix */
+			  && (
+                    /* breakpoint listing */
+                    IS_SUFFIX_OF_2(suffix, "bp")
+                    /* Ingres */
+					|| IS_SUFFIX_OF_2(suffix, "qc")
+					|| IS_SUFFIX_OF_2(suffix, "qh")
+                    /* SDL */
+					|| IS_SUFFIX_OF_2(suffix, "sd")
+                    /* C++ source */
+					|| IS_SUFFIX_OF_2(suffix, "cc")
+                    /* C++ header */
+					|| IS_SUFFIX_OF_2(suffix, "hh"))) {
+		looks_like_source = true;
+	} else if(suffix[3] == '\0' && ( /* 3 char suffix */
+		      /* C++ template source */
+		      IS_SUFFIX_OF_3(suffix, "tcc")
+		      /* C++ source: */
+		      || IS_SUFFIX_OF_3(suffix, "cpp")
+		      || IS_SUFFIX_OF_3(suffix, "cxx")
+		      || IS_SUFFIX_OF_3(suffix, "hpp")
+		      || IS_SUFFIX_OF_3(suffix, "hxx")
+              /**/
+		      || IS_SUFFIX_OF_3(suffix, "inc")
+    )) {
+		looks_like_source = true;
+	}
+
+	if (!looks_like_source) { return false; }
+
+	/* make sure it is a file */
+	if(lstat(path, &statstruct) == 0 && S_ISREG(statstruct.st_mode)) { return true; }
+	return false;
 }
 
 /* add a source directory to the list for each view path source directory */
@@ -141,22 +303,6 @@ void sourcedir(char *dirlist) {
 	free(dirlist);
 }
 
-/* add a source directory to the list */
-static void addsrcdir(char *dir) {
-	struct stat statstruct;
-
-	/* make sure it is a directory */
-	if(lstat(compress_path(dir), &statstruct) == 0 && S_ISDIR(statstruct.st_mode)) {
-
-		/* note: there already is a source directory list */
-		if(nsrcdirs == msrcdirs) {
-			msrcdirs += DIRINC;
-			srcdirs = realloc(srcdirs, msrcdirs * sizeof(*srcdirs));
-		}
-		srcdirs[nsrcdirs++] = strdup(dir);
-	}
-}
-
 /* add a #include directory to the list for each view path source directory */
 void includedir(char *dirlist) {
 	char		 path[PATHLEN + 1];
@@ -190,25 +336,6 @@ void includedir(char *dirlist) {
 		dir = strtok(NULL, DIRSEPS);
 	}
 	free(dirlist); /* HBB 20000421: avoid leaks */
-}
-
-/* add a #include directory to the list */
-static void addincdir(char *name, char *path) {
-	struct stat statstruct;
-
-	/* make sure it is a directory */
-	if(lstat(compress_path(path), &statstruct) == 0 && S_ISDIR(statstruct.st_mode)) {
-		if(incdirs == NULL) {
-			incdirs	 = malloc(mincdirs * sizeof(*incdirs));
-			incnames = malloc(mincdirs * sizeof(*incnames));
-		} else if(nincdirs == mincdirs) {
-			mincdirs += DIRINC;
-			incdirs	 = realloc(incdirs, mincdirs * sizeof(*incdirs));
-			incnames = realloc(incnames, mincdirs * sizeof(*incnames));
-		}
-		incdirs[nincdirs]	 = strdup(path);
-		incnames[nincdirs++] = strdup(name);
-	}
 }
 
 /* make the source file list */
@@ -421,141 +548,46 @@ void makefilelist(void) {
 	return;
 }
 
-/* scan a directory (recursively?) for source files */
-static void scan_dir(const char *adir, bool recurse_dir) {
-	DIR *dirfile;
-	int	 adir_len = strlen(adir);
-
-	/* FIXME: no guards against adir_len > PATHLEN, yet */
-
-	if((dirfile = opendir(adir)) != NULL) {
-		struct dirent *entry;
-		char		   path[PATHLEN + 1];
-
-		while((entry = readdir(dirfile)) != NULL) {
-			if((strcmp(".", entry->d_name) != 0) && (strcmp("..", entry->d_name) != 0)) {
-				struct stat buf;
-
-				snprintf(path,
-					sizeof(path),
-					"%s/%.*s",
-					adir,
-					PATHLEN - 2 - adir_len,
-					entry->d_name);
-
-				if(lstat(path, &buf)) { continue; }
-
-				if(recurse_dir && S_ISDIR(buf.st_mode)) {
-					scan_dir(path, recurse_dir);
-				} else
-                if(issrcfile(path)
-                && !infilelist(path)
-                && access(path, R_OK) == 0) {
-					addsrcfile(path);
-				}
-			}
-		}
-		closedir(dirfile);
-	}
-	return;
-}
-
-/* see if this is a source file */
-static bool issrcfile(char *path) {
-	struct stat statstruct;
-	const char *file			  = basename(path);
-	char	   *s				  = strrchr(file, '.');
-	bool		looks_like_source = false;
-
-	/* ensure there is some file suffix */
-	if(s == NULL || *(++s) == '\0') { return false; }
-
-	/* if an SCCS or versioned file */
-	if(file[1] == '.' && file + 2 != s) { /* 1 character prefix */
-		switch(*file) {
-			case 's':
-			case 'S':
-				return (false);
-		}
-	}
-
-	if(s[1] == '\0') { /* 1 character suffix */
-		switch(*s) {
-			case 'c':
-			case 'h':
-			case 'l':
-			case 'y':
-			case 'C':
-			case 'G':
-			case 'H':
-			case 'L':
-				looks_like_source = true;
-		}
-	} else if((s[2] == '\0')				   /* 2 char suffix */
-			  && ((s[0] == 'b' && s[1] == 'p') /* breakpoint listing */
-					 || (s[0] == 'q' && (s[1] == 'c' || s[1] == 'h')) /* Ingres */
-					 || (s[0] == 's' && s[1] == 'd')				  /* SDL */
-					 || (s[0] == 'c' && s[1] == 'c')				  /* C++ source */
-					 || (s[0] == 'h' && s[1] == 'h'))) {			  /* C++ header */
-		looks_like_source = true;
-
-	} else if(s[3] == '\0' && ( /* 3 char suffix */
-		      /* C++ template source */
-              (s[0] == 't' && s[1] == 'c' && s[2] == 'c')
-		      /* C++ source: */
-		      || (s[0] == 'c' && s[1] == 'p' && s[2] == 'p')
-		      || (s[0] == 'c' && s[1] == 'x' && s[2] == 'x')
-		      || (s[0] == 'h' && s[1] == 'p' && s[2] == 'p')
-		      || (s[0] == 'h' && s[1] == 'x' && s[2] == 'x')
-		      || (s[0] == 'i' && s[1] == 'n' && s[2] == 'c')
-    )) {
-		looks_like_source = true;
-	}
-
-	if(looks_like_source != true) return false;
-
-	/* make sure it is a file */
-	if(lstat(path, &statstruct) == 0 && S_ISREG(statstruct.st_mode)) { return (true); }
-	return false;
-}
-
 /* add an include file to the source file list */
 void incfile(char *file, char *type) {
-	char		 name[PATHLEN + 1];
-	char		 path[PATHLEN + 1];
-	char		*s;
-	unsigned int i;
-
 	assert(file != NULL); /* should never happen, but let's make sure anyway */
+
 	/* see if the file is already in the source file list */
 	if(infilelist(file) == true) { return; }
-	/* look in current directory if it was #include "file" */
-	if(type[0] == '"' && (s = inviewpath(file)) != NULL) {
-		addsrcfile(s);
-	} else {
-		size_t file_len = strlen(file);
 
-		/* search for the file in the #include directory list */
-		for(i = 0; i < nincdirs; ++i) {
-			/* don't include the file from two directories */
-			snprintf(name,
-				sizeof(name),
-				"%.*s/%s",
-				(int)(PATHLEN - 2 - file_len),
-				incnames[i],
-				file);
-			if(infilelist(name) == true) { break; }
-			/* make sure it exists and is readable */
-			snprintf(path,
-				sizeof(path),
-				"%.*s/%s",
-				(int)(PATHLEN - 2 - file_len),
-				incdirs[i],
-				file);
-			if(access(compress_path(path), READ) == 0) {
-				addsrcfile(path);
-				break;
-			}
+	/* look in current directory if it was #include "file" */
+    {
+        char * s;
+        if(type[0] == '"' && (s = inviewpath(file)) != NULL) {
+            addsrcfile(s);
+            return;
+        }
+    }
+
+	size_t file_len = strlen(file);
+
+	/* search for the file in the #include directory list */
+	for(unsigned i = 0; i < nincdirs; i++) {
+        char name[PATHLEN + 1];
+        char path[PATHLEN + 1];
+		/* don't include the file from two directories */
+		snprintf(name,
+			sizeof(name),
+			"%.*s/%s",
+			(int)(PATHLEN - 2 - file_len),
+			incnames[i],
+			file);
+		if(infilelist(name) == true) { break; }
+		/* make sure it exists and is readable */
+		snprintf(path,
+			sizeof(path),
+			"%.*s/%s",
+			(int)(PATHLEN - 2 - file_len),
+			incdirs[i],
+			file);
+		if(access(compress_path(path), READ) == 0) {
+			addsrcfile(path);
+			break;
 		}
 	}
 }
@@ -570,24 +602,13 @@ bool infilelist(char *path) {
 	return (false);
 }
 
-/* check if a file is readable enough to be allowed in the
- * database */
-static bool accessible_file(char *file) {
-	if(access(compress_path(file), READ) == 0) {
-		struct stat stats;
-
-		if(lstat(file, &stats) == 0 && S_ISREG(stats.st_mode)) { return true; }
-	}
-	return false;
-}
-
 /* search for the file in the view path */
 char *inviewpath(char *file) {
 	static char	 path[PATHLEN + 1];
 	unsigned int i;
 
 	/* look for the file */
-	if(accessible_file(file)) { return (file); }
+	if(is_accessible_file(file)) { return (file); }
 
 	/* if it isn't a full path name and there is a multi-directory
 	 * view path */
@@ -602,7 +623,7 @@ char *inviewpath(char *file) {
 				PATHLEN - 2 - file_len,
 				srcdirs[i],
 				file);
-			if(accessible_file(path)) { return (path); }
+			if(is_accessible_file(path)) { return (path); }
 		}
 	}
 	return (NULL);
