@@ -42,6 +42,7 @@
 #endif
 #include "invlib.h"
 #include "global.h"
+#include "vpath.h"
 
 #include <assert.h>
 

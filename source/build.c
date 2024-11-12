@@ -44,7 +44,7 @@
 
 #include "scanner.h"
 #include "version.inc"
-#include "vp.h"
+#include "vpath.h"
 
 #if defined(USE_NCURSES) && !defined(RENAMED_NCURSES)
 # include <ncurses.h>

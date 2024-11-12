@@ -1,7 +1,7 @@
 #include "global.h"
 
 #include "build.h"
-#include "vp.h"
+#include "vpath.h"
 #include "version.inc"
 #include "auto_vararg.h"
 

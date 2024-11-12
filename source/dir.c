@@ -38,7 +38,7 @@
 
 #include "global.h"
 
-#include "vp.h" /* vpdirs and vpndirs */
+#include "vpath.h" /* vpdirs and vpndirs */
 
 #include <stdlib.h>
 #include <sys/types.h> /* needed by stat.h and dirent.h */
