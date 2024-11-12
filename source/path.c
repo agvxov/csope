@@ -41,7 +41,7 @@ const char *basename(const char *path) {
 	const char *s;
 
 	if((s = strrchr(path, '/')) != 0) { return (s + 1); }
-	return (path);
+	return path;
 }
 
 /* get the requested path components */

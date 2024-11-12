@@ -134,20 +134,19 @@ void cannotwrite(const char *const file) {
 /* set up the digraph character tables for text compression */
 static
 void initcompress(void) {
-	int i;
-
 	if(compress == true) {
-		for(i = 0; i < 16; ++i) {
+		for(int i = 0; i < 16; i++) {
 			dicode1[(unsigned char)(dichar1[i])] = i * 8 + 1;
 		}
-		for(i = 0; i < 8; ++i) {
+		for(int i = 0; i < 8; i++) {
 			dicode2[(unsigned char)(dichar2[i])] = i + 1;
 		}
 	}
 }
 
 /* skip the list in the cross-reference file */
-static void skiplist(FILE *oldrefs) {
+static
+void skiplist(FILE *oldrefs) {
 	int i;
 
 	if(fscanf(oldrefs, "%d", &i) != 1) {
