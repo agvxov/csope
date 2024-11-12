@@ -90,16 +90,18 @@ void read_listfile(FILE * names) {
 	char *s;
 	/* get the names in the file */
 	while(fgets(line, 10 * PATHLEN, names) != NULL) {
-		char  *point_in_line	 = line + (strlen(line) - 1);
+		char  *point_in_line	 = line;
 		size_t length_of_name	 = 0;
 		int	   unfinished_option = 0;
 		bool   done				 = false;
 
 		/* Kill away \n left at end of fgets()'d string: */
-		if(*point_in_line == '\n') *point_in_line = '\0';
+        {
+            size_t last_char_index = strlen(line) - 1;
+            if (line[last_char_index] == '\n') { line[last_char_index] = '\0'; }
+        }
 
 		/* Parse whitespace-terminated strings in line: */
-		point_in_line = line;
 		while(sscanf(point_in_line, "%" PATHLEN_STR "s", path) == 1) {
 			/* Have to store this length --- inviewpath() will
 			 * modify path, later! */
