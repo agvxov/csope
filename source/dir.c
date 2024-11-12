@@ -76,10 +76,10 @@ static struct listitem {				/* source file names without view pathing */
 /* Internal prototypes: */
 static bool is_accessible_file(char *file);
 static bool is_source_file(char *file);
-static void addsrcdir(char *dir);
-static void addincdir(char *name, char *path);
+static void add_source_directory(char *dir);
+static void add_include_directory(char *name, char *path);
 static void scan_dir(const char *dirfile, bool recurse);
-static void makevpsrcdirs(void);
+static void make_vp_source_directories(void);
 static void read_listfile(FILE * listfile);
 
 static
@@ -144,6 +144,9 @@ void read_listfile(FILE * names) {
 						/* this code block used several times in here
 						 * --> make it a macro to avoid unnecessary
 						 * duplication */
+                        /* XXX: i dont think this does anything here?
+                         *       if only we had tests
+                         */
 #define HANDLE_OPTION_ARGUMENT(i, s)                                                     \
 	switch(i) {                                                                          \
 		case 'I': /* #include file directory */                                          \
@@ -236,8 +239,7 @@ void read_listfile(FILE * names) {
 			} /* else(ordinary name) */
 
 			point_in_line += length_of_name;
-			while(isspace((unsigned char)*point_in_line))
-				point_in_line++;
+			while(isspace((unsigned char)*point_in_line)) { point_in_line++; }
 		} /* while(sscanf(line)) */
 	}	  /* while(fgets(line)) */
 
@@ -245,7 +247,7 @@ void read_listfile(FILE * names) {
 
 /* make the view source directory list */
 static
-void makevpsrcdirs(void) {
+void make_vp_source_directories(void) {
 	/* return if this function has already been called */
 	if(nsrcdirs > 0) { return; }
 	/* get the current directory name */
@@ -273,7 +275,7 @@ void makevpsrcdirs(void) {
 
 /* add a source directory to the list */
 static
-void addsrcdir(char *dir) {
+void add_source_directory(char *dir) {
 	struct stat statstruct;
 
 	/* make sure it is a directory */
@@ -290,7 +292,7 @@ void addsrcdir(char *dir) {
 
 /* add a #include directory to the list */
 static
-void addincdir(char *name, char *path) {
+void add_include_directory(char *name, char *path) {
 	struct stat statstruct;
 
 	/* make sure it is a directory */
@@ -437,7 +439,7 @@ void sourcedir(char *dirlist) {
 	char		 path[PATHLEN + 1];
 	char		*dir;
 
-	makevpsrcdirs();		   /* make the view source directory list */
+	make_vp_source_directories();		   /* make the view source directory list */
 	dirlist = strdup(dirlist); /* don't change environment variable text */
 
 	/* parse the directory list */
@@ -445,7 +447,7 @@ void sourcedir(char *dirlist) {
 	while(dir != NULL) {
 		int dir_len = strlen(dir);
 
-		addsrcdir(dir);
+		add_source_directory(dir);
 
 		/* if it isn't a full path name and there is a
 		   multi-directory view path */
@@ -459,7 +461,7 @@ void sourcedir(char *dirlist) {
 					PATHLEN - 2 - dir_len,
 					srcdirs[i],
 					dir);
-				addsrcdir(path);
+				add_source_directory(path);
 			}
 		}
 		dir = strtok(NULL, DIRSEPS);
@@ -472,7 +474,7 @@ void includedir(char *dirlist) {
 	char		 path[PATHLEN + 1];
 	char		*dir;
 
-	makevpsrcdirs();		   /* make the view source directory list */
+	make_vp_source_directories();		   /* make the view source directory list */
 	dirlist = strdup(dirlist); /* don't change environment variable text */
 
 	/* parse the directory list */
@@ -480,7 +482,7 @@ void includedir(char *dirlist) {
 	while(dir != NULL) {
 		size_t dir_len = strlen(dir);
 
-		addincdir(dir, dir);
+		add_include_directory(dir, dir);
 
 		/* if it isn't a full path name and there is a
 		   multi-directory view path */
@@ -494,7 +496,7 @@ void includedir(char *dirlist) {
 					(int)(PATHLEN - 2 - dir_len),
 					srcdirs[i],
 					dir);
-				addincdir(dir, path);
+				add_include_directory(dir, path);
 			}
 		}
 		dir = strtok(NULL, DIRSEPS);
@@ -506,7 +508,7 @@ void includedir(char *dirlist) {
 void makefilelist(void) {
 	char *file;
 
-	makevpsrcdirs(); /* make the view source directory list */
+	make_vp_source_directories(); /* make the view source directory list */
 
 	/* if -i was NOT given and there are source file arguments */
 	if(namefile == NULL && fileargc > 0) {
