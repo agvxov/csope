@@ -42,12 +42,7 @@
 #include "global.h"
 #include "constants.h"
 
-#if !falseMALLOC
 char **vpdirs; /* directories (including current) in view path */
-#else
-char vpdirs[MAXDIR][DIRLEN + 1];
-# define MAXVPATH (MAXDIR * (DIRLEN + 1))
-#endif
 int vpndirs; /* number of directories in view path */
 
 void vpinit(char *current_dir) {
@@ -56,19 +51,13 @@ void vpinit(char *current_dir) {
 	char  buf[MAXPATH + 1];
 	int	  i;
 	char *s;
-#if falseMALLOC
-	char *node; /* view path node */
-	char  vpathbuf[MAXVPATH + 1];
-#endif
 
 	/* if an existing directory list is to be updated, free it */
 	if(current_dir != NULL && vpndirs > 0) {
-#if !falseMALLOC
 		for(i = 0; i < vpndirs; ++i) {
 			free(vpdirs[i]);
 		}
 		free(vpdirs);
-#endif
 		vpndirs = 0;
 	}
 	/* return if the directory list has been computed */
@@ -88,7 +77,6 @@ void vpinit(char *current_dir) {
 		return;
 	}
 	suffix = &current_dir[i];
-#if !falseMALLOC
 
 	/* count the nodes in the view path */
 	vpndirs = 1;
@@ -117,45 +105,4 @@ void vpinit(char *current_dir) {
 		vpdirs[i] = s;
 	}
 	free(vpath);
-#else
-	/* don't change VPATH in the environment */
-	if(strlen(vpath) > MAXVPATH) {
-		(void)fprintf(stderr,
-			"%s: VPATH is longer than %d characters: %s\n",
-			argv0,
-			MAXVPATH,
-			vpath);
-		return;
-	}
-	(void)strcpy(vpathbuf, vpath);
-	s = vpathbuf;
-
-	/* convert the view path nodes to directories */
-	while(*s != '\0') {
-
-		/* get the next node */
-		node = s;
-		while(*s != '\0' && *++s != ':') {
-			if(*s == '\n') { *s = '\0'; }
-		}
-		if(*s != '\0') { *s++ = '\0'; }
-		/* ignore a directory that is too long */
-		if(strlen(node) + strlen(suffix) > DIRLEN) {
-			(void)fprintf(stderr,
-				"%s: VPATH directory is longer than %d characters: %s%s\n",
-				argv0,
-				DIRLEN,
-				node,
-				suffix);
-		} else if(vpndirs >= MAXDIR) {
-			(void)fprintf(stderr, "%s: VPATH has more than %d nodes\n", argv0, vpndirs);
-			return;
-		} else {
-			/* create the view path directory */
-			(void)strcpy(vpdirs[vpndirs], node);
-			(void)strcat(vpdirs[vpndirs], suffix);
-			++vpndirs;
-		}
-	}
-#endif
 }
