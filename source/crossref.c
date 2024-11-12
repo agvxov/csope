@@ -54,7 +54,7 @@
 		digits = 1;                                                                      \
 		while(n >= BASE) {                                                               \
 			++digits;                                                                    \
-			i = n;                                                                       \
+			int i = n;                                                                   \
 			n /= BASE;                                                                   \
 			*--s = i - n * BASE + '!';                                                   \
 		}                                                                                \
@@ -181,7 +181,6 @@ void crossref(char *srcfile) {
 }
 
 /* save the symbol in the list */
-
 static void savesymbol(int token, int num) {
 	/* make sure there is room for the symbol */
 	if(symbols == msymbols) {
@@ -198,7 +197,6 @@ static void savesymbol(int token, int num) {
 }
 
 /* output the file name */
-
 void putfilename(char *srcfile) {
 	/* check for file system out of space */
 	/* note: dbputc is not used to avoid lint complaint */
@@ -343,15 +341,14 @@ void putcrossref(void) {
 /* HBB 20000421: new function, for avoiding memory leaks */
 /* free the cross reference symbol table */
 void freecrossref() {
-	if(symbol) free(symbol);
+	if (symbol) { free(symbol); }
 	symbol	= NULL;
 	symbols = 0;
 }
 
 /* output the inverted index posting */
-
 void putposting(char *term, int type) {
-	long  i, n;
+	long  n;
 	char *s;
 	int	  digits;  /* digits output */
 	long  offset;  /* function/macro database offset */
@@ -359,9 +356,9 @@ void putposting(char *term, int type) {
 
 	/* get the function or macro name offset */
 	offset = fcnoffset;
-	if(macrooffset != 0) { offset = macrooffset; }
+	if (macrooffset != 0) { offset = macrooffset; }
 	/* then update them to avoid negative relative name offset */
-	switch(type) {
+	switch (type) {
 		case DEFINE:
 			macrooffset = dboffset;
 			break;
@@ -376,9 +373,9 @@ void putposting(char *term, int type) {
 			return; /* null term */
 	}
 	/* ignore a null term caused by a enum/struct/union without a tag */
-	if(*term == '\0') { return; }
+	if (*term == '\0') { return; }
 	/* skip any #include secondary type char (< or ") */
-	if(type == INCLUDE) { ++term; }
+	if (type == INCLUDE) { ++term; }
 	/* output the posting, which should be as small as possible to reduce
 	   the temp file size and sort time */
 	(void)fputs(term, postings);
@@ -388,7 +385,7 @@ void putposting(char *term, int type) {
 	   in ascending line offset order to order the references as they
 	   appear withing a source file */
 	ltobase(lineoffset);
-	for(i = PRECISION - digits; i > 0; --i) {
+	for (long i = PRECISION - digits; i > 0; --i) {
 		(void)putc('!', postings);
 	}
 	do {
@@ -399,14 +396,14 @@ void putposting(char *term, int type) {
 	(void)putc(type, postings);
 
 	/* function or macro name offset */
-	if(offset > 0) {
+	if (offset > 0) {
 		(void)putc(' ', postings);
 		ltobase(offset);
 		do {
 			(void)putc(*s, postings);
 		} while(*++s != '\0');
 	}
-	if(putc('\n', postings) == EOF) {
+	if (putc('\n', postings) == EOF) {
 		cannotwrite(temp1);
 		/* NOTREACHED */
 	}
@@ -414,10 +411,8 @@ void putposting(char *term, int type) {
 }
 
 /* put the string into the new database */
-
 void writestring(char *s) {
 	unsigned char c;
-	int			  i;
 
 	if(compress == false) {
 		/* Save some I/O overhead by using puts() instead of putc(): */
@@ -425,7 +420,7 @@ void writestring(char *s) {
 		return;
 	}
 	/* compress digraphs */
-	for(i = 0; (c = s[i]) != '\0'; ++i) {
+	for(int i = 0; (c = s[i]) != '\0'; ++i) {
 		if(/* dicode1[c] && dicode2[(unsigned char) s[i + 1]] */
 			IS_A_DICODE(c, s[i + 1])) {
 			/* c = (0200 - 2) + dicode1[c] + dicode2[(unsigned char) s[i + 1]]; */
@@ -437,13 +432,12 @@ void writestring(char *s) {
 }
 
 /* print a warning message with the file name and line number */
-
 void warning(char *text) {
-
 	(void)fprintf(stderr,
 		PROGRAM_NAME ": \"%s\", line %d: warning: %s\n",
 		filename,
 		myylineno,
-		text);
+		text
+    );
 	errorsfound = true;
 }

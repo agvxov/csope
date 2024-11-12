@@ -314,8 +314,8 @@ int main(int argc, char **argv) {
     init_temp_files();
 
 	/* if the database path is relative and it can't be created */
-	if(reffile[0] != '/'
-    && access(".", WRITE) != 0) {
+	if (reffile[0] != '/'
+    &&  access(".", WRITE) != 0) {
 		/* put it in the home directory if the database may not be
 		 * up-to-date or doesn't exist in the relative directory,
 		 * so a database in the current directory will be
@@ -323,7 +323,8 @@ int main(int argc, char **argv) {
 		 * the home directory
 		 */
 		snprintf(path, sizeof(path), "%s/%s", home, reffile);
-		if(isuptodate == false || access(path, READ) == 0) {
+		if (preserve_database == false
+        ||  access(path, READ) == 0) {
 			reffile = strdup(path);
 			snprintf(path, sizeof(path), "%s/%s", home, invname);
 			invname = strdup(path);
