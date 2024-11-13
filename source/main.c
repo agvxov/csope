@@ -201,16 +201,7 @@ void linemode_event_loop(void) {
 		/* remove any trailing newline character */
 		if (*(s = buf + strlen(buf) - 1) == '\n') { *s = '\0'; }
 		switch (*buf) {
-			case '0':
-			case '1':
-			case '2':
-			case '3':
-			case '4':
-			case '5':
-			case '6':
-			case '7':
-			case '8':
-			case '9': /* samuel only */
+			case ASCII_DIGIT:
 				field = *buf - '0';
 				strcpy(input_line, buf + 1);
 				if (search(input_line) == false) {

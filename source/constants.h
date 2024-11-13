@@ -110,5 +110,19 @@ enum {
 #define O_TEXT	 0x00
 #define O_BINARY 0x00
 
+/* Represents switch cases '0'...'9'.
+ * Slightly hacky.
+ * Should be use gcc/clang ranges?
+ */
+#define ASCII_DIGIT '0': \
+    case '1': \
+    case '2': \
+    case '3': \
+    case '4': \
+    case '5': \
+    case '6': \
+    case '7': \
+    case '8': \
+    case '9'
 
 #endif /* CSCOPE_CONSTANTS_H */

@@ -122,16 +122,7 @@ char * * parse_options(const int argc, const char * const * const argv) {
 			case 'X':
 				remove_symfile_onexit = true;
 				break;
-			case '0':
-			case '1':
-			case '2':
-			case '3':
-			case '4':
-			case '5':
-			case '6':
-			case '7':
-			case '8':
-			case '9':
+			case ASCII_DIGIT:
 				/* The input fields numbers for line mode operation */
 				field = opt - '0';
 				if(strlen(optarg) > PATHLEN) {
