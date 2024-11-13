@@ -58,7 +58,6 @@ char dichar2[] = " tnerpla";			/* 8 most frequent second chars
 char dicode1[256];						/* digraph first character code */
 char dicode2[256];						/* digraph second character code */
 
-char		*argv0;						/* command name */
 bool		 compress = true;			/* compress the characters in the crossref */
 bool		 dbtruncated;				/* database symbols are truncated to 8 chars */
 int			 dispcomponents = 1;		/* file path components to display */
@@ -289,8 +288,6 @@ int main(int argc, char **argv) {
 
 	yyin  = stdin;
 	yyout = stdout;
-	/* save the command name for messages */
-	argv0 = argv[0];
 
 	/* set the options */
 	argv = parse_options(&argc, argv);
