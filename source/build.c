@@ -309,7 +309,7 @@ void build(void) {
 		}
 		/* get the first file name in the old cross-reference */
 		blocknumber = -1;
-		read_block();	/* read the first cross-ref block */
+		read_crossreference_block();	/* read the first cross-ref block */
 		scanpast('\t'); /* skip the header */
 		oldfile = getoldfile();
 	} else {			/* force cross-referencing of all the source files */
@@ -558,13 +558,13 @@ void copydata(void) {
 			while(*cp != '\t') {
 				dbputc(*cp++);
 			}
-		} while(*++cp == '\0' && (cp = read_block()) != NULL);
+		} while(*++cp == '\0' && (cp = read_crossreference_block()) != NULL);
 		dbputc('\t'); /* copy the tab */
 
 		/* get the next character */
 		/* HBB 2010-08-21: potential problem if above loop was left
 		 * with cp==NULL */
-		if(cp && (*(cp + 1) == '\0')) { cp = read_block(); }
+		if(cp && (*(cp + 1) == '\0')) { cp = read_crossreference_block(); }
 		/* exit if at the end of this file's data */
 		if(cp == NULL || *cp == NEWFILE) { break; }
 		/* look for an #included file */
@@ -598,13 +598,13 @@ void copyinverted(void) {
 			while(*cp != '\n') {
 				dbputc(*cp++);
 			}
-		} while(*++cp == '\0' && (cp = read_block()) != NULL);
+		} while(*++cp == '\0' && (cp = read_crossreference_block()) != NULL);
 		dbputc('\n'); /* copy the newline */
 
 		/* get the next character */
 		/* HBB 2010-08-21: potential problem if above loop was left
 		 * with cp==NULL */
-		if(cp && (*(cp + 1) == '\0')) { cp = read_block(); }
+		if(cp && (*(cp + 1) == '\0')) { cp = read_crossreference_block(); }
 		/* exit if at the end of this file's data */
 		if(cp == NULL) { break; }
 		switch(*cp) {

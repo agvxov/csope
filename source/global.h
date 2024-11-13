@@ -197,7 +197,7 @@ const char * prepend_path(const char * prepand_with, const char * file);
 char *inviewpath(const char *file);
 char *lookup(char *ident, bool do_compressed);
 char *pathcomponents(char *path, int components);
-char *read_block(void);
+char *read_crossreference_block(void);
 char *scanpast(char c);
 
 char **parse_options(const int argc, const char * const * const argv);

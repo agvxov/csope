@@ -50,13 +50,13 @@
 /* get the next character in the cross-reference */
 /* note that blockp is assumed not to be null */
 #define getrefchar()                                                                     \
-	(*(++blockp + 1) != '\0' ? *blockp : (read_block() != NULL ? *blockp : '\0'))
+	(*(++blockp + 1) != '\0' ? *blockp : (read_crossreference_block() != NULL ? *blockp : '\0'))
 
 /* skip the next character in the cross-reference */
 /* note that blockp is assumed not to be null and that
    this macro will always be in a statement by itself */
 #define skiprefchar()                                                                    \
-	if(*(++blockp + 1) == '\0') (void)read_block()
+	if(*(++blockp + 1) == '\0') (void)read_crossreference_block()
 
 #define DUMMYCHAR	   ' '			   /* use space as a dummy character */
 #define MSGLEN		   ((PATLEN) + 80) /* displayed message length */

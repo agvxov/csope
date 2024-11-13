@@ -159,7 +159,7 @@ bool check_for_assignment(void) {
 		if(asgn_char[0] == '\0') {
 			/* get the next block when we reach the end of
 			 * the current block */
-			if(NULL == (asgn_char = read_block())){
+			if(NULL == (asgn_char = read_crossreference_block())){
 				return false;
 			}
 		}
@@ -240,10 +240,10 @@ char *find_symbol_or_assignment(const char *pattern, bool assign_flag) {
 			while(*cp != '\n') {
 				++cp;
 			}
-		} while(*(cp + 1) == '\0' && (cp = read_block()) != NULL);
+		} while(*(cp + 1) == '\0' && (cp = read_crossreference_block()) != NULL);
 
 		/* skip the found character */
-		if(cp != NULL && *(++cp + 1) == '\0') { cp = read_block(); }
+		if(cp != NULL && *(++cp + 1) == '\0') { cp = read_crossreference_block(); }
 		if(cp == NULL) { break; }
 		/* look for a source file, function, or macro name */
 		if(*cp == '\t') {
@@ -811,7 +811,7 @@ bool matchrest(void) {
 			++blockp;
 			++i;
 		}
-	} while(*(blockp + 1) == '\0' && read_block() != NULL);
+	} while(*(blockp + 1) == '\0' && read_crossreference_block() != NULL);
 
 	if(*blockp == '\n' && cpattern[i] == '\0') { return (true); }
 	return (false);
@@ -914,7 +914,7 @@ void putline(FILE *output) {
 			}
 			++cp;
 		}
-	} while(*(cp + 1) == '\0' && (cp = read_block()) != NULL);
+	} while(*(cp + 1) == '\0' && (cp = read_crossreference_block()) != NULL);
 	blockp = cp;
 }
 
@@ -940,7 +940,7 @@ void fetch_string_from_dbase(char *s, size_t length) {
 			}
 			++cp;
 		}
-	} while(length > 0 && cp[1] == '\0' && (cp = read_block()) != NULL);
+	} while(length > 0 && cp[1] == '\0' && (cp = read_crossreference_block()) != NULL);
 	blockp = cp;
 	*s	   = '\0';
 }
@@ -955,14 +955,14 @@ char *scanpast(char c) {
 		while(*cp != c) {
 			++cp;
 		}
-	} while(*(cp + 1) == '\0' && (cp = read_block()) != NULL);
+	} while(*(cp + 1) == '\0' && (cp = read_crossreference_block()) != NULL);
 	blockp = cp;
 	if(cp != NULL) { skiprefchar(); /* skip the found character */ }
 	return blockp;
 }
 
 /* read a block of the cross-reference */
-char *read_block(void) {
+char *read_crossreference_block(void) {
 	/* read the next block */
 	blocklen = read(symrefs, block, BUFSIZ);
 	blockp	 = block;
@@ -1171,7 +1171,7 @@ long dbseek(long offset) {
 			sleep(3);
 			return rc;
 		}
-		read_block();
+		read_crossreference_block();
 		blocknumber = n;
 	}
 	blockp = block + offset % BUFSIZ;
