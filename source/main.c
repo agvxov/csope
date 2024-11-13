@@ -58,22 +58,22 @@ char dichar2[] = " tnerpla";			/* 8 most frequent second chars
 char dicode1[256];						/* digraph first character code */
 char dicode2[256];						/* digraph second character code */
 
-bool		 compress = true;			/* compress the characters in the crossref */
-bool		 dbtruncated;				/* database symbols are truncated to 8 chars */
-int			 dispcomponents = 1;		/* file path components to display */
-bool		 editallprompt	= true;		/* prompt between editing files */
-int			 fileversion;				/* cross-reference file version */
-bool		 incurses = false;			/* in curses */
-char		*prependpath;				/* prepend path to file names */
-FILE		*refsfound;					/* references found file */
-long		 totalterms;				/* total inverted index terms */
-bool		 trun_syms;					/* truncate symbols to 8 characters */
-char		 tempstring[TEMPSTRING_LEN + 1]; /* use this as a buffer, instead of 'yytext',
-											  * which had better be left alone
-                                              */
-const char * const * fileargv;					/* file argument values */
+bool  compress = true;			/* compress the characters in the crossref */
+bool  dbtruncated;				/* database symbols are truncated to 8 chars */
+int	  dispcomponents = 1;		/* file path components to display */
+bool  editallprompt	= true;		/* prompt between editing files */
+int	  fileversion;				/* cross-reference file version */
+bool  incurses = false;			/* in curses */
+char *prependpath;				/* prepend path to file names */
+FILE *refsfound;				/* references found file */
+long  totalterms;				/* total inverted index terms */
+bool  trun_syms;				/* truncate symbols to 8 characters */
+char  tempstring[TEMPSTRING_LEN + 1]; /* use this as a buffer, instead of 'yytext',
+									   * which had better be left alone
+                                       */
+const char * const * fileargv;	/* file argument values */
 
-static char path[PATHLEN + 1];				 /* file path */
+static char path[PATHLEN + 1];	/* file path */
 
 /* Internal prototypes: */
 static void		   skiplist(FILE *oldrefs);
@@ -177,14 +177,13 @@ void myexit(int sig) {
 
 static inline
 void linemode_event_loop(void) {
-	int c;
-
 	if (*input_line != '\0') { /* do any optional search */
 		if (search(input_line) == true) {
 			/* print the total number of lines in
 			 * verbose mode */
 			if (verbosemode == true) printf(PROGRAM_NAME ": %d lines\n", totallines);
 
+            int c;
 			while((c = getc(refsfound)) != EOF) {
 				putchar(c);
             }
@@ -218,6 +217,7 @@ void linemode_event_loop(void) {
 					printf("Unable to search database\n");
 				} else {
 					printf("cscope: %d lines\n", totallines);
+                    int c;
 					while((c = getc(refsfound)) != EOF) {
 						putchar(c);
 					}
