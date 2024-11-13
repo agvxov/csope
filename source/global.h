@@ -63,8 +63,8 @@ struct cmd {					 /* command history struct */
 		char	   *text;		 /* input field text */
 };
 
- /* bitmask type to mark which windows have to be rerendered by
-    display() */
+/* bitmask type to mark which windows have to be rerendered by display()
+ */
 enum {
 	CH_NONE	  = 0x0000,
 	CH_RESULT = 0x0001 << 0,
@@ -74,6 +74,10 @@ enum {
 	CH_HELP	  = 0x0001 << 4, /* do NOT add to CH_ALL */
 	CH_ALL	  = CH_RESULT | CH_INPUT | CH_MODE | CH_CASE
 };
+/* Only display.c can directly update the screen.
+ * Any other component must request the update of a particular
+ *  screen area by OR'ing this variable with the appropriate mask.
+ */
 extern int window_change;
 
 enum {
