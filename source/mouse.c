@@ -43,6 +43,12 @@
  *         future complete rewrite of mouse support
  */
 
+void mousemenu(void);
+void mouseinit(void);
+void mousereinit(void);
+
+// extern    bool    unixpcmouse;		/* UNIX PC mouse interface */
+
 extern int LINES;
 
 #define FLDLINE (LINES - FIELDS - 1 - 1) /* first input field line */
