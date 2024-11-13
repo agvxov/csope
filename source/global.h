@@ -165,7 +165,6 @@ extern size_t msrcfiles;	/* maximum number of source files */
 extern int			filelen;	  /* file name display field length */
 extern int			fcnlen;		  /* function name display field length */
 extern int			numlen;		  /* line number display field length */
-extern int		   *displine;	  /* screen line of displayed reference */
 extern unsigned int disprefs;	  /* displayed references */
 extern int			field;		  /* input field */
 extern unsigned int mdisprefs;	  /* maximum displayed references */

@@ -54,12 +54,12 @@
 /* XXX */
 #define MSGLINE 0							/* message line */
 #define MSGCOL	0							/* message column */
+static int * displine; /* screen line of displayed reference */
 
 int filelen		 = sizeof("File") - 1;		/* file name display field length */
 int fcnlen		 = sizeof("Function") - 1;	/* function name display field length */
 int numlen		 = 0;						/* line number display field length */
 
-int			*displine;						/* screen line of displayed reference */
 unsigned int disprefs;						/* displayed references */
 int			 field;							/* input field */
 unsigned int mdisprefs;						/* maximum displayed references */

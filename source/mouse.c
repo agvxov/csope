@@ -428,7 +428,7 @@ int process_mouse() {
 		/* find the selected line */
 		/* note: the selection is forced into range */
 		for(i = disprefs - 1; i > 0; --i) {
-			if(p->y1 >= displine[i]) { return false; }
+			if(p->y1 >= 1/*displine[i]*/) { return false; }
 		}
 		/* display it in the file with the editor */
 		editref(i);
