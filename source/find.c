@@ -90,6 +90,17 @@ typedef enum {				   /* findinit return code */
 	REGCMPERROR
 } FINDINIT;
 
+static char *findsymbol(const char *pattern);
+static char *finddef(const char *pattern);
+static char *findcalledby(const char *pattern);
+static char *findcalling(const char *pattern);
+static char *findstring(const char *pattern);
+static char *findregexp(const char *egreppat);
+static char *findfile(const char *dummy);
+static char *findinclude(const char *pattern);
+static char *findassign(const char *pattern);
+static char *findallfcns(const char *dummy);
+
 typedef char *(*FP)(const char *); /* pointer to function returning a character pointer */
 /* Paralel array to "fields", indexed by "field" */
 FP field_searchers[FIELDS + 1] = {
@@ -122,18 +133,21 @@ static void jumpback(int sig) {
 }
 
 /* find the symbol in the cross-reference */
+static
 char *findsymbol(const char *pattern) {
 	return find_symbol_or_assignment(pattern, false);
 }
 
 /* find the symbol in the cross-reference, and look for assignments */
+static
 char *findassign(const char *pattern) {
 	return find_symbol_or_assignment(pattern, true);
 }
 
 /* Test reference whether it's an assignment to the symbol found at
  * (global variable) 'blockp' */
-static bool check_for_assignment(void) {
+static
+bool check_for_assignment(void) {
 	/* Do the extra work here to determine if this is an
 	 * assignment or not.  Do this by examining the next character
 	 * or two in blockp */
@@ -184,7 +198,8 @@ static bool check_for_assignment(void) {
 
 /* The actual routine that does the work for findsymbol() and
  * findassign() */
-static char *find_symbol_or_assignment(const char *pattern, bool assign_flag) {
+static
+char *find_symbol_or_assignment(const char *pattern, bool assign_flag) {
 	char   file[PATHLEN + 1];	 /* source file name */
 	char   function[PATLEN + 1]; /* function name */
 	char   macro[PATLEN + 1];	 /* macro name */
@@ -364,7 +379,7 @@ static char *find_symbol_or_assignment(const char *pattern, bool assign_flag) {
 }
 
 /* find the function definition or #define */
-
+static
 char *finddef(const char *pattern) {
 	char file[PATHLEN + 1]; /* source file name */
 
@@ -426,6 +441,7 @@ char *finddef(const char *pattern) {
 }
 
 /* find all function definitions (used by samuel only) */
+static
 char *findallfcns(const char *dummy) {
 	char file[PATHLEN + 1];	   /* source file name */
 	char function[PATLEN + 1]; /* function name */
@@ -463,7 +479,7 @@ char *findallfcns(const char *dummy) {
 }
 
 /* find the functions calling this function */
-
+static
 char *findcalling(const char *pattern) {
 	char  file[PATHLEN + 1];	   /* source file name */
 	char  function[PATLEN + 1];	   /* function name */
@@ -550,7 +566,7 @@ char *findcalling(const char *pattern) {
 }
 
 /* find the text in the source files */
-
+static
 char *findstring(const char *pattern) {
 	char		egreppat[2 * PATLEN];
 	char	   *cp = egreppat;
@@ -568,7 +584,7 @@ char *findstring(const char *pattern) {
 }
 
 /* find this regular expression in the source files */
-
+static
 char *findregexp(const char *egreppat) {
 	unsigned int i;
 	char		*egreperror;
@@ -590,7 +606,7 @@ char *findregexp(const char *egreppat) {
 }
 
 /* find matching file names */
-
+static
 char *findfile(const char *dummy) {
 	UNUSED(dummy);
 
@@ -613,7 +629,7 @@ char *findfile(const char *dummy) {
 }
 
 /* find files #including this file */
-
+static
 char *findinclude(const char *pattern) {
 	char file[PATHLEN + 1]; /* source file name */
 
@@ -655,7 +671,6 @@ char *findinclude(const char *pattern) {
 }
 
 /* initialize */
-
 int findinit(const char *pattern_) {
 	char		 *pattern = strdup(pattern_);
 	int			  r		  = NOERROR;
@@ -766,7 +781,8 @@ void findcleanup(void) {
 
 /* match the pattern to the string */
 
-static bool match(void) {
+static
+bool match(void) {
 	char string[PATLEN + 1];
 
 	/* see if this is a regular expression pattern */
@@ -785,7 +801,8 @@ static bool match(void) {
 
 /* match the rest of the pattern to the name */
 
-static bool matchrest(void) {
+static
+bool matchrest(void) {
 	int i = 1;
 
 	skiprefchar();
@@ -802,7 +819,8 @@ static bool matchrest(void) {
 
 /* put the reference into the file */
 
-static void putref(int seemore, const char *file, const char *func) {
+static
+void putref(int seemore, const char *file, const char *func) {
 	FILE *output;
 
 	if(strcmp(func, global) == 0) {
@@ -816,7 +834,8 @@ static void putref(int seemore, const char *file, const char *func) {
 
 /* put the source line into the file */
 
-static void putsource(int seemore, FILE *output) {
+static
+void putsource(int seemore, FILE *output) {
 	char *tmpblockp;
 	char *cp, nextc = '\0';
 	bool  Change = false, retreat = false;
@@ -869,7 +888,8 @@ static void putsource(int seemore, FILE *output) {
 
 /* put the rest of the cross-reference line into the file */
 
-static void putline(FILE *output) {
+static
+void putline(FILE *output) {
 	char	*cp;
 	unsigned c;
 
@@ -960,7 +980,8 @@ char *read_block(void) {
 	return (blockp);
 }
 
-static char *lcasify(const char *s) {
+static
+char *lcasify(const char *s) {
 	static char ls[PATLEN + 1]; /* largest possible match string */
 	char	   *lptr = ls;
 
@@ -1028,8 +1049,8 @@ char * findcalledby(const char *pattern) {
 }
 
 /* find this term, which can be a regular expression */
-
-static void findterm(const char *pattern) {
+static
+void findterm(const char *pattern) {
 	char *s;
 	int	  len;
 	char  prefix[PATLEN + 1];
@@ -1097,8 +1118,8 @@ static void findterm(const char *pattern) {
 }
 
 /* get the next posting for this term */
-
-static POSTING *getposting(void) {
+static
+POSTING *getposting(void) {
 	if(npostings-- <= 0) { return (NULL); }
 	/* display progress about every three seconds */
 	if(++searchcount % 100 == 0) {
@@ -1109,7 +1130,8 @@ static POSTING *getposting(void) {
 
 /* put the posting reference into the file */
 
-static void putpostingref(POSTING *p, const char *pat) {
+static
+void putpostingref(POSTING *p, const char *pat) {
 	// initialize function to "unknown" so that the first line of temp1
 	// is properly formed if symbol matches a header file entry first time
 	static char function[PATLEN + 1] = "unknown"; /* function name */
@@ -1156,7 +1178,8 @@ long dbseek(long offset) {
 	return rc;
 }
 
-static void findcalledbysub(const char *file, bool macro) {
+static
+void findcalledbysub(const char *file, bool macro) {
 	/* find the next function call or the end of this function */
 	while(scanpast('\t') != NULL) {
 		switch(*blockp) {

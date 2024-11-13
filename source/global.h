@@ -194,16 +194,6 @@ extern int	 rl_point;
 /* cscope functions called from more than one function or between files */
 
 const char * prepend_path(const char * prepand_with, const char * file);
-char *findsymbol(const char *pattern);
-char *finddef(const char *pattern);
-char *findcalledby(const char *pattern);
-char *findcalling(const char *pattern);
-char *findstring(const char *pattern);
-char *findregexp(const char *egreppat);
-char *findfile(const char *dummy);
-char *findinclude(const char *pattern);
-char *findassign(const char *pattern);
-char *findallfcns(const char *dummy);
 char *inviewpath(const char *file);
 char *lookup(char *ident, bool do_compressed);
 char *pathcomponents(char *path, int components);
