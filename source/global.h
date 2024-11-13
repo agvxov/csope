@@ -54,7 +54,6 @@
 #include "constants.h" /* misc. constants */
 #include "invlib.h"	   /* inverted index library */
 #include "library.h"   /* library function return values */
-#include "stddef.h"	   /* size_t */
 
 typedef void (*sighandler_t)(int);
 
