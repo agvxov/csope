@@ -42,6 +42,7 @@
 #include "global.h"
 #include "build.h"
 #include "colors.h"
+#include "help.h"
 
 #ifdef CCS
 # include "sgs.h"	  /* ESG_PKG and ESG_REL */

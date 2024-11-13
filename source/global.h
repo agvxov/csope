@@ -203,8 +203,6 @@ char *scanpast(char c);
 char **parse_options(const int argc, const char * const * const argv);
 void readenv(bool preserve_database);
 
-void		 longusage(void);
-void		 usage(void);
 extern bool	 remove_symfile_onexit;
 extern bool	 onesearch;		   /* one search only in line mode */
 extern char *reflines;		   /* symbol reference lines file */

@@ -4,6 +4,7 @@
 #include "vpath.h"
 #include "version.inc"
 #include "auto_vararg.h"
+#include "help.h"
 
 #include <stdlib.h>	 /* atoi */
 #include <getopt.h>
