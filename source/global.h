@@ -216,9 +216,7 @@ void	   verswp_window(void);
 bool	   interpret(int c);	// XXX: probably rename
 int		   handle_input(const int c);
 int		   dispchar2int(const char c);
-int		   process_mouse();
-int		   changestring(const char *from, const char *to, const bool *const change,
-		   const int change_len);
+int		   changestring(const char *from, const char *to, const bool *const change, const int change_len);
 
 void init_temp_files(void);
 void deinit_temp_files(void);
@@ -229,51 +227,51 @@ void PCS_reset(void);
 
 void rlinit(void);
 
-void		addsrcfile(char *path);
-void		askforchar(void);
-void		askforreturn(void);
-void		cannotwrite(const char *const file);
-void		cannotopen(const char *const file);
-void		clearmsg(void);
-void		clearmsg2(void);
-void		countrefs(void);
-void		crossref(char *srcfile);
-void		dispinit(void);
-void		display(void);
-void		redisplay(void);
-void		drawscrollbar(int top, int bot);
-void		edit(const char * filename, const char *const linenum);
-void		editall(void);
-void		editref(int);
-void		entercurses(void);
-void		exitcurses(void);
-void		force_window(void);
-void		findcleanup(void);
-void		freesrclist(void);
-void		freeinclist(void);
-void		freecrossref(void);
-void		freefilelist(void);
-const char *help(void);
-void		incfile(char *file, char *type);
-void		includedir(const char *dirname);
-void		initsymtab(void);
-void		makefilelist(const char * const * const argv);
-void		mousecleanup(void);
-void		myexit(int sig);
-void		myperror(char *text);
-void		progress(char *what, long current, long max);
-void		putfilename(char *srcfile);
-void		postmsg(char *msg);
-void		postmsg2(char *msg);
-void		posterr(char *msg, ...);
-void		postfatal(const char *msg, ...);
-void		putposting(char *term, int type);
-void		fetch_string_from_dbase(char *, size_t);
-void		shellpath(char *out, int limit, char *in);
-void		sourcedir(const char * dirlist);
-void		myungetch(int c);
-void		warning(char *text);
-void		writestring(char *s);
+void addsrcfile(char *path);
+void askforchar(void);
+void askforreturn(void);
+void cannotwrite(const char *const file);
+void cannotopen(const char *const file);
+void clearmsg(void);
+void clearmsg2(void);
+void countrefs(void);
+void crossref(char *srcfile);
+void edit(const char * filename, const char *const linenum);
+void editall(void);
+void editref(int);
+void force_window(void);
+void findcleanup(void);
+void freesrclist(void);
+void freeinclist(void);
+void freecrossref(void);
+void freefilelist(void);
+void incfile(char *file, char *type);
+void includedir(const char *dirname);
+void initsymtab(void);
+void makefilelist(const char * const * const argv);
+void myexit(int sig);
+void myperror(char *text);
+void progress(char *what, long current, long max);
+void putfilename(char *srcfile);
+void postmsg(char *msg);
+void postmsg2(char *msg);
+void posterr(char *msg, ...);
+void postfatal(const char *msg, ...);
+void putposting(char *term, int type);
+void fetch_string_from_dbase(char *, size_t);
+void sourcedir(const char * dirlist);
+void myungetch(int c);
+void warning(char *text);
+void writestring(char *s);
+
+void entercurses(void);
+void exitcurses(void);
+void drawscrollbar(int top, int bot);
+void dispinit(void);
+void display(void);
+void redisplay(void);
+
+void shellpath(char *out, int limit, char *in);
 
 bool infilelist(const char * file);
 bool readrefs(char *filename);
@@ -287,5 +285,7 @@ int	 hash(const char * ss);
 int	 execute(char *a, ...);
 long dbseek(long offset);
 
+void mousecleanup(void);
+int process_mouse();
 
 #endif /* CSCOPE_GLOBAL_H */

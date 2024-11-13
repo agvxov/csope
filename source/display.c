@@ -35,6 +35,10 @@
  *    display functions
  */
 
+#include <ncurses.h>
+#include <time.h>
+#include <errno.h>
+
 #include "global.h"
 #include "build.h"
 #include "colors.h"
@@ -45,20 +49,14 @@
 # include "version.inc"
 #endif
 
-#include <ncurses.h>
-#include <stdarg.h> /* va_list stuff */
-#include <time.h>
-#include <errno.h>
-#include <stdarg.h>
-
 /* XXX */
 #define MSGLINE 0							/* message line */
 #define MSGCOL	0							/* message column */
 static int * displine; /* screen line of displayed reference */
 
-int filelen		 = sizeof("File") - 1;		/* file name display field length */
-int fcnlen		 = sizeof("Function") - 1;	/* function name display field length */
-int numlen		 = 0;						/* line number display field length */
+int filelen = sizeof("File") - 1;		/* file name display field length */
+int fcnlen  = sizeof("Function") - 1;	/* function name display field length */
+int numlen  = 0;						/* line number display field length */
 
 unsigned int disprefs;						/* displayed references */
 int			 field;							/* input field */
