@@ -162,8 +162,6 @@ extern size_t nsrcfiles;	/* number of source files */
 extern size_t msrcfiles;	/* maximum number of source files */
 
 /* display.c global data */
-extern int			subsystemlen; /* OGS subsystem name display field length */
-extern int			booklen;	  /* OGS book name display field length */
 extern int			filelen;	  /* file name display field length */
 extern int			fcnlen;		  /* function name display field length */
 extern int			numlen;		  /* line number display field length */
