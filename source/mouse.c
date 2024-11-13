@@ -47,6 +47,17 @@ void mousemenu(void);
 void mouseinit(void);
 void mousereinit(void);
 
+typedef struct { /* mouse action */
+		int button;
+		int percent;
+		int x1;
+		int y1;
+		int x2;
+		int y2;
+} MOUSE;
+
+MOUSE *getmouseaction(char leading_char);
+
 // extern    bool    unixpcmouse;		/* UNIX PC mouse interface */
 
 extern int LINES;
@@ -430,3 +441,41 @@ int process_mouse() {
 
 	return false;
 }
+
+// NOTE: this comes from command.c
+// /* scrollbar actions */
+// static void scrollbar(MOUSE *p) {
+// 	// XXX
+// 	///* reposition list if it makes sense */
+// 	// if (totallines == 0) {
+// 	// return;
+// 	// }
+// 	// switch (p->percent) {
+// 
+// 	// case 101: /* scroll down one page */
+// 	// if (nextline + mdisprefs > totallines) {
+// 	//     nextline = totallines - mdisprefs + 1;
+// 	// }
+// 	// break;
+// 
+// 	// case 102: /* scroll up one page */
+// 	// nextline = topline - mdisprefs;
+// 	// if (nextline < 1) {
+// 	//     nextline = 1;
+// 	// }
+// 	// break;
+// 
+// 	// case 103: /* scroll down one line */
+// 	// nextline = topline + 1;
+// 	// break;
+// 
+// 	// case 104: /* scroll up one line */
+// 	// if (topline > 1) {
+// 	//     nextline = topline - 1;
+// 	// }
+// 	// break;
+// 	// default:
+// 	// nextline = p->percent * totallines / 100;
+// 	// }
+// 	////seekline(nextline);
+// }

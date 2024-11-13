@@ -60,15 +60,6 @@
 
 typedef void (*sighandler_t)(int);
 
-typedef struct { /* mouse action */
-		int button;
-		int percent;
-		int x1;
-		int y1;
-		int x2;
-		int y2;
-} MOUSE;
-
 struct cmd {					 /* command history struct */
 		struct cmd *prev, *next; /* list ptrs */
 		int			field;		 /* input field number */
@@ -200,15 +191,10 @@ extern struct keystruct {
 		struct keystruct *next;
 } keyword[];
 
-/* mouse.c global data */
-extern bool mouse; /* mouse interface */
-
 /* readline.c global data */
 extern char *rl_line_buffer;
 extern char	 input_line[PATLEN + 1];
 extern int	 rl_point;
-
-// extern    bool    unixpcmouse;		/* UNIX PC mouse interface */
 
 /* cscope functions called from more than one function or between files */
 
@@ -310,8 +296,7 @@ bool readrefs(char *filename);
 bool search(const char *query);
 bool writerefsfound(void);
 
-int			findinit(const char *pattern_);
-MOUSE	   *getmouseaction(char leading_char);
+int	findinit(const char *pattern_);
 
 int	 egrep(char *file, FILE *output, char *format);
 int	 hash(const char * ss);

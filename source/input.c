@@ -376,8 +376,6 @@ int normal_global_input(const int c) {
 }
 
 int change_input(const int c) {
-	MOUSE *p; /* mouse data */
-
 	switch(c) {
 		case '*': /* invert page */
 			for(unsigned i = 0; i < (nextline-1); i++) {
@@ -391,17 +389,19 @@ int change_input(const int c) {
 			}
 			window_change |= CH_RESULT;
 			break;
-		case ctrl('X'): /* mouse selection */
+/* MOUSE SELECTION
+		case ctrl('X'):
+	        MOUSE *p;
 			if((p = getmouseaction(DUMMYCHAR)) == NULL) {
-				break;	/* unknown control sequence */
+				break;	// unknown control sequence
 			}
-			/* if the button number is a scrollbar tag */
+			// if the button number is a scrollbar tag
 			if(p->button == '0') {
 				// scrollbar(p);
 				break;
 			}
-			/* find the selected line */
-			/* NOTE: the selection is forced into range */
+			// find the selected line
+			// NOTE: the selection is forced into range
 			{
 				int i;
 				for(i = disprefs - 1; i > 0; --i) {
@@ -410,6 +410,7 @@ int change_input(const int c) {
 				change[i] = !change[i];
 			}
 			break;
+*/
 		case ctrl('D'):
 			changestring(input_line, newpat, change, totallines);
 			free(change);
