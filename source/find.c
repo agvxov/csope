@@ -578,7 +578,7 @@ char *findregexp(const char *egreppat) {
 
 		/* search the files */
 		for(i = 0; i < nsrcfiles; ++i) {
-			char *file = filepath(srcfiles[i]);
+			const char * file = prepend_path(prependpath, srcfiles[i]);
 
 			progress("Search", searchcount, nsrcfiles);
 			if(egrep(file, refsfound, "%s <unknown> %ld ") < 0) {

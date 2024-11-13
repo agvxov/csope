@@ -85,13 +85,13 @@ void editall(void) {
 }
 
 /* call the editor */
-void edit(char *file, const char *const linenum) {
+void edit(const char *filename, const char *const linenum) {
 	const char *const editor_basename = basename(editor);
 	char			  msg[MSGLEN + 1]; /* message */
 	char plusnum[NUMLEN + 20]; /* line number option: allow space for wordy line# flag */
 
-	file = filepath(file);
-	snprintf(msg, sizeof(msg), "%s +%s %s", basename(editor), linenum, file);
+	filename = prepend_path(prependpath, filename);
+	snprintf(msg, sizeof(msg), "%s +%s %s", basename(editor), linenum, filename);
 	postmsg(msg);
 	snprintf(plusnum, sizeof(plusnum), lineflag, linenum);
 
@@ -103,15 +103,15 @@ void edit(char *file, const char *const linenum) {
 	const char *const shit_pagers[] = {"page", "more", NULL};
 	for(const char *const *sp = shit_pagers; *sp != NULL; sp++) {
 		if(!strcmp(editor_basename, *sp)) {
-			execute(editor, editor, plusnum, file, "/dev/null", NULL);
+			execute(editor, editor, plusnum, filename, "/dev/null", NULL);
 			goto end;
 		}
 	}
 
 	if(lineflagafterfile) {
-		execute(editor, editor, file, plusnum, NULL);
+		execute(editor, editor, filename, plusnum, NULL);
 	} else {
-		execute(editor, editor, plusnum, file, NULL);
+		execute(editor, editor, plusnum, filename, NULL);
 	}
 
 end:
@@ -119,13 +119,14 @@ end:
 }
 
 /* if requested, prepend a path to a relative file name */
+const char * prepend_path(const char * prepand_with, const char * file) {
+	static char path[PATHLEN + 1]; // XXX
 
-char *filepath(char *file) {
-	static char path[PATHLEN + 1];
+    if (!prepand_with
+    ||  *file == '/') {
+        return file;
+    }
 
-	if(prependpath != NULL && *file != '/') {
-		(void)snprintf(path, sizeof(path), "%s/%s", prependpath, file);
-		file = path;
-	}
-	return (file);
+	snprintf(path, sizeof(path), "%s/%s", prependpath, file);
+	return path;
 }

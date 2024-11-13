@@ -554,7 +554,7 @@ size_t read_next_chunk(char **p, FILE *fptr)
     return fread(*p, sizeof(**p), buf_end - *p, fptr);
 }
 
-int egrep(char * file, FILE *output, char *format) {
+int egrep(const char * file, FILE *output, char *format) {
     char *p;
     unsigned int cstat;
     int ccount;

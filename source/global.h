@@ -193,7 +193,7 @@ extern int	 rl_point;
 
 /* cscope functions called from more than one function or between files */
 
-char *filepath(char *file);
+const char * prepend_path(const char * prepand_with, const char * file);
 char *findsymbol(const char *pattern);
 char *finddef(const char *pattern);
 char *findcalledby(const char *pattern);
@@ -253,7 +253,7 @@ void		dispinit(void);
 void		display(void);
 void		redisplay(void);
 void		drawscrollbar(int top, int bot);
-void		edit(char *file, const char *const linenum);
+void		edit(const char * filename, const char *const linenum);
 void		editall(void);
 void		editref(int);
 void		entercurses(void);
@@ -293,7 +293,7 @@ bool writerefsfound(void);
 
 int	findinit(const char *pattern_);
 
-int	 egrep(char *file, FILE *output, char *format);
+int	 egrep(const char * file, FILE *output, char *format);
 int	 hash(const char * ss);
 int	 execute(char *a, ...);
 long dbseek(long offset);
