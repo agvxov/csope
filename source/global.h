@@ -90,9 +90,7 @@ enum {
 };
 extern int input_mode;
 
-#ifndef DFLT_INCDIR
-# define DFLT_INCDIR "/usr/include"
-#endif
+#define DFLT_INCDIR "/usr/include"
 extern const char * incdir;
 
 /* digraph data for text compression */
