@@ -95,8 +95,7 @@ extern const char * incdir;
 
 /* digraph data for text compression */
 extern char dichar1[]; /* 16 most frequent first chars */
-extern char dichar2[]; /* 8 most frequent second chars
-		  using the above as first chars */
+extern char dichar2[]; /* 8 most frequent second chars using the above as first chars */
 extern char dicode1[]; /* digraph first character code */
 extern char dicode2[]; /* digraph second character code */
 
@@ -185,9 +184,9 @@ extern int	 blocklen;	  /* length of disk block read */
 
 /* lookup.c global data */
 extern struct keystruct {
-		const char * text;
-		const char delim;
-		struct keystruct *next;
+	const char * text;
+	const char delim;
+	struct keystruct *next;
 } keyword[];
 
 /* readline.c global data */

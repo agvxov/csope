@@ -144,17 +144,15 @@ r:	r OR r
 	;
 
 %%
-static int
-yyerror(char *s)
-{
+static
+int yyerror(char *s) {
 	message = s;
 	longjmp(env, 1);
 	return 1;		/* silence a warning */
 }
 
-static int
-yylex(void)
-{
+static
+int yylex(void) {
     int cclcnt, x;
     char c, d;
 
@@ -224,15 +222,13 @@ yylex(void)
     }
 }
 
-static void
-synerror(void)
-{
+static
+void synerror(void) {
     yyerror("Syntax error");
 }
 
-static unsigned int
-enter(int x)
-{
+static
+unsigned int enter(int x) {
     if(line >= MAXLIN)
 	overflo();
     name[line] = x;
@@ -241,9 +237,8 @@ enter(int x)
     return(line++);
 }
 
-static unsigned int
-cclenter(int x)
-{
+static
+unsigned int cclenter(int x) {
     unsigned int linno;
 
     linno = enter(x);
@@ -251,9 +246,8 @@ cclenter(int x)
     return (linno);
 }
 
-static int
-node(int x, int l, int r)
-{
+static
+int node(int x, int l, int r) {
     if(line >= MAXLIN)
 	overflo();
     name[line] = x;
@@ -264,9 +258,8 @@ node(int x, int l, int r)
     return(line++);
 }
 
-static int
-unary(int x, int d)
-{
+static
+int unary(int x, int d) {
     if(line >= MAXLIN)
 	overflo();
     name[line] = x;
@@ -276,34 +269,31 @@ unary(int x, int d)
     return(line++);
 }
 
-static void
-overflo(void)
-{
+static
+void overflo(void) {
     yyerror("internal table overflow");
 }
 
-static void
-cfoll(int v)
-{
+static
+void cfoll(int v) {
     unsigned int i;
 
     if (left[v] == 0) {
-	count = 0;
-	for (i = 1; i <= line; i++)
-	    tmpstat[i] = 0;
-	follow(v);
-	add(foll, v);
-    } else if (right[v] == 0)
-	cfoll(left[v]);
-    else {
-	cfoll(left[v]);
-	cfoll(right[v]);
+        count = 0;
+        for (i = 1; i <= line; i++)
+            tmpstat[i] = 0;
+        follow(v);
+        add(foll, v);
+    } else if (right[v] == 0) {
+        cfoll(left[v]);
+    } else {
+        cfoll(left[v]);
+        cfoll(right[v]);
     }
 }
 
-static void
-cgotofn(void)
-{
+static
+void cgotofn(void) {
     unsigned int i, n, s;
     int c, k;
     char symbol[NCHARS];
@@ -316,9 +306,9 @@ cgotofn(void)
     for (n=3; n<=line; n++)
 	tmpstat[n] = 0;
     if (cstate(line-1)==0) {
-	tmpstat[line] = 1;
-	count++;
-	out[0] = 1;
+        tmpstat[line] = 1;
+        count++;
+        out[0] = 1;
     }
     for (n=3; n<=line; n++)
 	initstat[n] = tmpstat[n];
@@ -418,40 +408,40 @@ cstate(int v)
 			tmpstat[v] = 1;
 			count++;
 		}
-		return(1);
+		return 1;
 	}
 	else if (right[v] == 0) {
-		if (cstate(left[v]) == 0) return (0);
-		else if (name[v] == PLUS) return (1);
-		else return (0);
+		if (cstate(left[v]) == 0) { return 0; }
+		else if (name[v] == PLUS) { return 1; }
+		else { return 0; }
 	}
 	else if (name[v] == CAT) {
-		if (cstate(left[v]) == 0 && cstate(right[v]) == 0) return (0);
-		else return (1);
+		if (cstate(left[v]) == 0 && cstate(right[v]) == 0) { return 0; }
+		else { return 1; }
 	}
 	else { /* name[v] == OR */
 		b = cstate(right[v]);
-		if (cstate(left[v]) == 0 || b == 0) return (0);
-		else return (1);
+		if (cstate(left[v]) == 0 || b == 0) { return 0; }
+		else { return 1; }
 	}
 }
 
-static int
-member(int symb, int set, int torf)
-{
-    unsigned int i, num, pos;
+static
+int member(int symb, int set, int torf) {
+    unsigned num = chars[set];
+    unsigned pos = set + 1;
 
-    num = chars[set];
-    pos = set + 1;
-    for (i = 0; i < num; i++)
-	if (symb == (unsigned char)(chars[pos++]))
-	    return (torf);
-    return (!torf);
+    for (unsigned i = 0; i < num; i++) {
+        if (symb == (unsigned char)(chars[pos++])) {
+            return torf;
+        }
+    }
+
+    return !torf;
 }
 
-static int
-notin(int n)
-{
+static
+int notin(int n) {
 	int i, j, pos;
 	for (i=0; i<=n; i++) {
 		if (positions[state[i]] == count) {
@@ -466,9 +456,8 @@ notin(int n)
 	return (1);
 }
 
-static void
-add(int *array, int n)
-{
+static
+void add(int *array, int n) {
     unsigned int i;
 
     if (nxtpos + count > MAXPOS)
@@ -476,15 +465,14 @@ add(int *array, int n)
     array[n] = nxtpos;
     positions[nxtpos++] = count;
     for (i=3; i <= line; i++) {
-	if (tmpstat[i] == 1) {
-	    positions[nxtpos++] = i;
-	}
+        if (tmpstat[i] == 1) {
+            positions[nxtpos++] = i;
+        }
     }
 }
 
-static void
-follow(unsigned int v)
-{
+static
+void follow(unsigned int v) {
     unsigned int p;
 
     if (v == line)
@@ -518,9 +506,7 @@ follow(unsigned int v)
     }
 }
 
-char *
-egrepinit(const char *egreppat)
-{
+char * egrepinit(const char *egreppat) {
     /* initialize the global data */
     memset(gotofn, 0, sizeof(gotofn));
     memset(state, 0, sizeof(state));
@@ -553,7 +539,8 @@ egrepinit(const char *egreppat)
 static char buf[2 * BUFSIZ];
 static const char *buf_end = buf + (sizeof(buf) / sizeof(*buf));
 
-static size_t read_next_chunk(char **p, FILE *fptr)
+static
+size_t read_next_chunk(char **p, FILE *fptr)
 {
     if (*p <= (buf + BUFSIZ)) {
         /* bwlow the middle, so enough space left for one entire BUFSIZ */
@@ -567,9 +554,7 @@ static size_t read_next_chunk(char **p, FILE *fptr)
     return fread(*p, sizeof(**p), buf_end - *p, fptr);
 }
 
-int
-egrep(char *file, FILE *output, char *format)
-{
+int egrep(char * file, FILE *output, char *format) {
     char *p;
     unsigned int cstat;
     int ccount;
@@ -656,8 +641,6 @@ egrep(char *file, FILE *output, char *format)
     return(0);
 }
 
-void
-egrepcaseless(int i)
-{
+void egrepcaseless(int i) {
 	iflag = i;	/* simulate "egrep -i" */
 }
