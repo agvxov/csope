@@ -144,7 +144,7 @@ void longusage(void) {
 	fprintf(stderr,
 		"\
 -k            Kernel Mode - don't use %s for #include files.\n",
-		DFLT_INCDIR);
+		DEFAULT_INCLUDE_DIRECTORY);
 	fputs("\
 -L            Do a single search with line-oriented output.\n\
 -l            Line-oriented interface.\n\

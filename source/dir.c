@@ -123,7 +123,7 @@ void read_listfile(FILE * names) {
 					case 'c': /* ASCII characters only in crossref */
 						compress = false;
 						break;
-					case 'k': /* ignore DFLT_INCDIR */
+					case 'k': /* ignore DEFAULT_INCLUDE_DIRECTORY */
 						kernelmode = true;
 						break;
 					case 'q': /* quick search */

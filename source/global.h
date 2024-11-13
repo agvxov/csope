@@ -90,7 +90,7 @@ enum {
 };
 extern int input_mode;
 
-#define DFLT_INCDIR "/usr/include"
+#define DEFAULT_INCLUDE_DIRECTORY "/usr/include"
 extern const char * incdir;
 
 /* digraph data for text compression */
@@ -122,7 +122,7 @@ extern int			fileversion;	/* cross-reference file version */
 extern bool			incurses;		/* in curses */
 extern bool			invertedindex;	/* the database has an inverted index */
 extern bool			preserve_database;		/* consider the crossref up-to-date */
-extern bool			kernelmode;		/* don't use DFLT_INCDIR - bad for kernels */
+extern bool			kernelmode;		/* don't use DEFAULT_INCLUDE_DIRECTORY - bad for kernels */
 extern bool			linemode;		/* use line oriented user interface */
 extern bool			verbosemode;	/* print extra information on line mode */
 extern bool			recurse_dir;	/* recurse dirs when searching for src files */

@@ -33,7 +33,7 @@ bool  onesearch;                        /* one search only in line mode */
 char *reflines;                         /* symbol reference lines file */
 bool  invertedindex;                    /* the database has an inverted index */
 bool  preserve_database = false;            /* consider the crossref up-to-date */
-bool  kernelmode;                       /* don't use DFLT_INCDIR - bad for kernels */
+bool  kernelmode;                       /* don't use DEFAULT_INCLUDE_DIRECTORY - bad for kernels */
 bool  linemode     = false;             /* use line oriented user interface */
 bool  verbosemode = false;              /* print extra information on line mode */
 bool  recurse_dir = false;              /* recurse dirs when searching for src files */
@@ -79,7 +79,7 @@ void readenv(bool preserve_database) {
     lineflagafterfile = getenv("CSCOPE_LINEFLAG_AFTER_FILE") ? 1 : 0;
 
     if (!preserve_database) {
-        incdir = coalesce_env(DFLT_INCDIR, "INCDIR");
+        incdir = coalesce_env(DEFAULT_INCLUDE_DIRECTORY, "INCDIR");
         /* get source directories from the environment */
         const char * const my_source_dirs = getenv("SOURCEDIRS");
         if(my_source_dirs) { sourcedir(my_source_dirs); }
@@ -158,7 +158,7 @@ char * * parse_options(const int argc, const char * const * const argv) {
 			case 'e': /* suppress ^E prompt between files */
 				editallprompt = false;
 				break;
-			case 'k': /* ignore DFLT_INCDIR */
+			case 'k': /* ignore DEFAULT_INCLUDE_DIRECTORY */
 				kernelmode = true;
 				break;
 			case 'L':
