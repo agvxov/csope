@@ -108,16 +108,10 @@ void cannotopen(const char *const file) {
 	posterr("Cannot open file %s", file);
 }
 
-/* FIXME MTE - should use postfatal here */
-void cannotwrite(const char *const file) {
-	char msg[MSGLEN + 1];
-
-	snprintf(msg, sizeof(msg), "Removed file %s because write failed", file);
-
-	myperror(msg); /* display the reason */
-
+void cannotwrite(const char * const file) {
 	unlink(file);
-	myexit(1); /* calls exit(2), which closes files */
+
+    postfatal("Removed file %s because write failed", file);
 }
 
 /* set up the digraph character tables for text compression */
