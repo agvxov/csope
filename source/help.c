@@ -106,13 +106,6 @@ const char *help(void) {
 	}
 }
 
-/* error exit including short usage information */
-void error_usage(void) {
-	usage();
-	fputs("Try the -h option for more information.\n", stderr);
-	myexit(1);
-}
-
 /* normal usage message */
 void usage(void) {
 	fputs("Usage: " PROGRAM_NAME

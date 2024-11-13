@@ -203,7 +203,6 @@ char *scanpast(char c);
 char **parse_options(const int argc, const char * const * const argv);
 void readenv(bool preserve_database);
 
-void		 error_usage(void);
 void		 longusage(void);
 void		 usage(void);
 extern bool	 remove_symfile_onexit;
