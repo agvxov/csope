@@ -62,8 +62,6 @@ bool		 compress = true;			/* compress the characters in the crossref */
 bool		 dbtruncated;				/* database symbols are truncated to 8 chars */
 int			 dispcomponents = 1;		/* file path components to display */
 bool		 editallprompt	= true;		/* prompt between editing files */
-unsigned int fileargc;					/* file argument count */
-char	   **fileargv;					/* file argument values */
 int			 fileversion;				/* cross-reference file version */
 bool		 incurses = false;			/* in curses */
 char		*prependpath;				/* prepend path to file names */
@@ -71,7 +69,9 @@ FILE		*refsfound;					/* references found file */
 long		 totalterms;				/* total inverted index terms */
 bool		 trun_syms;					/* truncate symbols to 8 characters */
 char		 tempstring[TEMPSTRING_LEN + 1]; /* use this as a buffer, instead of 'yytext',
-											  * which had better be left alone */
+											  * which had better be left alone
+                                              */
+const char * const * fileargv;					/* file argument values */
 
 static char path[PATHLEN + 1];				 /* file path */
 
@@ -237,7 +237,7 @@ void linemode_event_loop(void) {
 			case 'r': /* rebuild database cscope style */
 			case ctrl('R'):
 				freefilelist();
-				makefilelist();
+				makefilelist(fileargv);
 				/* FALLTHROUGH */
 
 			case 'R': /* rebuild database samuel style */
@@ -279,7 +279,7 @@ void screenmode_event_loop(void) {
 	}
 }
 
-int main(int argc, char **argv) {
+int main(const int argc, const char * const * const argv) {
 	FILE		*names;	  /* name file pointer */
 	int			 oldnum;  /* number in old cross-ref */
 	FILE		*oldrefs; /* old cross-reference file */
@@ -289,10 +289,8 @@ int main(int argc, char **argv) {
 	yyin  = stdin;
 	yyout = stdout;
 
-	/* set the options */
-	argv = parse_options(&argc, argv);
+	fileargv = parse_options(argc, argv);
 
-	/* read the environment */
     /* NOTE: the envirnment under no condition can overwrite cli set variables
      */
 	readenv(preserve_database);
@@ -444,13 +442,9 @@ int main(int argc, char **argv) {
 		}
 		fclose(oldrefs);
 	} else {
-		/* save the file arguments */
-		fileargc = argc;
-		fileargv = argv;
-
 		/* make the source file list */
 		srcfiles = malloc(msrcfiles * sizeof(*srcfiles));
-		makefilelist();
+		makefilelist(fileargv);
 		if (nsrcfiles == 0) {
 			postfatal(PROGRAM_NAME ": no source files found\n");
 		}

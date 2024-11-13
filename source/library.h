@@ -36,7 +36,7 @@
 #include <stdio.h> /* need FILE* type def. */
 
 /* private library */
-char	   *compress_path(char *pathname);
+char	   *compress_path(const char *pathname_);
 char	   *egrepinit(const char *egreppat);
 char	   *logdir(char *name);
 const char *basename(const char *path);

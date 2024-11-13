@@ -69,8 +69,8 @@ char *pathcomponents(char *path, int components) {
  *         of accidently changing strings obtained from makefiles
  *         and stored in global structures.
  */
-char *compress_path(char *pathname) /*FDEF*/
-{
+char *compress_path(const char *pathname_) {
+    char * pathname = strdup(pathname_);
 	char *nextchar;
 	char *lastchar;
 	char *sofar;

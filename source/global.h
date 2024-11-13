@@ -128,8 +128,6 @@ extern bool			compress;		/* compress the characters in the crossref */
 extern bool			dbtruncated;	/* database symbols truncated to 8 chars */
 extern int			dispcomponents; /* file path components to display */
 extern bool			editallprompt;	/* prompt between editing files */
-extern unsigned int fileargc;		/* file argument count */
-extern char		  **fileargv;		/* file argument values */
 extern int			fileversion;	/* cross-reference file version */
 extern bool			incurses;		/* in curses */
 extern bool			invertedindex;	/* the database has an inverted index */
@@ -144,6 +142,8 @@ extern FILE		   *refsfound;		/* references found file */
 extern long			totalterms;		/* total inverted index terms */
 extern bool			trun_syms;		/* truncate symbols to 8 characters */
 extern char			tempstring[TEMPSTRING_LEN + 1]; /* global dummy string buffer */
+
+extern const char * const * fileargv;		/* file argument values */
 
 extern char *tmpdir;								/* temporary directory */
 extern char	 temp1[];								/* temporary file name */
@@ -223,13 +223,13 @@ char *findfile(const char *dummy);
 char *findinclude(const char *pattern);
 char *findassign(const char *pattern);
 char *findallfcns(const char *dummy);
-char *inviewpath(char *file);
+char *inviewpath(const char *file);
 char *lookup(char *ident, bool do_compressed);
 char *pathcomponents(char *path, int components);
 char *read_block(void);
 char *scanpast(char c);
 
-char **parse_options(int *argc, char **argv);
+char **parse_options(const int argc, const char * const * const argv);
 void readenv(bool preserve_database);
 
 void		 error_usage(void);
@@ -287,7 +287,7 @@ const char *help(void);
 void		incfile(char *file, char *type);
 void		includedir(const char *dirname);
 void		initsymtab(void);
-void		makefilelist(void);
+void		makefilelist(const char * const * const argv);
 void		mousecleanup(void);
 void		mousemenu(void);
 void		mouseinit(void);
@@ -308,7 +308,7 @@ void		myungetch(int c);
 void		warning(char *text);
 void		writestring(char *s);
 
-bool infilelist(char *file);
+bool infilelist(const char * file);
 bool readrefs(char *filename);
 bool search(const char *query);
 bool writerefsfound(void);

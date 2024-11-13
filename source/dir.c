@@ -74,7 +74,7 @@ static struct listitem {				/* source file names without view pathing */
 } *srcnames[HASHMOD];
 
 /* Internal prototypes: */
-static bool is_accessible_file(char *file);
+static bool is_accessible_file(const char *file);
 static bool is_source_file(char *file);
 static void add_source_directory(char *dir);
 static void add_include_directory(char *name, char *path);
@@ -353,7 +353,7 @@ void scan_dir(const char *adir, bool recurse_dir) {
 /* check if a file is readable enough to be allowed in the
  * database */
 static
-bool is_accessible_file(char *file) {
+bool is_accessible_file(const char *file) {
 	if(access(compress_path(file), READ) == 0) {
 		struct stat stats;
 
@@ -504,17 +504,16 @@ void includedir(const char * dirlist) {
 }
 
 /* make the source file list */
-void makefilelist(void) {
-	char *file;
+void makefilelist(const char * const * const argv) {
 
 	make_vp_source_directories(); /* make the view source directory list */
 
 	/* if -i was NOT given and there are source file arguments */
-	if(namefile == NULL && fileargc > 0) {
+	if(namefile == NULL && *argv) {
 		/* put them in a list that can be expanded */
-		for(unsigned i = 0; i < fileargc; i++) {
-			file = fileargv[i];
-			if(infilelist(file) == false) {
+		for(unsigned i = 0; argv[i]; i++) {
+			const char * file = argv[i];
+			if (!infilelist(file)) {
                 char * s = inviewpath(file);
 				if (s) {
 					addsrcfile(s);
@@ -606,7 +605,7 @@ void incfile(char *file, char *type) {
 }
 
 /* see if the file is already in the list */
-bool infilelist(char *path) {
+bool infilelist(const char * path) {
 	struct listitem *p;
 
 	for(p = srcnames[hash(compress_path(path)) % HASHMOD]; p != NULL; p = p->next) {
@@ -616,30 +615,35 @@ bool infilelist(char *path) {
 }
 
 /* search for the file in the view path */
-char *inviewpath(char *file) {
-	static char	 path[PATHLEN + 1];
-	unsigned int i;
+char *inviewpath(const char * file) {
+	static char	path[PATHLEN + 1];
 
 	/* look for the file */
-	if(is_accessible_file(file)) { return (file); }
+	if(is_accessible_file(file)) {
+        strcpy(path, file);
+        return path;
+    }
 
 	/* if it isn't a full path name and there is a multi-directory
 	 * view path */
-	if(*file != '/' && vpndirs > 1) {
+	if(*file != '/'
+    && vpndirs > 1) {
 		int file_len = strlen(file);
 
 		/* compute its path from higher view path source dirs */
-		for(i = 1; i < nvpsrcdirs; ++i) {
+		for(unsigned i = 1; i < nvpsrcdirs; ++i) {
 			snprintf(path,
 				sizeof(path),
 				"%.*s/%s",
 				PATHLEN - 2 - file_len,
 				srcdirs[i],
-				file);
-			if(is_accessible_file(path)) { return (path); }
+				file
+            );
+			if(is_accessible_file(path)) { return path; }
 		}
 	}
-	return (NULL);
+
+	return NULL;
 }
 
 /* add a source file to the list */

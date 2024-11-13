@@ -69,14 +69,15 @@ static void catchint(int sig) {
 	longjmp(env, 1);
 }
 
-static inline bool rebuild_reference() {
+static inline
+bool rebuild_reference() {
 	if(preserve_database == true) {
 		postmsg("The -d option prevents rebuilding the symbol database");
 		return false;
 	}
 	exitcurses();
 	freefilelist(); /* remake the source file list */
-	makefilelist();
+	makefilelist(fileargv);
 	rebuild();
 	if(errorsfound == true) {
 		errorsfound = false;

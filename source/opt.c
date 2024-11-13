@@ -89,12 +89,11 @@ void readenv(bool preserve_database) {
     }
 }
 
-char **parse_options(int *argc, char **argv) {
+char * * parse_options(const int argc, const char * const * const argv) {
 	int	  opt;
 	int	  longind;
 	char  path[PATHLEN + 1]; /* file path */
 	char *s;
-	int	  argcc = *argc;
 
 	struct option lopts[] = {
 		{"help",    0, NULL, 'h'},
@@ -102,8 +101,7 @@ char **parse_options(int *argc, char **argv) {
 		{0,         0,    0,  0 },
 	};
 
-	while((opt = getopt_long(argcc,
-			   argv,
+	while((opt = getopt_long(argc, (char**)argv,
 			   "hVbcCdeF:f:I:i:kLl0:1:2:3:4:5:6:7:8:9:P:p:qRs:TUuvX",
 			   lopts,
 			   &longind)) != -1) {
@@ -235,11 +233,10 @@ char **parse_options(int *argc, char **argv) {
 		/* NOTREACHED */
 	}
 
-	/*
-	 * This adjusts argv so that we only see the remaining
-	 * args. Its ugly, but we need to do it so that the rest
-	 * of the main routine doesn't get all confused
+	/* NOTE:
+     *  we return where option arguments stop,
+     *  assuming that heres a list of files after them,
+     *  we process these later
 	 */
-	*argc = *argc - optind;
-	return argv + optind;
+	return (char**)(argv + optind);
 }
