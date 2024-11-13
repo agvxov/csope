@@ -41,6 +41,7 @@
 #include <setjmp.h> /* jmp_buf */
 #include <stdlib.h>
 #include <errno.h>
+#include <signal.h>
 #if HAVE_SYS_TERMIOS_H
 # include <sys/termios.h>
 #endif

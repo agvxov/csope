@@ -40,16 +40,14 @@
 
 #define UNUSED(x) (void)(x)
 
-#include <unistd.h>
-#include <sys/types.h>
+#include <stdlib.h>
+#include <stdarg.h>
+#include <stdbool.h>
 #include <assert.h>
 #include <ctype.h>	/* isalpha, isdigit, etc. */
-#include <signal.h> /* SIGINT and SIGQUIT */
-#include <stdio.h>	/* standard I/O package */
-#include <stdlib.h> /* standard library functions */
-#include <stdarg.h>
+#include <unistd.h>
+#include <sys/types.h>
 #include <fcntl.h>
-#include <stdbool.h>
 
 #include <string.h>	   /* string functions */
 

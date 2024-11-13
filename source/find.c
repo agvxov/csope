@@ -41,6 +41,7 @@
 #include "scanner.h" /* for token definitions */
 
 #include <assert.h>
+#include <signal.h>
 #include <ncurses.h>
 #include <regex.h>
 #include <setjmp.h> /* jmp_buf */
