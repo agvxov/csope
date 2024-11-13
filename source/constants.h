@@ -49,13 +49,13 @@
 
 /* get the next character in the cross-reference */
 /* note that blockp is assumed not to be null */
-#define getrefchar()                                                                     \
+#define getrefchar() \
 	(*(++blockp + 1) != '\0' ? *blockp : (read_crossreference_block() != NULL ? *blockp : '\0'))
 
 /* skip the next character in the cross-reference */
 /* note that blockp is assumed not to be null and that
    this macro will always be in a statement by itself */
-#define skiprefchar()                                                                    \
+#define skiprefchar() \
 	if(*(++blockp + 1) == '\0') (void)read_crossreference_block()
 
 #define DUMMYCHAR	   ' '			   /* use space as a dummy character */
@@ -73,11 +73,15 @@
 
 #define STMTMAX 10000				   /* maximum source statement length */
 
-#define STR2(x)			   #x
-#define STRINGIZE(x)	   STR2(x)
-#define PATLEN_STR		   STRINGIZE(PATLEN)
-#define PATHLEN_STR		   STRINGIZE(PATHLEN)
-#define NUMLEN_STR		   STRINGIZE(NUMLEN)
+/* NOTE: _STRINGIZE ensures that if the argument is a macro,
+ *        its expanded before stringinization
+ */
+#define _STRINGIZE(x) #x
+#define STRINGIZE(x)  _STRINGIZE(x)
+
+#define PATLEN_STR         STRINGIZE(PATLEN)
+#define PATHLEN_STR        STRINGIZE(PATHLEN)
+#define NUMLEN_STR         STRINGIZE(NUMLEN)
 #define TEMPSTRING_LEN_STR STRINGIZE(TEMPSTRING_LEN)
 
 /* input fields (value matches field order on screen) */
@@ -101,6 +105,7 @@ enum {
 #else
 # define READ 4
 #endif
+
 #ifdef W_OK
 # define WRITE W_OK
 #else
