@@ -41,8 +41,6 @@
 #include "build.h"
 #include "scanner.h"
 
-
-#include <stdlib.h>
 #include <sys/stat.h>
 
 /* convert long to a string in base BASE notation */
@@ -77,22 +75,20 @@ static long			 macrooffset;		   /* macro name database offset */
 static unsigned long msymbols = SYMBOLINC; /* maximum number of symbols */
 
 struct symbol {							   /* symbol data */
-		int			 type;				   /* type */
-		unsigned int first;				   /* index of first character in text */
-		unsigned int last;				   /* index of last+1 character in text */
-		unsigned int length;			   /* symbol length */
-		unsigned int fcn_level;			   /* function level of the symbol */
+    int			 type;				   /* type */
+    unsigned int first;				   /* index of first character in text */
+    unsigned int last;				   /* index of last+1 character in text */
+    unsigned int length;			   /* symbol length */
+    unsigned int fcn_level;			   /* function level of the symbol */
 };
 static struct symbol *symbol;
 
 static void putcrossref(void);
 static void savesymbol(int token, int num);
 
-void crossref(char *srcfile) {
-	unsigned int i;
+void crossref(char * srcfile) {
 	unsigned int length;   /* symbol length */
 	unsigned int entry_no; /* function level of the symbol */
-	int			 token;	   /* current token */
 	struct stat	 st;
 
 	if(!((stat(srcfile, &st) == 0) && S_ISREG(st.st_mode))) {
@@ -103,11 +99,13 @@ void crossref(char *srcfile) {
 
 	entry_no = 0;
 	/* open the source file */
-	if((yyin = myfopen(srcfile, "r")) == NULL) {
+    yyin = myfopen(srcfile, "r");
+	if(!yyin) {
 		cannotopen(srcfile);
 		errorsfound = true;
 		return;
 	}
+
 	filename = srcfile;	  /* save the file name for warning messages */
 	putfilename(srcfile); /* output the file name */
 	dbputc('\n');
@@ -119,7 +117,7 @@ void crossref(char *srcfile) {
 	symbols					= 0;
 	if(symbol == NULL) { symbol = malloc(msymbols * sizeof(*symbol)); }
 	for(;;) {
-
+	    int token;   /* current token */
 		/* get the next token */
 		switch(token = yylex()) {
 			default:
@@ -138,18 +136,21 @@ void crossref(char *srcfile) {
 				/* update entry_no if see function entry */
 				if(token == FCNDEF) { entry_no++; }
 				/* see if the symbol is already in the list */
-				for(i = 0; i < symbols; ++i) {
-					if(length == symbol[i].length &&
-						strncmp(my_yytext + first, my_yytext + symbol[i].first, length) ==
-							0 &&
-						entry_no == symbol[i].fcn_level &&
-						token == symbol[i].type) { /* could be a::a() */
-						break;
-					}
-				}
-				if(i == symbols) { /* if not already in list */
-					savesymbol(token, entry_no);
-				}
+                {
+                    unsigned i;
+                    for(i = 0; i < symbols; ++i) {
+                        if(length == symbol[i].length &&
+                            strncmp(my_yytext + first, my_yytext + symbol[i].first, length) ==
+                                0 &&
+                            entry_no == symbol[i].fcn_level &&
+                            token == symbol[i].type) { /* could be a::a() */
+                            break;
+                        }
+                    }
+                    if(i == symbols) { /* if not already in list */
+                        savesymbol(token, entry_no);
+                    }
+                }
 				break;
 
 			case NEWLINE:			/* end of line containing symbols */
