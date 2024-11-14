@@ -32,15 +32,9 @@
  =========================================================================*/
 
 /*
- * egrep -- fine lines containing a regular expression
+ * egrep -- find lines containing a regular expression
  */
 %}
-
-%token CHAR DOT CCL NCCL OR CAT STAR PLUS QUEST
-%left OR
-%left CHAR DOT CCL NCCL '('
-%left CAT
-%left STAR PLUS QUEST
 
 %{
 #include "global.h"
@@ -99,47 +93,81 @@ static int yylex(void);
 static int yyerror(char *);
 %}
 
+%token CHAR DOT CCL NCCL OR CAT STAR PLUS QUEST
+%left OR
+%left CHAR DOT CCL NCCL '('
+%left CAT
+%left STAR PLUS QUEST
+
 %%
-s:	t
-		{ unary(FINAL, $1);
-		  line--;
-		}
-	;
-t:	b r
-		{ $$ = node(CAT, $1, $2); }
-	| OR b r OR
-		{ $$ = node(CAT, $2, $3); }
-	| OR b r
-		{ $$ = node(CAT, $2, $3); }
-	| b r OR
-		{ $$ = node(CAT, $1, $2); }
-	;
-b:
-		{ $$ = enter(DOT);
-		   $$ = unary(STAR, $$); }
-	;
-r:	CHAR
-		{ $$ = enter($1); }
-	| DOT
-		{ $$ = enter(DOT); }
-	| CCL
-		{ $$ = cclenter(CCL); }
-	| NCCL
-		{ $$ = cclenter(NCCL); }
+pattern
+    : t {
+        unary(FINAL, $1);
+		line--;
+	}
 	;
 
-r:	r OR r
-		{ $$ = node(OR, $1, $3); }
-	| r r %prec CAT
-		{ $$ = node(CAT, $1, $2); }
-	| r STAR
-		{ $$ = unary(STAR, $1); }
-	| r PLUS
-		{ $$ = unary(PLUS, $1); }
-	| r QUEST
-		{ $$ = unary(QUEST, $1); }
-	| '(' r ')'
-		{ $$ = $2; }
+t
+    : b r {
+        $$ = node(CAT, $1, $2);
+    }
+	| OR b r OR {
+        $$ = node(CAT, $2, $3);
+    }
+	| OR b r {
+        $$ = node(CAT, $2, $3);
+    }
+	| b r OR {
+        $$ = node(CAT, $1, $2);
+    }
+	;
+
+b
+    : {
+        /* XXX:
+         *  why the fuck does this state exist?
+         *  what does it stand for?
+         *  can we enter it? do we always enter it?
+         */
+        $$ = enter(DOT);
+		$$ = unary(STAR, $$);
+    }
+	;
+
+r
+    : CHAR {
+        $$ = enter($1);
+    }
+	| DOT {
+        $$ = enter(DOT);
+    }
+	| CCL {
+        $$ = cclenter(CCL);
+    }
+	| NCCL {
+        $$ = cclenter(NCCL);
+    }
+	;
+
+r
+    : r OR r {
+        $$ = node(OR, $1, $3);
+    }
+	| r r %prec CAT {
+        $$ = node(CAT, $1, $2);
+    }
+	| r STAR {
+        $$ = unary(STAR, $1);
+    }
+	| r PLUS {
+        $$ = unary(PLUS, $1);
+    }
+	| r QUEST {
+        $$ = unary(QUEST, $1);
+    }
+	| '(' r ')' {
+        $$ = $2;
+    }
 	| error
 	;
 
@@ -157,68 +185,64 @@ int yylex(void) {
     char c, d;
 
     switch(c = nextch()) {
-    case '|':
-    case '\n':
-	return (OR);
-    case '*':
-	return (STAR);
-    case '+':
-	return (PLUS);
-    case '?':
-	return (QUEST);
-    case '(':
-    case ')':
-	return (c);
-    case '.':
-	return (DOT);
-    case '\0':
-	return (0);
-    case '[':
-	x = CCL;
-	cclcnt = 0;
-	count = nxtchar++;
-	if ((c = nextch()) == '^') {
-	    x = NCCL;
-	    c = nextch();
-	}
-	do {
-	    if (c == '\0')
-		synerror();
-	    if (   (c == '-')
-		&& (cclcnt > 0)
-		&& (chars[nxtchar-1] != 0)
-	       ) {
-		if ((d = nextch()) != 0) {
-		    c = chars[nxtchar-1];
-		    while ((unsigned int)c < (unsigned int)d) {
-			if (nxtchar >= MAXLIN)
-			    overflo();
-			chars[nxtchar++] = ++c;
-			cclcnt++;
-		    }
-		    continue;
-		} /* if() */
-	    } /* if() */
-	    if (nxtchar >= MAXLIN)
-		overflo();
-	    chars[nxtchar++] = c;
-	    cclcnt++;
-	} while ((c = nextch()) != ']');
-	chars[count] = cclcnt;
-	return (x);
-    case '\\':
-	if ((c = nextch()) == '\0')
-	    synerror();
-	yylval = c;
-	return (CHAR);
-    case '$':
-    case '^':
-	c = '\n';
-	yylval = c;
-	return (CHAR);
-    default:
-	yylval = c;
-	return (CHAR);
+        case '*': return STAR;
+        case '+': return PLUS;
+        case '?': return QUEST;
+        case '.': return DOT;
+        case '\0': return 0;
+        // ---
+        case '|':
+        case '\n':
+            return OR;
+        case '(':
+        case ')':
+            return c;
+        // ---
+        case '[':
+            x = CCL;
+            cclcnt = 0;
+            count = nxtchar++;
+            if ((c = nextch()) == '^') {
+                x = NCCL;
+                c = nextch();
+            }
+            do {
+                if (c == '\0')
+                synerror();
+                if (   (c == '-')
+                && (cclcnt > 0)
+                && (chars[nxtchar-1] != 0)) {
+                    if ((d = nextch()) != 0) {
+                        c = chars[nxtchar-1];
+                        while ((unsigned int)c < (unsigned int)d) {
+                            if (nxtchar >= MAXLIN)
+                                overflo();
+                            chars[nxtchar++] = ++c;
+                            cclcnt++;
+                        }
+                        continue;
+                    } /* if() */
+                } /* if() */
+                if (nxtchar >= MAXLIN)
+                overflo();
+                chars[nxtchar++] = c;
+                cclcnt++;
+            } while ((c = nextch()) != ']');
+            chars[count] = cclcnt;
+            return (x);
+        case '\\':
+            if ((c = nextch()) == '\0')
+                synerror();
+            yylval = c;
+            return (CHAR);
+        case '$':
+        case '^':
+            c = '\n';
+            yylval = c;
+            return (CHAR);
+        default:
+            yylval = c;
+            return (CHAR);
     }
 }
 
@@ -239,9 +263,7 @@ unsigned int enter(int x) {
 
 static
 unsigned int cclenter(int x) {
-    unsigned int linno;
-
-    linno = enter(x);
+    unsigned int linno = enter(x);
     right[linno] = count;
     return (linno);
 }
@@ -529,9 +551,9 @@ char * egrepinit(const char *egreppat) {
     input = egreppat;
     message = NULL;
     if (setjmp(env) == 0) {
-	yyparse();
-	cfoll(line-1);
-	cgotofn();
+        yyparse();
+        cfoll(line-1);
+        cgotofn();
     }
     return(message);
 }
