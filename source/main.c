@@ -274,7 +274,7 @@ int main(const int argc, const char * const * const argv) {
 	yyin  = stdin;
 	yyout = stdout;
 
-	fileargv = parse_options(argc, argv);
+	fileargv = (const char*const*)parse_options(argc, argv);
 
     /* NOTE: the envirnment under no condition can overwrite cli set variables
      */
