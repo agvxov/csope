@@ -269,7 +269,6 @@ int main(const int argc, const char * const * const argv) {
 	int			 oldnum;  /* number in old cross-ref */
 	FILE		*oldrefs; /* old cross-reference file */
 	char		*s;
-	unsigned int i;
 
 	yyin  = stdin;
 	yyout = stdout;
