@@ -81,6 +81,7 @@ static void		   initcompress(void);
 static inline void linemode_event_loop(void);
 static inline void screenmode_event_loop(void);
 
+static void read_old_reffile(const char * reffile);
 
 
 static inline
@@ -264,11 +265,128 @@ void screenmode_event_loop(void) {
 	}
 }
 
+static
+void read_old_reffile(const char * reffile) {
+	char * s;
+	FILE * names;	  /* name file pointer */
+	int	oldnum;  /* number in old cross-ref */
+	FILE * oldrefs = vpfopen(reffile, "rb"); /* old cross-reference file */
+	if (!oldrefs) {
+		postfatal(PROGRAM_NAME ": cannot open file %s\n", reffile);
+	}
+
+	/* get the crossref file version but skip the current directory */
+	if (fscanf(oldrefs, PROGRAM_NAME " %d %*s", &fileversion) != 1) {
+		postfatal(PROGRAM_NAME ": cannot read file version from file %s\n", reffile);
+	}
+	if (fileversion >= 8) {
+
+		/* override these command line options */
+		compress	  = true;
+		invertedindex = false;
+
+		/* see if there are options in the database */
+		for (int c;;) {
+			getc(oldrefs); /* skip the blank */
+			if ((c = getc(oldrefs)) != '-') {
+				ungetc(c, oldrefs);
+				break;
+			}
+			switch (getc(oldrefs)) {
+				case 'c': /* ASCII characters only */
+					compress = false;
+					break;
+				case 'q': /* quick search */
+					invertedindex = true;
+					fscanf(oldrefs, "%ld", &totalterms);
+					break;
+				case 'T': /* truncate symbols to 8 characters */
+					dbtruncated = true;
+					trun_syms	= true;
+					break;
+			}
+		}
+		initcompress();
+		seek_to_trailer(oldrefs);
+	}
+	/* skip the source and include directory lists */
+	skiplist(oldrefs);
+	skiplist(oldrefs);
+
+	/* get the number of source files */
+	if (fscanf(oldrefs, "%lu", &nsrcfiles) != 1) {
+		postfatal(
+            PROGRAM_NAME ": cannot read source file size from file %s\n",
+			reffile
+        );
+	}
+	/* get the source file list */
+	srcfiles = malloc(nsrcfiles * sizeof(*srcfiles));
+	if (fileversion >= 9) {
+
+		/* allocate the string space */
+		if (fscanf(oldrefs, "%d", &oldnum) != 1) {
+			postfatal(
+                PROGRAM_NAME ": cannot read string space size from file %s\n",
+				reffile
+            );
+		}
+		s = malloc(oldnum);
+		getc(oldrefs); /* skip the newline */
+
+		/* read the strings */
+		if (fread(s, oldnum, 1, oldrefs) != 1) {
+			postfatal(
+                PROGRAM_NAME ": cannot read source file names from file %s\n",
+				reffile
+            );
+		}
+		/* change newlines to nulls */
+		for (int i = 0; i < nsrcfiles; i++) {
+			srcfiles[i] = s;
+			for (++s; *s != '\n'; ++s) { ; }
+			*s = '\0';
+			++s;
+		}
+		/* if there is a file of source file names */
+		if ((namefile != NULL && (names = vpfopen(namefile, "r")) != NULL)
+        ||  (names = vpfopen(NAMEFILE, "r")) != NULL) {
+			/* read any -p option from it */
+			while(fgets(path, sizeof(path), names) != NULL && *path == '-') {
+				char orig_path1 = path[1];
+				s = path + 2;	 /* for "-Ipath" */
+				if (*s == '\0') { /* if "-I path" */
+					fgets(path, sizeof(path), names);
+					s = path;
+				}
+				switch (orig_path1) {
+					case 'p': /* file path components to display */
+						if (*s < '0' || *s > '9') {
+							posterr(
+                                PROGRAM_NAME ": -p option in file %s: missing or invalid numeric value\n",
+								namefile
+                            );
+						}
+						dispcomponents = atoi(s);
+				}
+			}
+			fclose(names);
+		}
+	} else {
+		for (int i = 0; i < nsrcfiles; ++i) {
+			if (!fgets(path, sizeof(path), oldrefs)) {
+				postfatal(PROGRAM_NAME
+					": cannot read source file name from file %s\n",
+					reffile);
+				/* NOTREACHED */
+			}
+			srcfiles[i] = strdup(path);
+		}
+	}
+	fclose(oldrefs);
+}
+
 int main(const int argc, const char * const * const argv) {
-	FILE		*names;	  /* name file pointer */
-	int			 oldnum;  /* number in old cross-ref */
-	FILE		*oldrefs; /* old cross-reference file */
-	char		*s;
 
 	yyin  = stdin;
 	yyout = stdout;
@@ -313,118 +431,7 @@ int main(const int argc, const char * const * const argv) {
 
 	/* if the cross-reference is to be considered up-to-date */
 	if (preserve_database == true) {
-		if ((oldrefs = vpfopen(reffile, "rb")) == NULL) {
-			postfatal(PROGRAM_NAME ": cannot open file %s\n", reffile);
-		}
-		/* get the crossref file version but skip the current directory */
-		if (fscanf(oldrefs, PROGRAM_NAME " %d %*s", &fileversion) != 1) {
-			postfatal(PROGRAM_NAME ": cannot read file version from file %s\n", reffile);
-		}
-		if (fileversion >= 8) {
-
-			/* override these command line options */
-			compress	  = true;
-			invertedindex = false;
-
-			/* see if there are options in the database */
-			for (int c;;) {
-				getc(oldrefs); /* skip the blank */
-				if ((c = getc(oldrefs)) != '-') {
-					ungetc(c, oldrefs);
-					break;
-				}
-				switch (getc(oldrefs)) {
-					case 'c': /* ASCII characters only */
-						compress = false;
-						break;
-					case 'q': /* quick search */
-						invertedindex = true;
-						fscanf(oldrefs, "%ld", &totalterms);
-						break;
-					case 'T': /* truncate symbols to 8 characters */
-						dbtruncated = true;
-						trun_syms	= true;
-						break;
-				}
-			}
-			initcompress();
-			seek_to_trailer(oldrefs);
-		}
-		/* skip the source and include directory lists */
-		skiplist(oldrefs);
-		skiplist(oldrefs);
-
-		/* get the number of source files */
-		if (fscanf(oldrefs, "%lu", &nsrcfiles) != 1) {
-			postfatal(
-                PROGRAM_NAME ": cannot read source file size from file %s\n",
-				reffile
-            );
-		}
-		/* get the source file list */
-		srcfiles = malloc(nsrcfiles * sizeof(*srcfiles));
-		if (fileversion >= 9) {
-
-			/* allocate the string space */
-			if (fscanf(oldrefs, "%d", &oldnum) != 1) {
-				postfatal(
-                    PROGRAM_NAME ": cannot read string space size from file %s\n",
-					reffile
-                );
-			}
-			s = malloc(oldnum);
-			getc(oldrefs); /* skip the newline */
-
-			/* read the strings */
-			if (fread(s, oldnum, 1, oldrefs) != 1) {
-				postfatal(
-                    PROGRAM_NAME ": cannot read source file names from file %s\n",
-					reffile
-                );
-			}
-			/* change newlines to nulls */
-			for (int i = 0; i < nsrcfiles; i++) {
-				srcfiles[i] = s;
-				for (++s; *s != '\n'; ++s) { ; }
-				*s = '\0';
-				++s;
-			}
-			/* if there is a file of source file names */
-			if ((namefile != NULL && (names = vpfopen(namefile, "r")) != NULL)
-            ||  (names = vpfopen(NAMEFILE, "r")) != NULL) {
-				/* read any -p option from it */
-				while(fgets(path, sizeof(path), names) != NULL && *path == '-') {
-					char orig_path1 = path[1];
-					s = path + 2;	 /* for "-Ipath" */
-					if (*s == '\0') { /* if "-I path" */
-						fgets(path, sizeof(path), names);
-						s = path;
-					}
-					switch (orig_path1) {
-						case 'p': /* file path components to display */
-							if (*s < '0' || *s > '9') {
-								posterr(
-                                    PROGRAM_NAME ": -p option in file %s: missing or invalid numeric value\n",
-									namefile
-                                );
-							}
-							dispcomponents = atoi(s);
-					}
-				}
-				fclose(names);
-			}
-		} else {
-			for (int i = 0; i < nsrcfiles; ++i) {
-				if (!fgets(path, sizeof(path), oldrefs)) {
-					postfatal(PROGRAM_NAME
-						": cannot read source file name from file %s\n",
-						reffile);
-					/* NOTREACHED */
-				}
-				srcfiles[i] = strdup(path);
-			}
-		}
-		fclose(oldrefs);
+        read_old_reffile(reffile);
 	} else {
 		/* make the source file list */
 		srcfiles = malloc(msrcfiles * sizeof(*srcfiles));
@@ -457,6 +464,7 @@ int main(const int argc, const char * const * const argv) {
 			myexit(0);
 		}
 	}
+
 	opendatabase();
 
 	/* if using the line oriented user interface so cscope can be a
