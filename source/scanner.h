@@ -70,22 +70,8 @@ extern FILE *yyin;		/* input file descriptor */
 extern FILE *yyout;		/* output file */
 extern int	 myylineno; /* input line number */
 
-#ifdef USING_LEX
-/* HBB 20010430: if lex is used instead of flex, have to simulate the
- * private copies of yytext and yytext for the world outside scanner.l: */
-/* FIXME: there should be a feature test for this! */
-# if defined(__OSF1__) || defined(__sun) || defined(_AIX)
-extern char yytext[];
-# else
-extern unsigned char yytext[];
-# endif
-extern int yyleng;
-# define my_yytext yytext
-# define my_yyleng yyleng
-#else
 extern char	 *my_yytext; /* private copy of input line */
 extern size_t my_yyleng; /* ... and current length of it */
-#endif
 
 /* The master function exported by scanner.l */
 int	 yylex(void);
