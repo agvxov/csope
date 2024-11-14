@@ -61,8 +61,14 @@ int	myylineno = 1;
 size_t my_yyleng = 0;
 char *my_yytext = NULL;
 
+enum {
+    FILETYPE_IRRELEVANT,
+    FILETYPE_LEX,
+    FILETYPE_SDL,
+    FILETYPE_BPLISTING,
+} filetype = FILETYPE_IRRELEVANT;
+
 static	bool	arraydimension;		/* inside array dimension declaration */
-static	bool	bplisting;		/* breakpoint listing */
 static	int	braces;			/* unmatched left brace count */
 static	bool	classdef;		/* c++ class definition */
 static	bool	elseelif;		/* #else or #elif found */
@@ -74,7 +80,6 @@ static	bool	global;			/* file global scope (outside functions) */
 static	size_t	iflevel;		/* #if nesting level */
 static	bool	initializer;		/* data initializer */
 static	int	initializerbraces;	/* data initializer outer brace count */
-static	bool	lex;			/* lex file */
 static	size_t	miflevel = IFLEVELINC;	/* maximum #if nesting level */
 static	int	*maxifbraces;		/* maximum brace count within #if */
 static	int	*preifbraces;		/* brace count before #if */
@@ -83,7 +88,6 @@ static	bool	ppdefine;		/* preprocessor define statement */
 static	bool	pseudoelif;		/* pseudo-#elif */
 static	bool	oldtype;		/* next identifier is an old type */
 static	bool	rules;			/* lex/yacc rules */
-static	bool	sdl;			/* sdl file */
 static	bool	structfield;		/* structure field declaration */
 static	int	tagdef;			/* class/enum/struct/union tag definition */
 static	bool	template;		/* function template */
@@ -139,7 +143,7 @@ function_call       {ws}*\(([*&[\]=,.]|{identifier}|{number}|{wsnl})*
 				/* simulate a yylex() or yyparse() definition */
 				(void) strcat(my_yytext, " /* ");
 				first = strlen(my_yytext);
-				if (lex == true) {
+				if (filetype == FILETYPE_LEX) {
 					(void) strcat(my_yytext, "yylex");
 				} else {
 					/* yacc: yyparse implicitly calls yylex */
@@ -304,8 +308,7 @@ include{ws}*<[^>\n]+> 	{ /* #include file */
 
 			my_yymore();
 			s = strpbrk(my_yytext, "\"<");
-			if (!s)
-				return(LEXERR);
+			if (!s) { return(LEXERR); }
 			my_yytext[my_yyleng-1] = '\0';
 			incfile(s + 1, s);
 			my_yytext[my_yyleng-1] = remember;
@@ -366,8 +369,7 @@ include{ws}*<[^>\n]+> 	{ /* #include file */
 			/* NOTREACHED */
 		}
 =		{	/* if a global definition initializer */
-			if (!my_yytext)
-				return(LEXERR);
+			if (!my_yytext) { return(LEXERR); }
 			if (global == true && ppdefine == false && my_yytext[0] != '#') {
 				initializerbraces = braces;
 				initializer = true;
@@ -376,8 +378,7 @@ include{ws}*<[^>\n]+> 	{ /* #include file */
 			/* NOTREACHED */
 		}
 :		{	/* a if global structure field */
-			if (!my_yytext)
-				return(LEXERR);
+			if (!my_yytext) { return(LEXERR); }
 			if (global == true && ppdefine == false && my_yytext[0] != '#') {
 				structfield = true;
 			}
@@ -677,7 +678,7 @@ if{wsnl}*\(	{ 	/* ignore 'if' */
 			}
 			/* skip the first 8 columns of a breakpoint listing line */
 			/* and skip the file path in the page header */
-			if (bplisting == true) {
+			if (filetype == FILETYPE_BPLISTING) {
 				int	c, i;
 
 				/* FIXME HBB 20001007: should call input() instead */
@@ -717,8 +718,7 @@ if{wsnl}*\(	{ 	/* ignore 'if' */
 		}
 
 \'		{	/* character constant */
-			if (sdl == false)
-				BEGIN(IN_SQUOTE);
+			if (filetype == FILETYPE_SDL) { BEGIN(IN_SQUOTE); }
 			goto more;
 			/* NOTREACHED */
 		}
@@ -808,21 +808,17 @@ if{wsnl}*\(	{ 	/* ignore 'if' */
 
 %%
 
-void
-initscanner(char *srcfile)
-{
-	char	*s;
-
+void initscanner(char *srcfile) {
 	if (maxifbraces == NULL) {
 		maxifbraces = malloc(miflevel * sizeof(*maxifbraces));
 		preifbraces = malloc(miflevel * sizeof(*preifbraces));
 	}
+
 	first = 0;		/* buffer index for first char of symbol */
 	last = 0;		/* buffer index for last char of symbol */
 	lineno = 1;		/* symbol line number */
 	myylineno = 1;		/* input line number */
 	arraydimension = false;	/* inside array dimension declaration */
-	bplisting = false;		/* breakpoint listing */
 	braces = 0;		/* unmatched left brace count */
 	classdef = false;		/* c++ class definition */
 	elseelif = false;		/* #else or #elif found */
@@ -834,13 +830,11 @@ initscanner(char *srcfile)
 	iflevel = 0;		/* #if nesting level */
 	initializer = false;	/* data initializer */
 	initializerbraces = -1;	/* data initializer outer brace count */
-	lex = false;		/* lex file */
 	parens = 0;		/* unmatched left parenthesis count */
 	ppdefine = false;		/* preprocessor define statement */
 	pseudoelif = false;	/* pseudo-#elif */
 	oldtype = false;		/* next identifier is an old type */
 	rules = false;		/* lex/yacc rules */
-	sdl = false;		/* sdl file */
 	structfield = false;	/* structure field declaration */
 	tagdef = '\0';		/* class/enum/struct/union tag definition */
 	template = false;		/* function template */
@@ -854,27 +848,29 @@ initscanner(char *srcfile)
 	BEGIN(INITIAL);
 
 	/* if this is not a C file */
-	if ((s = strrchr(srcfile, '.')) != NULL) {
+	const char * s = strrchr(srcfile, '.');
+	if (s) {
 		switch (*++s) {	/* this switch saves time on C files */
             case 'b': {
                 if (strcmp(s, "bp") == 0) {	/* breakpoint listing */
-                    bplisting = true;
+                    filetype = FILETYPE_BPLISTING;
                 }
             } break;
             case 'l': {
                 if (strcmp(s, "l") == 0) {	/* lex */
-                    lex = true;
+                    filetype = FILETYPE_LEX;
                     global = false;
                 }
             } break;
             case 's': {
                 if (strcmp(s, "sd") == 0) {	/* sdl */
-                    sdl = true;
+                    filetype = FILETYPE_SDL;
                     BEGIN(SDL);
                 }
             } break;
             case 'y': {
                 if (strcmp(s, "y") == 0) {	/* yacc */
+                    // NOTE: yacc has no filetype value
                     global = false;
                 }
             } break;
