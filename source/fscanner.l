@@ -99,6 +99,12 @@ static	int	ident_start;		/* begin of preceding identifier */
 static	void	my_yymore(void);
 
 %}
+%x IN_PREPROC WAS_ENDIF WAS_IDENTIFIER WAS_ESU IN_DQUOTE IN_SQUOTE COMMENT
+
+/* XXX:
+ *  the {comment} pattern seems unnecesarry as the COMMENT state unputs a ' ',
+ *  but i do not dare to touch it until we have tests
+ */
 identifier	[a-zA-Z_$][a-zA-Z_0-9$]*
 number		\.?[0-9][.0-9a-fA-FlLuUxX]*
 comment		"/*"([^*]*("*"+[^/])?)*"*/"|"//"[^\n]*\n
@@ -109,16 +115,14 @@ class_definition    class{wsnl}+{identifier}({wsnl}|{identifier}|[():])*\{
 function_definition {ws}*\(({wsnl}|{identifier}|{number}|[*&[\]=,.:])*\)([()]|{wsnl})*[:a-zA-Z_#{]
 function_call       {ws}*\(([*&[\]=,.]|{identifier}|{number}|{wsnl})*
 
-/* flex options: stack of start conditions, and don't use yywrap() */
 %option stack
 %option noyywrap
+/* unused */
+%option noyy_top_state
 
 %start SDL
 %a 4000
 %o 7000
-
-/* exclusive start conditions. not available in AT&T lex -> use flex! */
-%x IN_PREPROC WAS_ENDIF WAS_IDENTIFIER WAS_ESU IN_DQUOTE IN_SQUOTE COMMENT
 
 %%
 
@@ -771,7 +775,9 @@ if{wsnl}*\(	{ 	/* ignore 'if' */
 			unput(' ');
  		}
 
-"/*"					yy_push_state(COMMENT);
+"/*"	{
+            yy_push_state(COMMENT);
+        }
 
 <COMMENT>{
 [^*\n]*			|
