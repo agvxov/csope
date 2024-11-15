@@ -259,6 +259,19 @@ void linemode_event_loop(void) {
 
 static inline
 void screenmode_event_loop(void) {
+	/* pause before clearing the screen if there have been error messages */
+	if (errorsfound == true) {
+		errorsfound = false;
+		askforreturn();
+	}
+	/* do any optional search */
+	if (*input_line != '\0') {
+		// command(ctrl('Y'));    /* search */	// XXX: fix
+	} else if (reflines != NULL) {
+		/* read any symbol reference lines file */
+		readrefs(reflines);
+	}
+
 	for (;;) {
 		display();
 		handle_input(wgetch(stdscr));	 // NOTE: getch() does not return KEY_* codes
@@ -467,25 +480,13 @@ int main(const int argc, const char * const * const argv) {
 
 	opendatabase(reffile);
 
-	/* if using the line oriented user interface so cscope can be a
-	   subprocess to emacs or samuel */
-	if (linemode == true) { linemode_event_loop(); }
-	/* pause before clearing the screen if there have been error messages */
-	if (errorsfound == true) {
-		errorsfound = false;
-		askforreturn();
-	}
-	/* do any optional search */
-	if (*input_line != '\0') {
-		// command(ctrl('Y'));    /* search */	// XXX: fix
-	} else if (reflines != NULL) {
-		/* read any symbol reference lines file */
-		readrefs(reflines);
-	}
+	if (linemode == true) {
+        /* if using the line oriented user interface so cscope can be a
+           subprocess to emacs or samuel */
+        linemode_event_loop();
+    } else {
+        screenmode_event_loop();
+    }
 
-	screenmode_event_loop();
-	/* cleanup and exit */
-	myexit(0);
-	/* NOTREACHED */
-	return 0; /* avoid warning... */
+	return 0;
 }
