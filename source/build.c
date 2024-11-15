@@ -125,7 +125,7 @@ static bool samelist(FILE *oldrefs, char **names, int count) {
 }
 
 /* create the file name(s) used for a new cross-referene */
-void setup_build_filenames(char *reffile) {
+void setup_build_filenames(const char * const reffile) {
 	char path[strlen(reffile)+10]; /* file pathname */
 	strcpy(path, reffile);
 
