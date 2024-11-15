@@ -96,6 +96,7 @@ WINDOW *wresult;
 WINDOW *whelp;
 WINDOW *wtooltip;
 WINDOW *wcase;
+WINDOW *wbackend;
 /* Selected window pointer */
 WINDOW		  **current_window;
 static WINDOW **last_window;
@@ -166,6 +167,7 @@ void dispinit(void) {
 	easy_init_pair(HELP);
 	easy_init_pair(TOOLTIP);
 	easy_init_pair(CASE);
+	easy_init_pair(BACKEND);
 	easy_init_pair(MESSAGE);
 	easy_init_pair(PATTERN);
 	easy_init_pair(TABLE_HEADER);
@@ -192,9 +194,9 @@ void dispinit(void) {
 	first_col_width	 = 48;	  // (((COLS - 2)%2 == 0) ? ((COLS-2)/2) : (((COLS-2)/2)+1));
 	second_col_width = COLS - 2 - 1 - first_col_width;	  //((COLS - 2) / 2) - 1;
 	mdisprefs		 = result_window_height - (WRESULT_TABLE_BODY_START + 1);
-	tooltip_width =
-		MAX(MAX(strlen(tooltip_winput), strlen(tooltip_wmode)), strlen(tooltip_wresult));
-	static int case_width = sizeof("Case: XXX")-1;
+	tooltip_width = MAX(MAX(strlen(tooltip_winput), strlen(tooltip_wmode)), strlen(tooltip_wresult));
+	static int case_width    = sizeof("Case: XXX")-1;
+	static int backend_width = sizeof("Backend: XXXXXX")-1;
 
 	if(mdisprefs <= 0) {
 		postfatal(PROGRAM_NAME ": screen too small\n");
@@ -214,14 +216,16 @@ void dispinit(void) {
 	wresult  = newwin(result_window_height, second_col_width, 1, first_col_width + 1 + 1);
 	whelp	 = newwin(LINES - 2, COLS - 2, 1, 1);
 	wtooltip = newwin(1, tooltip_width, LINES - 1, COLS - (tooltip_width + 4));
-	wcase    = newwin(1, case_width, 0, COLS - case_width - 4);
+	wcase    = newwin(1, case_width, 0, COLS - (case_width + 4));
+	wbackend = newwin(1, backend_width, 0, COLS - (backend_width + case_width + 4*2));
 	/* Set background */
-	wbkgdset(winput, COLOR_PAIR(COLOR_PAIR_STD));
-	wbkgdset(wmode, COLOR_PAIR(COLOR_PAIR_STD));
-	wbkgdset(wresult, COLOR_PAIR(COLOR_PAIR_STD));
-	wbkgdset(whelp, COLOR_PAIR(COLOR_PAIR_STD));
+	wbkgdset(winput,   COLOR_PAIR(COLOR_PAIR_STD));
+	wbkgdset(wmode,    COLOR_PAIR(COLOR_PAIR_STD));
+	wbkgdset(wresult,  COLOR_PAIR(COLOR_PAIR_STD));
+	wbkgdset(whelp,    COLOR_PAIR(COLOR_PAIR_STD));
 	wbkgdset(wtooltip, COLOR_PAIR(COLOR_PAIR_STD));
-	wbkgdset(wcase, COLOR_PAIR(COLOR_PAIR_STD));
+	wbkgdset(wcase,    COLOR_PAIR(COLOR_PAIR_STD));
+	wbkgdset(wbackend, COLOR_PAIR(COLOR_PAIR_STD));
 
 	refresh();
 
@@ -301,6 +305,14 @@ inline void display_case(){
 
 static
 inline void display_backend(){
+	wmove(wbackend, 0, 0);
+	wattron(wbackend, COLOR_PAIR(COLOR_PAIR_BACKEND));
+	waddstr(wbackend, (backend_mode ? "Backend:  Ctags" : "Backend: CScope"));
+	wattroff(wbackend, COLOR_PAIR(COLOR_PAIR_BACKEND));
+}
+
+static inline
+void display_frame(const bool border_only) {
 	wattron(stdscr, COLOR_PAIR(COLOR_PAIR_FRAME));
 
 	box(stdscr, 0, 0);
@@ -847,6 +859,7 @@ void display(void) {
 			lstwin = *current_window;
 			display_tooltip();
 		}
+		if(window_change & CH_BACKEND) { display_backend(); }
 		if(window_change & CH_CASE) { display_case(); }
 		if(window_change & CH_INPUT) { display_command_field(); }
 		if(window_change & CH_RESULT) { display_results(); }
@@ -858,6 +871,7 @@ void display(void) {
 		wnoutrefresh(wresult);
 		wnoutrefresh(wtooltip);
 		wnoutrefresh(wcase);
+		wnoutrefresh(wbackend);
 		doupdate();
 	}
 
@@ -871,6 +885,7 @@ void redisplay(void) {
 	delwin(whelp);
 	delwin(wtooltip);
 	delwin(wcase);
+	delwin(wbackend);
 
 	endwin();
 

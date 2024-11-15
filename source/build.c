@@ -54,6 +54,8 @@
 
 /* Exported variables: */
 
+int backend_mode = CSCOPE_BACKEND;
+
 bool buildonly	   = false; /* only build the database */
 bool unconditional = false; /* unconditionally build database */
 bool fileschanged;			/* assume some files changed */
