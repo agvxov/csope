@@ -35,10 +35,15 @@
  *    display functions
  */
 
+#include <ncurses.h>
+#include <time.h>
+#include <errno.h>
+
 #include "global.h"
 #include "build.h"
 #include "colors.h"
 #include "backend.h"
+#include "help.h"
 
 #ifdef CCS
 # include "sgs.h"	  /* ESG_PKG and ESG_REL */
@@ -46,23 +51,15 @@
 # include "version.inc"
 #endif
 
-#include <ncurses.h>
-#include <stdarg.h>
-#include <time.h>
-#include <errno.h>
-#include <stdarg.h>
-
 /* XXX */
 #define MSGLINE 0							/* message line */
 #define MSGCOL	0							/* message column */
+static int * displine; /* screen line of displayed reference */
 
-int subsystemlen = sizeof("Subsystem") - 1; /* OGS subsystem name display field length */
-int booklen		 = sizeof("Book") - 1;		/* OGS book name display field length */
-int filelen		 = sizeof("File") - 1;		/* file name display field length */
-int fcnlen		 = sizeof("Function") - 1;	/* function name display field length */
-int numlen		 = 0;						/* line number display field length */
+int filelen = sizeof("File") - 1;		/* file name display field length */
+int fcnlen  = sizeof("Function") - 1;	/* function name display field length */
+int numlen  = 0;						/* line number display field length */
 
-int			*displine;						/* screen line of displayed reference */
 unsigned int disprefs;						/* displayed references */
 int			 field;							/* input field */
 unsigned int mdisprefs;						/* maximum displayed references */
@@ -243,7 +240,7 @@ void entercurses(void) {
 	noecho();	 /* don't echo input characters */
 	curs_set(0);
 	clear();	 /* clear the screen */
-	mouseinit(); /* initialize any mouse interface */
+	// mouseinit(); /* initialize any mouse interface */
 	// drawscrollbar(topline, nextline);
 	keypad(stdscr, TRUE); /* enable the keypad */
 	// fixkeypad();    /* fix for getch() intermittently returning garbage */
@@ -261,7 +258,7 @@ void exitcurses(void) {
 	incurses = false;
 
 	/* restore the mouse */
-	mousecleanup();
+	// mousecleanup();
 	fflush(stdout);
 }
 
@@ -390,8 +387,6 @@ void display_results() {
 								 * because of selections
 								 */
 								/* column headings */
-	char *subsystem;			/* OGS subsystem name */
-	char *book;					/* OGS book name */
 	char  file[PATHLEN + 1];	/* file name */
 	char  function[PATLEN + 1]; /* function name */
 	char  linenum[NUMLEN + 1];	/* line number */
@@ -425,10 +420,6 @@ void display_results() {
 	/* --- Display the column headings --- */
 	wattron(wresult, COLOR_PAIR(COLOR_PAIR_TABLE_HEADER));
 	wmove(wresult, 2, 2);
-	if(ogs == true && field != FILENAME) {
-		wprintw(wresult, "%-*s ", subsystemlen, "Subsystem");
-		wprintw(wresult, "%-*s ", booklen, "Book");
-	}
 	if(dispcomponents > 0) wprintw(wresult, "%-*s ", filelen, "File");
 
 	if(field == SYMBOL || field == CALLEDBY || field == CALLING) {
@@ -444,7 +435,6 @@ void display_results() {
 	/* NOTE: the +1s are column gaps */
 	srctxtw = second_col_width;
 	srctxtw -= 1 + 1;	 // dispchars
-	if(ogs == true) { srctxtw -= subsystemlen + 1 + booklen + 1; }
 	if(dispcomponents > 0) { srctxtw -= filelen + 1; }
 	if(field == SYMBOL || field == CALLEDBY || field == CALLING) {
 		srctxtw -= fcnlen + 1;
@@ -504,12 +494,6 @@ void display_results() {
 		if(field == FILENAME) {
 			wprintw(wresult, "%-*s ", filelen, file);
 		} else {
-			/* if OGS, display the subsystem and book names */
-			if(ogs == true) {
-				ogsnames(file, &subsystem, &book);
-				wprintw(wresult, "%-*.*s ", subsystemlen, subsystemlen, subsystem);
-				wprintw(wresult, "%-*.*s ", booklen, booklen, book);
-			}
 			/* display the requested path components */
 			if(dispcomponents > 0) {
 				wprintw(wresult,
@@ -724,10 +708,10 @@ void myperror(char *text) {
 }
 
 /* postmsg clears the message line and prints the message */
-
 void postmsg(char *msg) {
-	if(linemode == true || incurses == false) {
-		printf("%s\n", msg);
+	if (linemode == true
+    ||  incurses == false) {
+        puts(msg);
 		fflush(stdout);
 	} else {
 		window_change |= CH_RESULT;
@@ -772,46 +756,19 @@ void posterr(char *msg, ...) {
 
 /* display a fatal error mesg -- stderr *after* shutting down curses */
 void postfatal(const char *msg, ...) {
-	va_list ap;
-	char	errbuf[MSGLEN];
 
-	va_start(ap, msg);
-	vsnprintf(errbuf, sizeof(errbuf), msg, ap);
-	/* restore the terminal to its original mode */
 	if(incurses == true) { exitcurses(); }
 
-	/* display fatal error messages */
-	fprintf(stderr, "%s", errbuf);
+	va_list ap;
+	va_start(ap, msg);
+	vfprintf(stderr, msg, ap);
+	va_end(ap);
 
-	/* shut down */
 	myexit(1);
 }
 
-/* get the OGS subsystem and book names */
-void ogsnames(char *file, char **subsystem, char **book) {
-	static char buf[PATHLEN + 1];
-	char	   *s, *slash;
-
-	*subsystem = *book = "";
-	(void)strcpy(buf, file);
-	s = buf;
-	if(*s == '/') { ++s; }
-	while((slash = strchr(s, '/')) != NULL) {
-		*slash = '\0';
-		if((int)strlen(s) >= 3 && strncmp(slash - 3, ".ss", 3) == 0) {
-			*subsystem = s;
-			s		   = slash + 1;
-			if((slash = strchr(s, '/')) != NULL) {
-				*book  = s;
-				*slash = '\0';
-			}
-			break;
-		}
-		s = slash + 1;
-	}
-}
-
-static inline void display_tooltip(void) {
+static inline
+void display_tooltip(void) {
 	wmove(wtooltip, 0, 0);
 	const char *tooltip;
 	if(*current_window == winput) {

@@ -35,6 +35,31 @@
  *    mouse functions
  */
 
+/*  NOTE: the mouse functionallity has been void of anyone,
+ *         but those on the most esoteric of systems
+ *         for the past 20 years.
+ *        as of now, non-of the code here should ever execute
+ *        this file will be kept here as a reference for a
+ *         future complete rewrite of mouse support
+ */
+
+void mousemenu(void);
+void mouseinit(void);
+void mousereinit(void);
+
+typedef struct { /* mouse action */
+		int button;
+		int percent;
+		int x1;
+		int y1;
+		int x2;
+		int y2;
+} MOUSE;
+
+MOUSE *getmouseaction(char leading_char);
+
+// extern    bool    unixpcmouse;		/* UNIX PC mouse interface */
+
 extern int LINES;
 
 #define FLDLINE (LINES - FIELDS - 1 - 1) /* first input field line */
@@ -89,12 +114,10 @@ static int	getcoordinate(void);
 static int	getpercent(void);
 
 /* see if there is a mouse interface */
-
 void mouseinit(void) {
-	char *term;
+	char *term = ""; // mygetenv("TERM", ""); // NOTE: this function no longer exists
 
 	/* see if this is emacsterm or viterm */
-	term = mygetenv("TERM", "");
 	if(strcmp(term, "emacsterm") == 0 || strcmp(term, "viterm") == 0) {
 		emacsviterm = true;
 		mouse		= true;
@@ -102,7 +125,7 @@ void mouseinit(void) {
 	/* the MOUSE enviroment variable is for 5620 terminal programs that have
 	   mouse support but the TERM environment variable is the same as a
 	   terminal without a mouse, such as myx */
-	else if(strcmp(mygetenv("MOUSE", ""), "myx") == 0) {
+	else if(strcmp("" /* XXX mygetenv("MOUSE", "")*/, "myx") == 0) {
 		mouse = true;
 	}
 #if UNIXPC
@@ -147,7 +170,6 @@ void mouseinit(void) {
 }
 
 /* load the correct mouse menu */
-
 void mousemenu(void) {
 	if(mouse == true) {
 		if(input_mode == INPUT_CHANGE) {
@@ -159,7 +181,6 @@ void mousemenu(void) {
 }
 
 /* download a menu */
-
 static void loadmenu(MENU *menu) {
 	int i;
 
@@ -189,7 +210,6 @@ static void loadmenu(MENU *menu) {
 }
 
 /* reinitialize the mouse in case curses changed the attributes */
-
 void mousereinit(void) {
 	if(emacsviterm == true) {
 
@@ -201,7 +221,6 @@ void mousereinit(void) {
 }
 
 /* restore the mouse attributes */
-
 void mousecleanup(void) {
 	int i;
 
@@ -217,7 +236,6 @@ void mousecleanup(void) {
 }
 
 /* draw the scrollbar */
-
 void drawscrollbar(int top, int bot) {
 	int p1, p2;
 
@@ -238,7 +256,6 @@ void drawscrollbar(int top, int bot) {
 }
 
 /* get the mouse information */
-
 MOUSE *getmouseaction(char leading_char) {
 	static MOUSE m;
 
@@ -341,7 +358,6 @@ MOUSE *getmouseaction(char leading_char) {
 #endif /* not UNIXPC */
 
 		if(mouse == true && leading_char == ctrl('X')) {
-
 			switch(getch()) {
 				case ctrl('_'):						  /* click */
 					if((m.button = getch()) == '0') { /* if scrollbar */
@@ -370,7 +386,6 @@ MOUSE *getmouseaction(char leading_char) {
 }
 
 /* get a row or column coordinate from a mouse button click or sweep */
-
 static int getcoordinate(void) {
 	int c, next;
 
@@ -385,13 +400,12 @@ static int getcoordinate(void) {
 }
 
 /* get a percentage */
-
 static int getpercent(void) {
-	int c;
+	int c = getch();
 
-	c = getch();
-	if(c < 16) { return (0); }
-	if(c > 120) { return (100); }
+	if(c < 16)  { return   0; }
+	if(c > 120) { return 100; }
+
 	return (c - 16);
 }
 
@@ -399,22 +413,22 @@ int process_mouse() {
 	int	   i;
 	MOUSE *p;
 	if((p = getmouseaction(DUMMYCHAR)) == NULL) {
-		return (false); /* unknown control sequence */
+		return false; /* unknown control sequence */
 	}
 	/* if the button number is a scrollbar tag */
 	if(p->button == '0') {
 		// scrollbar(p);    // XXX
-		return (false);
+		return false;
 	}
 	/* ignore a sweep */
-	if(p->x2 >= 0) { return (false); }
+	if(p->x2 >= 0) { return false; }
 	/* if this is a line selection */
 	if(p->y1 > FLDLINE) {
 
 		/* find the selected line */
 		/* note: the selection is forced into range */
 		for(i = disprefs - 1; i > 0; --i) {
-			if(p->y1 >= displine[i]) { return (false); }
+			if(p->y1 >= 1/*displine[i]*/) { return false; }
 		}
 		/* display it in the file with the editor */
 		editref(i);
@@ -422,8 +436,46 @@ int process_mouse() {
 		field = p->y1 - FLDLINE;
 		/* force it into range */
 		if(field >= FIELDS) { field = FIELDS - 1; }
-		return (false);
+		return false;
 	}
 
 	return false;
 }
+
+// NOTE: this comes from command.c
+// /* scrollbar actions */
+// static void scrollbar(MOUSE *p) {
+// 	// XXX
+// 	///* reposition list if it makes sense */
+// 	// if (totallines == 0) {
+// 	// return;
+// 	// }
+// 	// switch (p->percent) {
+// 
+// 	// case 101: /* scroll down one page */
+// 	// if (nextline + mdisprefs > totallines) {
+// 	//     nextline = totallines - mdisprefs + 1;
+// 	// }
+// 	// break;
+// 
+// 	// case 102: /* scroll up one page */
+// 	// nextline = topline - mdisprefs;
+// 	// if (nextline < 1) {
+// 	//     nextline = 1;
+// 	// }
+// 	// break;
+// 
+// 	// case 103: /* scroll down one line */
+// 	// nextline = topline + 1;
+// 	// break;
+// 
+// 	// case 104: /* scroll up one line */
+// 	// if (topline > 1) {
+// 	//     nextline = topline - 1;
+// 	// }
+// 	// break;
+// 	// default:
+// 	// nextline = p->percent * totallines / 100;
+// 	// }
+// 	////seekline(nextline);
+// }

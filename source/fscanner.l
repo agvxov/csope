@@ -40,8 +40,6 @@
 #include "scanner.h"
 #include "lookup.h"
 
-#include <assert.h>
-
 /* the line counting has been moved from character reading for speed */
 /* comments are discarded */
 
@@ -63,8 +61,14 @@ int	myylineno = 1;
 size_t my_yyleng = 0;
 char *my_yytext = NULL;
 
+enum {
+    FILETYPE_IRRELEVANT,
+    FILETYPE_LEX,
+    FILETYPE_SDL,
+    FILETYPE_BPLISTING,
+} filetype = FILETYPE_IRRELEVANT;
+
 static	bool	arraydimension;		/* inside array dimension declaration */
-static	bool	bplisting;		/* breakpoint listing */
 static	int	braces;			/* unmatched left brace count */
 static	bool	classdef;		/* c++ class definition */
 static	bool	elseelif;		/* #else or #elif found */
@@ -76,7 +80,6 @@ static	bool	global;			/* file global scope (outside functions) */
 static	size_t	iflevel;		/* #if nesting level */
 static	bool	initializer;		/* data initializer */
 static	int	initializerbraces;	/* data initializer outer brace count */
-static	bool	lex;			/* lex file */
 static	size_t	miflevel = IFLEVELINC;	/* maximum #if nesting level */
 static	int	*maxifbraces;		/* maximum brace count within #if */
 static	int	*preifbraces;		/* brace count before #if */
@@ -85,46 +88,51 @@ static	bool	ppdefine;		/* preprocessor define statement */
 static	bool	pseudoelif;		/* pseudo-#elif */
 static	bool	oldtype;		/* next identifier is an old type */
 static	bool	rules;			/* lex/yacc rules */
-static	bool	sdl;			/* sdl file */
 static	bool	structfield;		/* structure field declaration */
 static	int	tagdef;			/* class/enum/struct/union tag definition */
 static	bool	template;		/* function template */
 static	int	templateparens;		/* function template outer parentheses count */
 static	int	typedefbraces = -1;	/* initial typedef brace count */
 static	int	token;			/* token found */
-static	int 	ident_start;		/* begin of preceding identifier */
+static	int	ident_start;		/* begin of preceding identifier */
 
 static	void	my_yymore(void);
 
 %}
+%x IN_PREPROC WAS_ENDIF WAS_IDENTIFIER WAS_ESU IN_DQUOTE IN_SQUOTE COMMENT
+
+/* XXX:
+ *  the {comment} pattern seems unnecesarry as the COMMENT state unputs a ' ',
+ *  but i do not dare to touch it until we have tests
+ */
 identifier	[a-zA-Z_$][a-zA-Z_0-9$]*
 number		\.?[0-9][.0-9a-fA-FlLuUxX]*
 comment		"/*"([^*]*("*"+[^/])?)*"*/"|"//"[^\n]*\n
-ws		[ \t\r\v\f]
+ws		    [ \t\r\v\f]
 wsnl		[ \t\r\v\f\n]|{comment}
 
-/* flex options: stack of start conditions, and don't use yywrap() */
+class_definition    class{wsnl}+{identifier}({wsnl}|{identifier}|[():])*\{
+function_definition {ws}*\(({wsnl}|{identifier}|{number}|[*&[\]=,.:])*\)([()]|{wsnl})*[:a-zA-Z_#{]
+function_call       {ws}*\(([*&[\]=,.]|{identifier}|{number}|{wsnl})*
+
 %option stack
 %option noyywrap
+/* unused */
+%option noyy_top_state
 
 %start SDL
 %a 4000
 %o 7000
-
-/* exclusive start conditions. not available in AT&T lex -> use flex! */
-%x IN_PREPROC WAS_ENDIF WAS_IDENTIFIER WAS_ESU IN_DQUOTE IN_SQUOTE COMMENT
 
 %%
 
 %\{		{	/* lex/yacc C declarations/definitions */
 			global = true;
 			goto more;
-			/* NOTREACHED */
 		}
 %\}		{
 			global = false;
 			goto more;
-			/* NOTREACHED */
 		}
 ^%%		{	/* lex/yacc rules delimiter */
 			braces = 0;
@@ -139,7 +147,7 @@ wsnl		[ \t\r\v\f\n]|{comment}
 				/* simulate a yylex() or yyparse() definition */
 				(void) strcat(my_yytext, " /* ");
 				first = strlen(my_yytext);
-				if (lex == true) {
+				if (filetype == FILETYPE_LEX) {
 					(void) strcat(my_yytext, "yylex");
 				} else {
 					/* yacc: yyparse implicitly calls yylex */
@@ -161,21 +169,20 @@ wsnl		[ \t\r\v\f\n]|{comment}
 				last = first;
 				my_yymore();
 				return(FCNEND);
-				/* NOTREACHED */
 			}
 		}
 
-<SDL>STATE[ \t]+({identifier}|\*)	{ /* sdl state, treat as function def */
+<SDL>{
+STATE[ \t]+({identifier}|\*)	{ /* sdl state, treat as function def */
 			braces = 1;
 			fcndef = true;
 			token = FCNDEF;
 			goto findident;
-			/* NOTREACHED */
 		}
-<SDL>ENDSTATE[ \t]	{ /* end of an sdl state, treat as end of a function */
+ENDSTATE[ \t]	{ /* end of an sdl state, treat as end of a function */
 			goto endstate;
-			/* NOTREACHED */
 		}
+}
 
 \{		{	/* count unmatched left braces for fcn def detection */
 			++braces;
@@ -193,26 +200,18 @@ wsnl		[ \t\r\v\f\n]|{comment}
 				return(token);
 			}
 			goto more;
-			/* NOTREACHED */
 		}
 
 \#{ws}*	{ /* start a preprocessor line */
-			if (rules == false)		/* don't consider CPP for lex/yacc rules */
+			if (rules == false) {		/* don't consider CPP for lex/yacc rules */
 				BEGIN(IN_PREPROC);
+            }
 			yyleng = 1;	/* get rid of the blanks, if any */
 			goto more;
-			/* NOTREACHED */
 		}
-<IN_PREPROC>endif([^a-zA-Z0-9_$\n].*)?	{	/* #endif */
-			/* delay treatment of #endif depending on whether an
-			 * #if comes right after it, or not */
-			/* HBB 20010619: new pattern allows trailing garbage
-			 * after the #endif */
-			BEGIN(WAS_ENDIF);
-			goto more;
-			/* NOTREACHED */
-		}
-<WAS_ENDIF>\n{wsnl}*#{ws}*if(ndef|def)?{ws}+		{
+
+<WAS_ENDIF>{
+\n{wsnl}*#{ws}*if(ndef|def)?{ws}+		{
 			/* attempt to correct erroneous brace count caused by:
 			 *
 			 * #if ...
@@ -225,16 +224,14 @@ wsnl		[ \t\r\v\f\n]|{comment}
 			/* the current #if must not have an #else or #elif */
 			if (elseelif == true) {
 				goto endif;
-				/* NOTREACHED */
 			}
 			pseudoelif = true;
 			BEGIN(INITIAL);
 			yyless(1);	/* rescan all but the line ending */
 			yy_set_bol(1);
 			goto eol;
-			/* NOTREACHED */
 		}
-<WAS_ENDIF>\n{wsnl}*		 { 	/* an #endif with no #if right after it */
+\n{wsnl}*		 { 	/* an #endif with no #if right after it */
 		endif:
 			if (iflevel > 0) {
 				/* get the maximum brace count for this #if */
@@ -246,84 +243,8 @@ wsnl		[ \t\r\v\f\n]|{comment}
 			yyless(1);
 			yy_set_bol(1);
 			goto eol;
-			/* NOTREACHED */
 		}
-
-<IN_PREPROC>ifndef{ws}+	|
-<IN_PREPROC>ifdef{ws}+		|
-<IN_PREPROC>if{ws}+		{ /* #if directive */
-			elseelif = false;
-			if (pseudoelif == true) {
-				pseudoelif = false;
-				goto elif;
-				/* NOTREACHED */
-			}
-			/* make sure there is room for the current brace count */
-			if (iflevel == miflevel) {
-				miflevel += IFLEVELINC;
-				maxifbraces = realloc(maxifbraces, miflevel * sizeof(*maxifbraces));
-				preifbraces = realloc(preifbraces, miflevel * sizeof(*preifbraces));
-			}
-			/* push the current brace count */
-			preifbraces[iflevel] = braces;
-			maxifbraces[iflevel++] = 0;
-			BEGIN(INITIAL);
-			goto more;
-			/* NOTREACHED */
-		}
-<IN_PREPROC>else({ws}.*)?	{ /* #else --- eat up whole line */
-			elseelif = true;
-			if (iflevel > 0) {
-
-				/* save the maximum brace count for this #if */
-				if (braces > maxifbraces[iflevel - 1]) {
-					maxifbraces[iflevel - 1] = braces;
-				}
-				/* restore the brace count to before the #if */
-				braces = preifbraces[iflevel - 1];
-			}
-			BEGIN(INITIAL);
-			goto more;
-			/* NOTREACHED */
-		}
-<IN_PREPROC>elif{ws}+	{ /* #elif */
-			/* elseelif = true; --- HBB I doubt this is correct */
-		elif:
-			if (iflevel > 0) {
-
-				/* save the maximum brace count for this #if */
-				if (braces > maxifbraces[iflevel - 1]) {
-					maxifbraces[iflevel - 1] = braces;
-				}
-				/* restore the brace count to before the #if */
-				braces = preifbraces[iflevel - 1];
-			}
-			BEGIN(INITIAL);
-			goto more;
-			/* NOTREACHED */
-		}
-
-<IN_PREPROC>include{ws}*\"[^"\n]+\" |
-<IN_PREPROC>include{ws}*<[^>\n]+> 	{ /* #include file */
-			char	*s;
-			char remember = yytext[yyleng-1];
-
-			my_yymore();
-			s = strpbrk(my_yytext, "\"<");
-			if (!s)
-				return(LEXERR);
-			my_yytext[my_yyleng-1] = '\0';
-			incfile(s + 1, s);
-			my_yytext[my_yyleng-1] = remember;
-			first = s - my_yytext;
-			last = my_yyleng - 1;
-			if (compress == true) {
-				my_yytext[0] = '\2';	/* compress the keyword */
-			}
-			BEGIN(INITIAL);
-			return(INCLUDE);
-			/* NOTREACHED */
-		}
+}
 
 \}		{
 			/* could be the last enum member initializer */
@@ -351,13 +272,11 @@ wsnl		[ \t\r\v\f\n]|{comment}
 				}
 			}
 			goto more;
-			/* NOTREACHED */
 		}
 
 \(		{	/* count unmatched left parentheses for function templates */
 			++parens;
 			goto more;
-			/* NOTREACHED */
 		}
 \)		{
 			if (--parens <= 0) {
@@ -369,26 +288,21 @@ wsnl		[ \t\r\v\f\n]|{comment}
 				template = false;
 			}
 			goto more;
-			/* NOTREACHED */
 		}
 =		{	/* if a global definition initializer */
-			if (!my_yytext)
-				return(LEXERR);
+			if (!my_yytext) { return(LEXERR); }
 			if (global == true && ppdefine == false && my_yytext[0] != '#') {
 				initializerbraces = braces;
 				initializer = true;
 			}
 			goto more;
-			/* NOTREACHED */
 		}
 :		{	/* a if global structure field */
-			if (!my_yytext)
-				return(LEXERR);
+			if (!my_yytext) { return(LEXERR); }
 			if (global == true && ppdefine == false && my_yytext[0] != '#') {
 				structfield = true;
 			}
 			goto more;
-			/* NOTREACHED */
 		}
 \,		{
 			if (braces == initializerbraces) {
@@ -397,7 +311,6 @@ wsnl		[ \t\r\v\f\n]|{comment}
 			}
 			structfield = false;
 			goto more;
-			/* NOTREACHED */
 		}
 ;		{	/* if the enum/struct/union was not a definition */
 			if (braces == 0) {
@@ -415,9 +328,85 @@ wsnl		[ \t\r\v\f\n]|{comment}
 			structfield = false;
 			initializer = false;
 			goto more;
-			/* NOTREACHED */
 		}
-<IN_PREPROC>define{ws}+{identifier}	{
+
+<IN_PREPROC>{
+ifndef{ws}+	|
+ifdef{ws}+	|
+if{ws}+		{ /* #if directive */
+			elseelif = false;
+			if (pseudoelif == true) {
+				pseudoelif = false;
+				goto elif;
+			}
+			/* make sure there is room for the current brace count */
+			if (iflevel == miflevel) {
+				miflevel += IFLEVELINC;
+				maxifbraces = realloc(maxifbraces, miflevel * sizeof(*maxifbraces));
+				preifbraces = realloc(preifbraces, miflevel * sizeof(*preifbraces));
+			}
+			/* push the current brace count */
+			preifbraces[iflevel] = braces;
+			maxifbraces[iflevel++] = 0;
+			BEGIN(INITIAL);
+			goto more;
+		}
+else({ws}.*)?	{ /* #else --- eat up whole line */
+			elseelif = true;
+			if (iflevel > 0) {
+
+				/* save the maximum brace count for this #if */
+				if (braces > maxifbraces[iflevel - 1]) {
+					maxifbraces[iflevel - 1] = braces;
+				}
+				/* restore the brace count to before the #if */
+				braces = preifbraces[iflevel - 1];
+			}
+			BEGIN(INITIAL);
+			goto more;
+		}
+elif{ws}+	{ /* #elif */
+			/* elseelif = true; --- HBB I doubt this is correct */
+		elif:
+			if (iflevel > 0) {
+
+				/* save the maximum brace count for this #if */
+				if (braces > maxifbraces[iflevel - 1]) {
+					maxifbraces[iflevel - 1] = braces;
+				}
+				/* restore the brace count to before the #if */
+				braces = preifbraces[iflevel - 1];
+			}
+			BEGIN(INITIAL);
+			goto more;
+		}
+endif([^a-zA-Z0-9_$\n].*)?	{	/* #endif */
+			/* delay treatment of #endif depending on whether an
+			 * #if comes right after it, or not */
+			BEGIN(WAS_ENDIF);
+			goto more;
+		}
+
+include{ws}*\"[^"\n]+\" |
+include{ws}*<[^>\n]+> 	{ /* #include file */
+			char	*s;
+			char remember = yytext[yyleng-1];
+
+			my_yymore();
+			s = strpbrk(my_yytext, "\"<");
+			if (!s) { return(LEXERR); }
+			my_yytext[my_yyleng-1] = '\0';
+			incfile(s + 1, s);
+			my_yytext[my_yyleng-1] = remember;
+			first = s - my_yytext;
+			last = my_yyleng - 1;
+			if (compress == true) {
+				my_yytext[0] = '\2';	/* compress the keyword */
+			}
+			BEGIN(INITIAL);
+			return(INCLUDE);
+		}
+define{ws}+{identifier}	{
 
 			/* preprocessor macro or constant definition */
 			ppdefine = true;
@@ -438,28 +427,25 @@ wsnl		[ \t\r\v\f\n]|{comment}
 			last = my_yyleng;
 			BEGIN(INITIAL);
 			goto definition;
-			/* NOTREACHED */
 		}
-<IN_PREPROC>\n	{   /* unknown preprocessor line */
+\n	{   /* unknown preprocessor line */
 			BEGIN(INITIAL);
                         ++myylineno;
 			goto more;
-			/* NOTREACHED */
 		}
-<IN_PREPROC>.		 |
-<IN_PREPROC>{identifier}	{   /* unknown preprocessor line */
+.		 |
+{identifier}	{   /* unknown preprocessor line */
 			BEGIN(INITIAL);
 			goto more;
-			/* NOTREACHED */
 		}
+}
 
-class{wsnl}+{identifier}({wsnl}|{identifier}|[():])*\{	{	/* class definition */
+{class_definition}	{	/* class definition */
 			classdef = true;
 			tagdef =  'c';
 			yyless(5);		/* eat up 'class', and re-scan */
 			yy_set_bol(0);
 			goto more;
-			/* NOTREACHED */
 		}
 
 ("enum"|"struct"|"union")	{
@@ -467,6 +453,7 @@ class{wsnl}+{identifier}({wsnl}|{identifier}|[():])*\{	{	/* class definition */
 			BEGIN(WAS_ESU);
 			goto more;
 		}
+
 <WAS_ESU>{
 ({wsnl}+{identifier}){wsnl}*\{		{ /* e/s/u definition */
 			tagdef = my_yytext[ident_start];
@@ -501,11 +488,10 @@ if{wsnl}*\(	{ 	/* ignore 'if' */
 			BEGIN(WAS_IDENTIFIER);
 			ident_start = first;
 			goto more;
-			/* NOTREACHED */
 		}
 
 <WAS_IDENTIFIER>{
-{ws}*\(({wsnl}|{identifier}|{number}|[*&[\]=,.:])*\)([()]|{wsnl})*[:a-zA-Z_#{]	{
+{function_definition}	{
 			/* a function definition */
 			/* note: "#define a (b) {" and "#if defined(a)\n#"
 			 * are not fcn definitions! */
@@ -522,27 +508,22 @@ if{wsnl}*\(	{ 	/* ignore 'if' */
 				fcndef = true;
 				token = FCNDEF;
 				goto fcn;
-				/* NOTREACHED */
 			}
 			goto fcncal;
-			/* NOTREACHED */
 		}
-{ws}*\(([*&[\]=,.]|{identifier}|{number}|{wsnl})*		{ 	/* function call */
+{function_call}		{ 	/* function call */
 		fcncal:	if (fcndef == true || ppdefine == true || rules == true) {
 				token = FCNCALL;
 				goto fcn;
-				/* NOTREACHED */
 			}
 			if (template == false) {
 				templateparens = parens;
 				template = true;
 			}
 			goto ident;
-			/* NOTREACHED */
 		}
 ("*"|{wsnl})+{identifier}		{	/* typedef name or modifier use */
 			goto ident;
-			/* NOTREACHED */
 		}
 .|\n	{		/* general identifer usage */
 			char	*s;
@@ -601,7 +582,7 @@ if{wsnl}*\(	{ 	/* ignore 'if' */
 			}
 
 			/* if found word was a keyword: */
-			if ((s = lookup(my_yytext + first)) != NULL) {
+			if ((s = lookup(my_yytext + first, compress)) != NULL) {
 				first = my_yyleng;
 
 				/* if the start of a typedef */
@@ -649,7 +630,6 @@ if{wsnl}*\(	{ 	/* ignore 'if' */
 				}
 				/* my_yymore(); */
 				return(token);
-				/* NOTREACHED */
 			}
 		}
 }
@@ -657,19 +637,16 @@ if{wsnl}*\(	{ 	/* ignore 'if' */
 \[		{	/* array dimension (don't worry or about subscripts) */
 			arraydimension = true;
 			goto more;
-			/* NOTREACHED */
 		}
 \]		{
 			arraydimension = false;
 			goto more;
-			/* NOTREACHED */
 		}
 \\\n		{	/* preprocessor statement is continued on next line */
 			/* save the '\\' to the output file, but not the '\n': */
 			yyleng = 1;
 			my_yymore();
 			goto eol;
-			/* NOTREACHED */
 		}
 \n		{	/* end of the line */
 			if (ppdefine == true) {	/* end of a #define */
@@ -681,29 +658,28 @@ if{wsnl}*\(	{ 	/* ignore 'if' */
 			}
 			/* skip the first 8 columns of a breakpoint listing line */
 			/* and skip the file path in the page header */
-			if (bplisting == true) {
+			if (filetype == FILETYPE_BPLISTING) {
 				int	c, i;
 
 				/* FIXME HBB 20001007: should call input() instead */
 				switch (input()) {	/* tab and EOF just fall through */
-				case ' ':	/* breakpoint number line */
-				case '[':
-					for (i = 1; i < 8 && input() > LEXEOF; ++i)
-						;
-					break;
-				case '.':	/* header line */
-				case '/':
-					/* skip to the end of the line */
-					while ((c = input()) > LEXEOF) {
-						if (c == '\n') {
-							unput(c);
-							break;
-						}
-					}
-					break;
-				case '\n':	/* empty line */
-					unput('\n');
-					break;
+                    case ' ':	/* breakpoint number line */
+                    case '[': {
+                        for (i = 1; i < 8 && input() > LEXEOF; ++i) { ; }
+                    } break;
+                    case '.':	/* header line */
+                    case '/':
+                        /* skip to the end of the line */
+                        while ((c = input()) > LEXEOF) {
+                            if (c == '\n') {
+                                unput(c);
+                                break;
+                            }
+                        }
+                        break;
+                    case '\n': {	/* empty line */
+                        unput('\n');
+                    } break;
 				}
 			}
 		eol:
@@ -722,41 +698,33 @@ if{wsnl}*\(	{ 	/* ignore 'if' */
 		}
 
 \'		{	/* character constant */
-			if (sdl == false)
-				BEGIN(IN_SQUOTE);
+			if (filetype == FILETYPE_SDL) { BEGIN(IN_SQUOTE); }
 			goto more;
-			/* NOTREACHED */
 		}
 <IN_SQUOTE>\'	{
 			BEGIN(INITIAL);
 			goto more;
-			/* NOTREACHED */
 		}
 \"		{	/* string constant */
 			BEGIN(IN_DQUOTE);
 			goto more;
-			/* NOTREACHED */
 		}
 <IN_DQUOTE>\"	{
 			BEGIN(INITIAL);
 			goto more;
-			/* NOTREACHED */
 		}
 <IN_DQUOTE,IN_SQUOTE>{
 \n	  	{	/* syntax error: unexpected EOL */
 			BEGIN(INITIAL);
 			goto eol;
-			/* NOTREACHED */
 		}
 \\.	|
 .		{
 			goto more;
-			/* NOTREACHED */
 		}
 \\\n 	{		/* line continuation inside a string! */
 			myylineno++;
 			goto more;
-			/* NOTREACHED */
 		}
 }
 
@@ -776,31 +744,32 @@ if{wsnl}*\(	{ 	/* ignore 'if' */
 			unput(' ');
  		}
 
-"/*"					yy_push_state(COMMENT);
+"/*"	{
+            yy_push_state(COMMENT);
+        }
+
 <COMMENT>{
 [^*\n]*			|
-"*"+[^*/\n]*	; /* do nothing */
+"*"+[^*/\n]*	{ ; }
 [^*\n]*\n		|
 "*"+[^*/\n]*\n	{
-			if (ppdefine == false) {
-				goto eol;
-			} else {
-				++myylineno;
-			}
-			/* NOTREACHED */
-		}
-"*"+"/"		{
-			/* replace the comment by a single blank */
-			unput(' ');
-			yy_pop_state();
-		}
+                if (ppdefine == false) {
+                    goto eol;
+                } else {
+                    ++myylineno;
+                }
+		    }
+"*"+"/"	    {
+                /* replace the comment by a single blank */
+                unput(' ');
+                yy_pop_state();
+		    }
 }
 
-"//".*\n?		{
-			/* C++-style one-line comment */
-			goto eol;
-			/* NOTREACHED */
-		}
+"//".*\n?	{
+                /* C++-style one-line comment */
+                goto eol;
+		    }
 
 {number}				|	/* number */
 <SDL>STATE[ \t]+		|   /* ... and other syntax error catchers... */
@@ -812,21 +781,17 @@ if{wsnl}*\(	{ 	/* ignore 'if' */
 
 %%
 
-void
-initscanner(char *srcfile)
-{
-	char	*s;
-
+void initscanner(char *srcfile) {
 	if (maxifbraces == NULL) {
 		maxifbraces = malloc(miflevel * sizeof(*maxifbraces));
 		preifbraces = malloc(miflevel * sizeof(*preifbraces));
 	}
+
 	first = 0;		/* buffer index for first char of symbol */
 	last = 0;		/* buffer index for last char of symbol */
 	lineno = 1;		/* symbol line number */
 	myylineno = 1;		/* input line number */
 	arraydimension = false;	/* inside array dimension declaration */
-	bplisting = false;		/* breakpoint listing */
 	braces = 0;		/* unmatched left brace count */
 	classdef = false;		/* c++ class definition */
 	elseelif = false;		/* #else or #elif found */
@@ -838,13 +803,11 @@ initscanner(char *srcfile)
 	iflevel = 0;		/* #if nesting level */
 	initializer = false;	/* data initializer */
 	initializerbraces = -1;	/* data initializer outer brace count */
-	lex = false;		/* lex file */
 	parens = 0;		/* unmatched left parenthesis count */
 	ppdefine = false;		/* preprocessor define statement */
 	pseudoelif = false;	/* pseudo-#elif */
 	oldtype = false;		/* next identifier is an old type */
 	rules = false;		/* lex/yacc rules */
-	sdl = false;		/* sdl file */
 	structfield = false;	/* structure field declaration */
 	tagdef = '\0';		/* class/enum/struct/union tag definition */
 	template = false;		/* function template */
@@ -852,45 +815,45 @@ initscanner(char *srcfile)
 	typedefbraces = -1;	/* initial typedef braces count */
 	ident_start = 0;	/* start of previously found identifier */
 
-	if (my_yytext)
-		*my_yytext = '\0';
+	if (my_yytext) { *my_yytext = '\0'; }
 	my_yyleng = 0;
 
 	BEGIN(INITIAL);
 
 	/* if this is not a C file */
-	if ((s = strrchr(srcfile, '.')) != NULL) {
+	const char * s = strrchr(srcfile, '.');
+	if (s) {
 		switch (*++s) {	/* this switch saves time on C files */
-		case 'b':
-			if (strcmp(s, "bp") == 0) {	/* breakpoint listing */
-				bplisting = true;
-			}
-			break;
-		case 'l':
-			if (strcmp(s, "l") == 0) {	/* lex */
-				lex = true;
-				global = false;
-			}
-			break;
-		case 's':
-			if (strcmp(s, "sd") == 0) {	/* sdl */
-				sdl = true;
-				BEGIN(SDL);
-			}
-			break;
-		case 'y':
-			if (strcmp(s, "y") == 0) {	/* yacc */
-				global = false;
-			}
-			break;
-		}
+            case 'b': {
+                if (strcmp(s, "bp") == 0) {	/* breakpoint listing */
+                    filetype = FILETYPE_BPLISTING;
+                }
+            } break;
+            case 'l': {
+                if (strcmp(s, "l") == 0) {	/* lex */
+                    filetype = FILETYPE_LEX;
+                    global = false;
+                }
+            } break;
+            case 's': {
+                if (strcmp(s, "sd") == 0) {	/* sdl */
+                    filetype = FILETYPE_SDL;
+                    BEGIN(SDL);
+                }
+            } break;
+            case 'y': {
+                if (strcmp(s, "y") == 0) {	/* yacc */
+                    // NOTE: yacc has no filetype value
+                    global = false;
+                }
+            } break;
+        }
 	}
 }
 
 #define MY_YY_ALLOCSTEP 1000
-static void
-my_yymore(void)
-{
+static
+void my_yymore(void) {
 	static size_t yytext_size = 0;
 
 	/* my_yytext is an ever-growing buffer. It will not ever

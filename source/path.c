@@ -41,16 +41,13 @@ const char *basename(const char *path) {
 	const char *s;
 
 	if((s = strrchr(path, '/')) != 0) { return (s + 1); }
-	return (path);
+	return path;
 }
 
 /* get the requested path components */
 char *pathcomponents(char *path, int components) {
-	int	  i;
-	char *s;
-
-	s = path + strlen(path) - 1;
-	for(i = 0; i < components; ++i) {
+	char * s = path + strlen(path) - 1;
+	for(int i = 0; i < components; i++) {
 		while(s > path && *--s != '/') {
 			;
 		}
@@ -60,7 +57,7 @@ char *pathcomponents(char *path, int components) {
 }
 
 /*
- *    compath(pathname)
+ *    compress_path(pathname)
  *
  *    This compresses pathnames.  All strings of multiple slashes are
  *    changed to a single slash.  All occurrences of "./" are removed.
@@ -72,9 +69,8 @@ char *pathcomponents(char *path, int components) {
  *         of accidently changing strings obtained from makefiles
  *         and stored in global structures.
  */
-
-char *compath(char *pathname) /*FDEF*/
-{
+char *compress_path(const char *pathname_) {
+    char * pathname = strdup(pathname_);
 	char *nextchar;
 	char *lastchar;
 	char *sofar;
@@ -85,20 +81,17 @@ char *compath(char *pathname) /*FDEF*/
 	/*
 	 *	do not change the path if it has no "/"
 	 */
-
 	if(strchr(pathname, '/') == NULL) return (pathname);
 
 	/*
 	 *	find all strings consisting of more than one '/'
 	 */
-
 	for(lastchar = pathname + 1; *lastchar != '\0'; lastchar++)
 		if((*lastchar == '/') && (*(lastchar - 1) == '/')) {
 
 			/*
 			 *	find the character after the last slash
 			 */
-
 			nextchar = lastchar;
 			while(*++lastchar == '/') { }
 
@@ -106,7 +99,6 @@ char *compath(char *pathname) /*FDEF*/
 			 *	eliminate the extra slashes by copying
 			 *	everything after the slashes over the slashes
 			 */
-
 			sofar = nextchar;
 			while((*nextchar++ = *lastchar++) != '\0')
 				;
@@ -116,7 +108,6 @@ char *compath(char *pathname) /*FDEF*/
 	/*
 	 *	find all strings of "./"
 	 */
-
 	for(lastchar = pathname + 1; *lastchar != '\0'; lastchar++)
 		if((*lastchar == '/') && (*(lastchar - 1) == '.') &&
 			((lastchar - 1 == pathname) || (*(lastchar - 2) == '/'))) {
@@ -124,7 +115,6 @@ char *compath(char *pathname) /*FDEF*/
 			/*
 			 *	copy everything after the "./" over the "./"
 			 */
-
 			nextchar = lastchar - 1;
 			sofar	 = nextchar;
 			while((*nextchar++ = *++lastchar) != '\0')
@@ -223,10 +213,9 @@ char *compath(char *pathname) /*FDEF*/
 
 static
 char *nextfield(char *p) {
-	while(*p && *p != ':')
-		++p;
-	if(*p) *p++ = 0;
-	return (p);
+	while(*p && *p != ':') { ++p; }
+	if(*p) { *p++ = 0; }
+	return p;
 }
 
 /*
@@ -238,8 +227,8 @@ char *nextfield(char *p) {
  *    storage allocation.
  */
 char *logdir(char *name) {
-	#define OURBUFSIZ 160 /* renamed: avoid conflict with <stdio.h> */
-	static char line[OURBUFSIZ + 1];
+	#define BUFFER_SIZE 160
+	static char line[BUFFER_SIZE];
 	char *p;
 	int	  i, j;
 	int	  pwf;
@@ -250,9 +239,10 @@ char *logdir(char *name) {
 	/* find the matching password entry */
 	do {
 		/* get the next line in the password file */
-		i = read(pwf, line, OURBUFSIZ);
-		for(j = 0; j < i; j++)
-			if(line[j] == '\n') break;
+		i = read(pwf, line, BUFFER_SIZE-1);
+		for(j = 0; j < i; j++) {
+			if(line[j] == '\n') { break; }
+        }
 		/* return a null pointer if the whole file has been read */
 		if(j >= i) return (0);
 		line[++j] = 0;						/* terminate the line */

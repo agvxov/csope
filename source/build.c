@@ -44,7 +44,7 @@
 
 #include "scanner.h"
 #include "version.inc"
-#include "vp.h"
+#include "vpath.h"
 
 # include <ncurses.h>
 
@@ -68,6 +68,9 @@ int	  symrefs = -1;				   /* cross-reference file */
 
 INVCONTROL invcontrol;			   /* inverted file control structure */
 
+char temp1[PATHLEN + 1];		/* temporary file name */
+char temp2[PATHLEN + 1];		/* temporary file name */
+
 
 /* Local variables: */
 static char *newinvname;	/* new inverted index file name */
@@ -89,12 +92,14 @@ static bool	 samelist(FILE *oldrefs, char **names, int count);
 
 /* Error handling routine if inverted index creation fails */
 static void cannotindex(void) {
-	fprintf(stderr, PROGRAM_NAME ": cannot create inverted index; ignoring -q option\n");
 	invertedindex = false;
 	errorsfound	  = true;
-	fprintf(stderr, PROGRAM_NAME ": removed files %s and %s\n", newinvname, newinvpost);
+
+	fprintf(stderr, PROGRAM_NAME ": cannot create inverted index; ignoring -q option\n");
+
 	unlink(newinvname);
 	unlink(newinvpost);
+	fprintf(stderr, PROGRAM_NAME ": removed files %s and %s\n", newinvname, newinvpost);
 }
 
 /* see if the name list is the same in the cross-reference file */
@@ -104,39 +109,37 @@ static bool samelist(FILE *oldrefs, char **names, int count) {
 	int	 i;
 
 	/* see if the number of names is the same */
-	if(fscanf(oldrefs, "%d", &oldcount) != 1 || oldcount != count) { return (false); }
+	if(fscanf(oldrefs, "%d", &oldcount) != 1 || oldcount != count) { return false; }
 	/* see if the name list is the same */
 	for(i = 0; i < count; ++i) {
-		if((1 != fscanf(oldrefs, " %[^\n]", oldname)) || strnotequal(oldname, names[i])) {
-			return (false);
+		if((1 != fscanf(oldrefs, " %[^\n]", oldname))
+        || strnotequal(oldname, names[i])) {
+			return false;
 		}
 	}
-	return (true);
+	return true;
 }
 
 /* create the file name(s) used for a new cross-referene */
-void setup_build_filenames(char *reffile) {
-	char *path; /* file pathname */
-	char *s;	/* pointer to basename in path */
-
-	path = malloc(strlen(reffile) + 10u);
+void setup_build_filenames(const char * const reffile) {
+	char path[strlen(reffile)+10]; /* file pathname */
 	strcpy(path, reffile);
-	s  = (char *)basename(path);	// this is save because the returned pointer is inside $path, and we know we can edit it
+
+	char * s = (char*)basename(path);	// this is safe because the returned pointer is inside $path, and we know we can edit it
 	*s = '\0';
-	strcat(path, "n");
+	strcat(path, "n"); // XXX: prefix signalling "new"
 	++s;
+
 	strcpy(s, basename(reffile));
 	newreffile = strdup(path);
 	strcpy(s, basename(invname));
 	newinvname = strdup(path);
 	strcpy(s, basename(invpost));
 	newinvpost = strdup(path);
-	free(path);
 }
 
 /* open the database */
-
-void opendatabase(void) {
+void opendatabase(const char * const reffile) {
 	if((symrefs = vpopen(reffile, O_BINARY | O_RDONLY)) == -1) {
 		cannotopen(reffile);
 		myexit(1);
@@ -144,7 +147,8 @@ void opendatabase(void) {
 	blocknumber = -1; /* force next seek to read the first block */
 
 	/* open any inverted index */
-	if(invertedindex == true && invopen(&invcontrol, invname, invpost, INVAVAIL) == -1) {
+	if (invertedindex == true
+    &&  invopen(&invcontrol, invname, invpost, INVAVAIL) == -1) {
 		askforreturn(); /* so user sees message */
 		invertedindex = false;
 	}
@@ -159,7 +163,7 @@ void rebuild(void) {
 		npostings  = 0;
 	}
 	build();
-	opendatabase();
+	opendatabase(reffile);
 
 	/* revert to the initial display */
 	if(refsfound != NULL) {
@@ -179,7 +183,7 @@ void build(void) {
 	char		  olddir[PATHLEN + 1];	/* directory in old cross-reference */
 	char		  oldname[PATHLEN + 1]; /* name in old cross-reference */
 	unsigned long oldnum;				/* number in old cross-ref */
-	struct stat	  statstruct;			/* file status */
+	struct stat	  file_status;
 	unsigned long firstfile;			/* first source file in pass */
 	unsigned long lastfile;				/* last source file in pass */
 	int			  built	 = 0;			/* built crossref for these files */
@@ -187,12 +191,14 @@ void build(void) {
 	unsigned long fileindex;			/* source file name index */
 	bool		  interactive = true;	/* output progress messages */
 
+    // XXX: find a safe way to remove this,
+    //       building is cheap, $HOME moves rarely
 	/* normalize the current directory relative to the home directory so
 	   the cross-reference is not rebuilt when the user's login is moved */
 	strcpy(newdir, currentdir);
-	if(strcmp(currentdir, home) == 0) {
+	if(!strcmp(currentdir, home)) {
 		strcpy(newdir, "$HOME");
-	} else if(strncmp(currentdir, home, strlen(home)) == 0) {
+	} else if(!strncmp(currentdir, home, strlen(home))) {
 		snprintf(newdir, sizeof(newdir), "$HOME%s", currentdir + strlen(home));
 	}
 	/* sort the source file names (needed for rebuilding) */
@@ -200,24 +206,21 @@ void build(void) {
 
 	/* if there is an old cross-reference and its current directory matches */
 	/* or this is an unconditional build */
-	if((oldrefs = vpfopen(reffile, "rb")) != NULL && unconditional == false &&
-		fscanf(oldrefs, PROGRAM_NAME " %d %" PATHLEN_STR "s", &fileversion, olddir) ==
-			2 &&
-		(strcmp(olddir, currentdir) == 0 /* remain compatible */
-			|| strcmp(olddir, newdir) == 0)) {
+	if((oldrefs = vpfopen(reffile, "rb")) != NULL
+    && !unconditional
+    && fscanf(oldrefs, PROGRAM_NAME " %d %" PATHLEN_STR "s", &fileversion, olddir) == 2
+    && (strcmp(olddir, currentdir) == 0 /* remain compatible */ || strcmp(olddir, newdir) == 0)) {
 		/* get the cross-reference file's modification time */
-		fstat(fileno(oldrefs), &statstruct);
-		reftime = statstruct.st_mtime;
+		fstat(fileno(oldrefs), &file_status);
+		reftime = file_status.st_mtime;
 		if(fileversion >= 8) {
 			bool oldcompress	  = true;
 			bool oldinvertedindex = false;
 			bool oldtruncate	  = false;
-			int	 c;
 
 			/* see if there are options in the database */
-			for(;;) {
-				while((c = getc(oldrefs)) == ' ')
-					; /* do nothing */
+			for(int c;;) {
+				while((c = getc(oldrefs)) == ' ') { ; }
 				if(c != '-') {
 					ungetc(c, oldrefs);
 					break;
@@ -274,8 +277,8 @@ void build(void) {
 		for(i = 0; i < nsrcfiles; ++i) {
 			if((1 != fscanf(oldrefs, " %[^\n]", oldname)) ||
 				strnotequal(oldname, srcfiles[i]) ||
-				(lstat(srcfiles[i], &statstruct) != 0) ||
-				(statstruct.st_mtime > reftime)) {
+				(lstat(srcfiles[i], &file_status) != 0) ||
+				(file_status.st_mtime > reftime)) {
 				goto outofdate;
 			}
 		}
@@ -301,7 +304,7 @@ void build(void) {
 		}
 		/* get the first file name in the old cross-reference */
 		blocknumber = -1;
-		read_block();	/* read the first cross-ref block */
+		read_crossreference_block();	/* read the first cross-ref block */
 		scanpast('\t'); /* skip the header */
 		oldfile = getoldfile();
 	} else {			/* force cross-referencing of all the source files */
@@ -355,7 +358,7 @@ void build(void) {
 			if(oldfile == NULL || strcmp(file, oldfile) < 0) {
 				crossref(file);
 				++built;
-			} else if(lstat(file, &statstruct) == 0 && statstruct.st_mtime > reftime) {
+			} else if(lstat(file, &file_status) == 0 && file_status.st_mtime > reftime) {
 				/* if this file was modified */
 				crossref(file);
 				++built;
@@ -413,7 +416,7 @@ void build(void) {
 			cannotwrite(temp1);
 			/* NOTREACHED */
 		}
-		fstat(fileno(postings), &statstruct);
+		fstat(fileno(postings), &file_status);
 		fclose(postings);
 		snprintf(sortcommand,
 			sizeof(sortcommand),
@@ -448,7 +451,8 @@ void build(void) {
 }
 
 /* string comparison function for qsort */
-static int compare(const void *arg_s1, const void *arg_s2) {
+static
+int compare(const void *arg_s1, const void *arg_s2) {
 	const char **s1 = (const char **)arg_s1;
 	const char **s2 = (const char **)arg_s2;
 
@@ -468,7 +472,8 @@ void seek_to_trailer(FILE *f) {
 }
 
 /* get the next file name in the old cross-reference */
-static char *getoldfile(void) {
+static
+char *getoldfile(void) {
 	static char file[PATHLEN + 1]; /* file name in old crossref */
 
 	if(blockp != NULL) {
@@ -477,13 +482,14 @@ static char *getoldfile(void) {
 				skiprefchar();
 				fetch_string_from_dbase(file, sizeof(file));
 				if(file[0] != '\0') { /* if not end-of-crossref */
-					return (file);
+					return file;
 				}
-				return (NULL);
+				return NULL;
 			}
 		} while(scanpast('\t') != NULL);
 	}
-	return (NULL);
+
+	return NULL;
 }
 
 /* Free all storage allocated for filenames: */
@@ -495,7 +501,8 @@ void free_newbuildfiles(void) {
 
 /* output the cscope version, current directory, database format options, and
    the database trailer offset */
-static void putheader(char *dir) {
+static
+void putheader(char *dir) {
 	dboffset = fprintf(newrefs, PROGRAM_NAME " %d %s", FILEVERSION, dir);
 	if(compress == false) { dboffset += fprintf(newrefs, " -c"); }
 	if(invertedindex == true) {
@@ -509,26 +516,24 @@ static void putheader(char *dir) {
 	if(trun_syms == true) { dboffset += fprintf(newrefs, " -T"); }
 
 	dboffset += fprintf(newrefs, " %.10ld\n", traileroffset);
-#ifdef PRINTF_RETVAL_BROKEN
-	dboffset = ftell(newrefs);
-#endif
 }
 
 /* put the name list into the cross-reference file */
-static void putlist(char **names, int count) {
-	int i, size = 0;
+static
+void putlist(char **names, int count) {
+	int size = 0;
 
 	fprintf(newrefs, "%d\n", count);
 	if(names == srcfiles) {
-
 		/* calculate the string space needed */
-		for(i = 0; i < count; ++i) {
+		for(int i = 0; i < count; ++i) {
 			size += strlen(names[i]) + 1;
 		}
 		fprintf(newrefs, "%d\n", size);
 	}
-	for(i = 0; i < count; ++i) {
-		if(fputs(names[i], newrefs) == EOF || putc('\n', newrefs) == EOF) {
+	for(int i = 0; i < count; i++) {
+		if(fputs(names[i], newrefs) == EOF
+        || putc('\n', newrefs) == EOF) {
 			cannotwrite(newreffile);
 			/* NOTREACHED */
 		}
@@ -536,7 +541,8 @@ static void putlist(char **names, int count) {
 }
 
 /* copy this file's symbol data */
-static void copydata(void) {
+static
+void copydata(void) {
 	char *cp;
 
 	setmark('\t');
@@ -547,13 +553,13 @@ static void copydata(void) {
 			while(*cp != '\t') {
 				dbputc(*cp++);
 			}
-		} while(*++cp == '\0' && (cp = read_block()) != NULL);
+		} while(*++cp == '\0' && (cp = read_crossreference_block()) != NULL);
 		dbputc('\t'); /* copy the tab */
 
 		/* get the next character */
 		/* HBB 2010-08-21: potential problem if above loop was left
 		 * with cp==NULL */
-		if(cp && (*(cp + 1) == '\0')) { cp = read_block(); }
+		if(cp && (*(cp + 1) == '\0')) { cp = read_crossreference_block(); }
 		/* exit if at the end of this file's data */
 		if(cp == NULL || *cp == NEWFILE) { break; }
 		/* look for an #included file */
@@ -570,8 +576,8 @@ static void copydata(void) {
 }
 
 /* copy this file's symbol data and output the inverted index postings */
-
-static void copyinverted(void) {
+static
+void copyinverted(void) {
 	char *cp;
 	char  c;
 	int	  type; /* reference type (mark character) */
@@ -587,13 +593,13 @@ static void copyinverted(void) {
 			while(*cp != '\n') {
 				dbputc(*cp++);
 			}
-		} while(*++cp == '\0' && (cp = read_block()) != NULL);
+		} while(*++cp == '\0' && (cp = read_crossreference_block()) != NULL);
 		dbputc('\n'); /* copy the newline */
 
 		/* get the next character */
 		/* HBB 2010-08-21: potential problem if above loop was left
 		 * with cp==NULL */
-		if(cp && (*(cp + 1) == '\0')) { cp = read_block(); }
+		if(cp && (*(cp + 1) == '\0')) { cp = read_crossreference_block(); }
 		/* exit if at the end of this file's data */
 		if(cp == NULL) { break; }
 		switch(*cp) {
@@ -636,7 +642,8 @@ static void copyinverted(void) {
 }
 
 /* replace the old file with the new file */
-static void movefile(char *new, char *old) {
+static
+void movefile(char *new, char *old) {
 	unlink(old);
 	if(rename(new, old) == -1) {
 		myperror(PROGRAM_NAME);
@@ -646,9 +653,51 @@ static void movefile(char *new, char *old) {
 }
 
 /* process the #included file in the old database */
-static void fetch_include_from_dbase(char *s, size_t length) {
+static
+void fetch_include_from_dbase(char *s, size_t length) {
 	dbputc(INCLUDE);
 	skiprefchar();
 	fetch_string_from_dbase(s, length);
 	incfile(s + 1, s);
+}
+
+// -----------
+
+static char tempdirpv[PATHLEN + 1];	/* private temp directory */
+
+void init_temp_files(void) {
+	/* make sure that tmpdir exists */
+	struct stat	stat_buf;
+	if(lstat(tmpdir, &stat_buf)) {
+        postfatal(
+            PROGRAM_NAME ": Temporary directory %s does not exist or cannot be accessed\n"
+            PROGRAM_NAME ": Please create the directory or set the environment variable\n"
+            PROGRAM_NAME ": TMPDIR to a valid directory\n",
+			tmpdir
+        );
+	}
+
+	/* create the temporary file names */
+	mode_t orig_umask = umask(S_IRWXG | S_IRWXO);
+	pid_t pid		  = getpid();
+	snprintf(tempdirpv, sizeof(tempdirpv), "%s/" PROGRAM_NAME ".%d", tmpdir, pid);
+	if(mkdir(tempdirpv, S_IRWXU)) {
+        postfatal(
+            PROGRAM_NAME ": Could not create private temp dir %s\n",
+			tempdirpv
+        );
+	}
+	umask(orig_umask);
+
+	snprintf(temp1, sizeof(temp1), "%s/" PROGRAM_NAME ".1", tempdirpv);
+	snprintf(temp2, sizeof(temp2), "%s/" PROGRAM_NAME ".2", tempdirpv);
+}
+
+void deinit_temp_files(void) {
+	/* remove any temporary files */
+	if(temp1[0] != '\0') {
+		unlink(temp1);
+		unlink(temp2);
+		rmdir(tempdirpv);
+	}
 }

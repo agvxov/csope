@@ -41,8 +41,6 @@
 #include "build.h"
 #include "scanner.h"
 
-
-#include <stdlib.h>
 #include <sys/stat.h>
 
 /* convert long to a string in base BASE notation */
@@ -54,7 +52,7 @@
 		digits = 1;                                                                      \
 		while(n >= BASE) {                                                               \
 			++digits;                                                                    \
-			i = n;                                                                       \
+			int i = n;                                                                   \
 			n /= BASE;                                                                   \
 			*--s = i - n * BASE + '!';                                                   \
 		}                                                                                \
@@ -76,23 +74,21 @@ static long			 fcnoffset;			   /* function name database offset */
 static long			 macrooffset;		   /* macro name database offset */
 static unsigned long msymbols = SYMBOLINC; /* maximum number of symbols */
 
-struct symbol {							   /* symbol data */
-		int			 type;				   /* type */
-		unsigned int first;				   /* index of first character in text */
-		unsigned int last;				   /* index of last+1 character in text */
-		unsigned int length;			   /* symbol length */
-		unsigned int fcn_level;			   /* function level of the symbol */
-};
-static struct symbol *symbol;
+typedef struct {							   /* symbol data */
+    int			 type;				   /* type */
+    unsigned int first;				   /* index of first character in text */
+    unsigned int last;				   /* index of last+1 character in text */
+    unsigned int length;			   /* symbol length */
+    unsigned int fcn_level;			   /* function level of the symbol */
+} symbol_t;
+static symbol_t * symbol;
 
 static void putcrossref(void);
 static void savesymbol(int token, int num);
 
-void crossref(char *srcfile) {
-	unsigned int i;
+void crossref(char * srcfile) {
 	unsigned int length;   /* symbol length */
 	unsigned int entry_no; /* function level of the symbol */
-	int			 token;	   /* current token */
 	struct stat	 st;
 
 	if(!((stat(srcfile, &st) == 0) && S_ISREG(st.st_mode))) {
@@ -103,11 +99,13 @@ void crossref(char *srcfile) {
 
 	entry_no = 0;
 	/* open the source file */
-	if((yyin = myfopen(srcfile, "r")) == NULL) {
+    yyin = myfopen(srcfile, "r");
+	if(!yyin) {
 		cannotopen(srcfile);
 		errorsfound = true;
 		return;
 	}
+
 	filename = srcfile;	  /* save the file name for warning messages */
 	putfilename(srcfile); /* output the file name */
 	dbputc('\n');
@@ -119,7 +117,7 @@ void crossref(char *srcfile) {
 	symbols					= 0;
 	if(symbol == NULL) { symbol = malloc(msymbols * sizeof(*symbol)); }
 	for(;;) {
-
+	    int token;   /* current token */
 		/* get the next token */
 		switch(token = yylex()) {
 			default:
@@ -138,18 +136,21 @@ void crossref(char *srcfile) {
 				/* update entry_no if see function entry */
 				if(token == FCNDEF) { entry_no++; }
 				/* see if the symbol is already in the list */
-				for(i = 0; i < symbols; ++i) {
-					if(length == symbol[i].length &&
-						strncmp(my_yytext + first, my_yytext + symbol[i].first, length) ==
-							0 &&
-						entry_no == symbol[i].fcn_level &&
-						token == symbol[i].type) { /* could be a::a() */
-						break;
-					}
-				}
-				if(i == symbols) { /* if not already in list */
-					savesymbol(token, entry_no);
-				}
+                {
+                    unsigned i;
+                    for(i = 0; i < symbols; ++i) {
+                        if(length == symbol[i].length &&
+                            strncmp(my_yytext + first, my_yytext + symbol[i].first, length) ==
+                                0 &&
+                            entry_no == symbol[i].fcn_level &&
+                            token == symbol[i].type) { /* could be a::a() */
+                            break;
+                        }
+                    }
+                    if(i == symbols) { /* if not already in list */
+                        savesymbol(token, entry_no);
+                    }
+                }
 				break;
 
 			case NEWLINE:			/* end of line containing symbols */
@@ -181,7 +182,6 @@ void crossref(char *srcfile) {
 }
 
 /* save the symbol in the list */
-
 static void savesymbol(int token, int num) {
 	/* make sure there is room for the symbol */
 	if(symbols == msymbols) {
@@ -198,7 +198,6 @@ static void savesymbol(int token, int num) {
 }
 
 /* output the file name */
-
 void putfilename(char *srcfile) {
 	/* check for file system out of space */
 	/* note: dbputc is not used to avoid lint complaint */
@@ -213,8 +212,8 @@ void putfilename(char *srcfile) {
 }
 
 /* output the symbols and source line */
-
-static void putcrossref(void) {
+static
+void putcrossref(void) {
 	unsigned int  i, j;
 	unsigned char c;
 	bool		  blank;	  /* blank indicator */
@@ -224,11 +223,7 @@ static void putcrossref(void) {
 	/* output the source line */
 	lineoffset = dboffset;
 	dboffset += fprintf(newrefs, "%d ", lineno);
-#ifdef PRINTF_RETVAL_BROKEN
-	dboffset = ftell(newrefs); /* fprintf doesn't return chars written */
-#endif
 
-	/* HBB 20010425: added this line: */
 	my_yytext[my_yyleng] = '\0';
 
 	blank = false;
@@ -347,15 +342,14 @@ static void putcrossref(void) {
 /* HBB 20000421: new function, for avoiding memory leaks */
 /* free the cross reference symbol table */
 void freecrossref() {
-	if(symbol) free(symbol);
+	if (symbol) { free(symbol); }
 	symbol	= NULL;
 	symbols = 0;
 }
 
 /* output the inverted index posting */
-
 void putposting(char *term, int type) {
-	long  i, n;
+	long  n;
 	char *s;
 	int	  digits;  /* digits output */
 	long  offset;  /* function/macro database offset */
@@ -363,9 +357,9 @@ void putposting(char *term, int type) {
 
 	/* get the function or macro name offset */
 	offset = fcnoffset;
-	if(macrooffset != 0) { offset = macrooffset; }
+	if (macrooffset != 0) { offset = macrooffset; }
 	/* then update them to avoid negative relative name offset */
-	switch(type) {
+	switch (type) {
 		case DEFINE:
 			macrooffset = dboffset;
 			break;
@@ -380,9 +374,9 @@ void putposting(char *term, int type) {
 			return; /* null term */
 	}
 	/* ignore a null term caused by a enum/struct/union without a tag */
-	if(*term == '\0') { return; }
+	if (*term == '\0') { return; }
 	/* skip any #include secondary type char (< or ") */
-	if(type == INCLUDE) { ++term; }
+	if (type == INCLUDE) { ++term; }
 	/* output the posting, which should be as small as possible to reduce
 	   the temp file size and sort time */
 	(void)fputs(term, postings);
@@ -392,7 +386,7 @@ void putposting(char *term, int type) {
 	   in ascending line offset order to order the references as they
 	   appear withing a source file */
 	ltobase(lineoffset);
-	for(i = PRECISION - digits; i > 0; --i) {
+	for (long i = PRECISION - digits; i > 0; --i) {
 		(void)putc('!', postings);
 	}
 	do {
@@ -403,14 +397,14 @@ void putposting(char *term, int type) {
 	(void)putc(type, postings);
 
 	/* function or macro name offset */
-	if(offset > 0) {
+	if (offset > 0) {
 		(void)putc(' ', postings);
 		ltobase(offset);
 		do {
 			(void)putc(*s, postings);
 		} while(*++s != '\0');
 	}
-	if(putc('\n', postings) == EOF) {
+	if (putc('\n', postings) == EOF) {
 		cannotwrite(temp1);
 		/* NOTREACHED */
 	}
@@ -418,10 +412,8 @@ void putposting(char *term, int type) {
 }
 
 /* put the string into the new database */
-
 void writestring(char *s) {
 	unsigned char c;
-	int			  i;
 
 	if(compress == false) {
 		/* Save some I/O overhead by using puts() instead of putc(): */
@@ -429,7 +421,7 @@ void writestring(char *s) {
 		return;
 	}
 	/* compress digraphs */
-	for(i = 0; (c = s[i]) != '\0'; ++i) {
+	for(int i = 0; (c = s[i]) != '\0'; ++i) {
 		if(/* dicode1[c] && dicode2[(unsigned char) s[i + 1]] */
 			IS_A_DICODE(c, s[i + 1])) {
 			/* c = (0200 - 2) + dicode1[c] + dicode2[(unsigned char) s[i + 1]]; */
@@ -441,13 +433,12 @@ void writestring(char *s) {
 }
 
 /* print a warning message with the file name and line number */
-
 void warning(char *text) {
-
 	(void)fprintf(stderr,
 		PROGRAM_NAME ": \"%s\", line %d: warning: %s\n",
 		filename,
 		myylineno,
-		text);
+		text
+    );
 	errorsfound = true;
 }

@@ -40,34 +40,22 @@
 
 #define UNUSED(x) (void)(x)
 
-#include <unistd.h>
-#include <sys/types.h>
+#include <stdlib.h>
+#include <stdarg.h>
+#include <stdbool.h>
 #include <assert.h>
 #include <ctype.h>	/* isalpha, isdigit, etc. */
-#include <signal.h> /* SIGINT and SIGQUIT */
-#include <stdio.h>	/* standard I/O package */
-#include <stdlib.h> /* standard library functions */
-#include <stdarg.h>
+#include <unistd.h>
+#include <sys/types.h>
 #include <fcntl.h>
-#include <stdbool.h>
 
 #include <string.h>	   /* string functions */
 
 #include "constants.h" /* misc. constants */
 #include "invlib.h"	   /* inverted index library */
 #include "library.h"   /* library function return values */
-#include "stddef.h"	   /* size_t */
 
 typedef void (*sighandler_t)(int);
-
-typedef struct { /* mouse action */
-		int button;
-		int percent;
-		int x1;
-		int y1;
-		int x2;
-		int y2;
-} MOUSE;
 
 struct cmd {					 /* command history struct */
 		struct cmd *prev, *next; /* list ptrs */
@@ -75,8 +63,8 @@ struct cmd {					 /* command history struct */
 		char	   *text;		 /* input field text */
 };
 
-/* bitmask type to mark which windows have to be rerendered by
-   display() */
+/* bitmask type to mark which windows have to be rerendered by display()
+ */
 enum {
 	CH_NONE	   = 0x0000,
 	CH_RESULT  = 0x0001 << 0,
@@ -87,6 +75,10 @@ enum {
 	CH_HELP	   = 0x0001 << 5, /* do NOT add to CH_ALL */
 	CH_ALL	   = CH_RESULT | CH_INPUT | CH_MODE | CH_CASE | CH_BACKEND,
 };
+/* Only display.c can directly update the screen.
+ * Any other component must request the update of a particular
+ *  screen area by OR'ing this variable with the appropriate mask.
+ */
 extern int window_change;
 
 enum {
@@ -99,14 +91,12 @@ enum {
 };
 extern int input_mode;
 
-#ifndef DFLT_INCDIR
-# define DFLT_INCDIR "/usr/include"
-#endif
+#define DEFAULT_INCLUDE_DIRECTORY "/usr/include"
+extern const char * incdir;
 
 /* digraph data for text compression */
 extern char dichar1[]; /* 16 most frequent first chars */
-extern char dichar2[]; /* 8 most frequent second chars
-		  using the above as first chars */
+extern char dichar2[]; /* 8 most frequent second chars using the above as first chars */
 extern char dicode1[]; /* digraph first character code */
 extern char dicode2[]; /* digraph second character code */
 
@@ -128,23 +118,22 @@ extern bool			compress;		/* compress the characters in the crossref */
 extern bool			dbtruncated;	/* database symbols truncated to 8 chars */
 extern int			dispcomponents; /* file path components to display */
 extern bool			editallprompt;	/* prompt between editing files */
-extern unsigned int fileargc;		/* file argument count */
-extern char		  **fileargv;		/* file argument values */
 extern int			fileversion;	/* cross-reference file version */
 extern bool			incurses;		/* in curses */
 extern bool			invertedindex;	/* the database has an inverted index */
-extern bool			isuptodate;		/* consider the crossref up-to-date */
-extern bool			kernelmode;		/* don't use DFLT_INCDIR - bad for kernels */
+extern bool			preserve_database;		/* consider the crossref up-to-date */
+extern bool			kernelmode;		/* don't use DEFAULT_INCLUDE_DIRECTORY - bad for kernels */
 extern bool			linemode;		/* use line oriented user interface */
 extern bool			verbosemode;	/* print extra information on line mode */
 extern bool			recurse_dir;	/* recurse dirs when searching for src files */
 extern char		   *namefile;		/* file of file names */
-extern bool			ogs;			/* display OGS book and subsystem names */
 extern char		   *prependpath;	/* prepend path to file names */
 extern FILE		   *refsfound;		/* references found file */
 extern long			totalterms;		/* total inverted index terms */
 extern bool			trun_syms;		/* truncate symbols to 8 characters */
 extern char			tempstring[TEMPSTRING_LEN + 1]; /* global dummy string buffer */
+
+extern const char * const * fileargv;		/* file argument values */
 
 extern char *tmpdir;								/* temporary directory */
 extern char	 temp1[];								/* temporary file name */
@@ -174,12 +163,9 @@ extern size_t nsrcfiles;	/* number of source files */
 extern size_t msrcfiles;	/* maximum number of source files */
 
 /* display.c global data */
-extern int			subsystemlen; /* OGS subsystem name display field length */
-extern int			booklen;	  /* OGS book name display field length */
 extern int			filelen;	  /* file name display field length */
 extern int			fcnlen;		  /* function name display field length */
 extern int			numlen;		  /* line number display field length */
-extern int		   *displine;	  /* screen line of displayed reference */
 extern unsigned int disprefs;	  /* displayed references */
 extern int			field;		  /* input field */
 extern unsigned int mdisprefs;	  /* maximum displayed references */
@@ -196,44 +182,28 @@ extern int	 blocklen;	  /* length of disk block read */
 
 /* lookup.c global data */
 extern struct keystruct {
-		char			 *text;
-		char			  delim;
-		struct keystruct *next;
+	const char * text;
+	const char delim;
+	struct keystruct *next;
 } keyword[];
-
-/* mouse.c global data */
-extern bool mouse; /* mouse interface */
 
 /* readline.c global data */
 extern char *rl_line_buffer;
 extern char	 input_line[PATLEN + 1];
 extern int	 rl_point;
 
-// extern    bool    unixpcmouse;		/* UNIX PC mouse interface */
-
 /* cscope functions called from more than one function or between files */
 
-char *filepath(char *file);
-char *findsymbol(const char *pattern);
-char *finddef(const char *pattern);
-char *findcalledby(const char *pattern);
-char *findcalling(const char *pattern);
-char *findstring(const char *pattern);
-char *findregexp(const char *egreppat);
-char *findfile(const char *dummy);
-char *findinclude(const char *pattern);
-char *findassign(const char *pattern);
-char *findallfcns(const char *dummy);
-char *inviewpath(char *file);
-char *lookup(char *ident);
+const char * prepend_path(const char * prepand_with, const char * file);
+char *inviewpath(const char *file);
+char *lookup(char *ident, bool do_compressed);
 char *pathcomponents(char *path, int components);
-char *read_block(void);
+char *read_crossreference_block(void);
 char *scanpast(char c);
 
-char	   **parse_options(int *argc, char **argv);
-void		 error_usage(void);
-void		 longusage(void);
-void		 usage(void);
+char **parse_options(const int argc, const char * const * const argv);
+void readenv(bool preserve_database);
+
 extern bool	 remove_symfile_onexit;
 extern bool	 onesearch;		   /* one search only in line mode */
 extern char *reflines;		   /* symbol reference lines file */
@@ -245,9 +215,10 @@ void	   verswp_window(void);
 bool	   interpret(int c);	// XXX: probably rename
 int		   handle_input(const int c);
 int		   dispchar2int(const char c);
-int		   process_mouse();
-int		   changestring(const char *from, const char *to, const bool *const change,
-		   const int change_len);
+int		   changestring(const char *from, const char *to, const bool *const change, const int change_len);
+
+void init_temp_files(void);
+void deinit_temp_files(void);
 
 long seekpage(const size_t i);
 long seekrelline(unsigned i);
@@ -255,68 +226,65 @@ void PCS_reset(void);
 
 void rlinit(void);
 
-void		addsrcfile(char *path);
-void		askforchar(void);
-void		askforreturn(void);
-void		cannotwrite(const char *const file);
-void		cannotopen(const char *const file);
-void		clearmsg(void);
-void		clearmsg2(void);
-void		countrefs(void);
-void		crossref(char *srcfile);
-void		dispinit(void);
-void		display(void);
-void		redisplay(void);
-void		drawscrollbar(int top, int bot);
-void		edit(char *file, const char *const linenum);
-void		editall(void);
-void		editref(int);
-void		entercurses(void);
-void		exitcurses(void);
-void		force_window(void);
-void		findcleanup(void);
-void		freesrclist(void);
-void		freeinclist(void);
-void		freecrossref(void);
-void		freefilelist(void);
-const char *help(void);
-void		incfile(char *file, char *type);
-void		includedir(char *_dirname);
-void		initsymtab(void);
-void		makefilelist(void);
-void		mousecleanup(void);
-void		mousemenu(void);
-void		mouseinit(void);
-void		mousereinit(void);
-void		myexit(int sig);
-void		myperror(char *text);
-void		ogsnames(char *file, char **subsystem, char **book);
-void		progress(char *what, long current, long max);
-void		putfilename(char *srcfile);
-void		postmsg(char *msg);
-void		postmsg2(char *msg);
-void		posterr(char *msg, ...);
-void		postfatal(const char *msg, ...);
-void		putposting(char *term, int type);
-void		fetch_string_from_dbase(char *, size_t);
-void		shellpath(char *out, int limit, char *in);
-void		sourcedir(char *dirlist);
-void		myungetch(int c);
-void		warning(char *text);
-void		writestring(char *s);
+void addsrcfile(char *path);
+void askforchar(void);
+void askforreturn(void);
+void cannotwrite(const char *const file);
+void cannotopen(const char *const file);
+void clearmsg(void);
+void clearmsg2(void);
+void countrefs(void);
+void crossref(char *srcfile);
+void edit(const char * filename, const char *const linenum);
+void editall(void);
+void editref(int);
+void force_window(void);
+void findcleanup(void);
+void freesrclist(void);
+void freeinclist(void);
+void freecrossref(void);
+void freefilelist(void);
+void incfile(char *file, char *type);
+void includedir(const char *dirname);
+void initsymtab(void);
+void makefilelist(const char * const * const argv);
+void myexit(int sig);
+void myperror(char *text);
+void progress(char *what, long current, long max);
+void putfilename(char *srcfile);
+void postmsg(char *msg);
+void postmsg2(char *msg);
+void posterr(char *msg, ...);
+void postfatal(const char *msg, ...);
+void putposting(char *term, int type);
+void fetch_string_from_dbase(char *, size_t);
+void sourcedir(const char * dirlist);
+void myungetch(int c);
+void warning(char *text);
+void writestring(char *s);
 
-bool infilelist(char *file);
+void entercurses(void);
+void exitcurses(void);
+void drawscrollbar(int top, int bot);
+void dispinit(void);
+void display(void);
+void redisplay(void);
+
+void shellpath(char *out, int limit, char *in);
+
+bool infilelist(const char * file);
 bool readrefs(char *filename);
 bool search(const char *query);
 bool writerefsfound(void);
 
-int			findinit(const char *pattern_);
-MOUSE	   *getmouseaction(char leading_char);
+int	findinit(const char *pattern_);
 
-int	 egrep(char *file, FILE *output, char *format);
-int	 hash(char *ss);
+int	 egrep(const char * file, FILE *output, char *format);
+int	 hash(const char * ss);
 int	 execute(char *a, ...);
 long dbseek(long offset);
 
+void mousecleanup(void);
+int process_mouse();
 
 #endif /* CSCOPE_GLOBAL_H */

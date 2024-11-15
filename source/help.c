@@ -80,7 +80,8 @@ static char help_msg[] =
 	"^D\t\tExit the program.\n"
 	"\nNote: If the first character of the pattern you want to search for matches\n"
 	"a command, type a \\ character first.\n"
-	"Note: Some ctrl keys may be occupied by your terminal configuration.\n";
+	"Note: Some ctrl keys may be occupied by your terminal configuration.\n"
+;
 
 static char changeing_help_msg[] =
 	"When changing text, you can use these single-character commands:\n\n"
@@ -94,9 +95,10 @@ static char changeing_help_msg[] =
 	"ESC\t\tExit without changing the marked lines.\n"
 	"!\t\tStart an interactive shell (type ^D to return).\n"
 	"^L\t\tRedraw the screen.\n"
-	"?\t\tDisplay this list of commands.\n";
+	"?\t\tDisplay this list of commands.\n"
+;
 
-const char *help(void) {
+const char * help(void) {
 	switch (input_mode) {
 		case INPUT_CHANGE:
 		case INPUT_CHANGE_TO:
@@ -104,13 +106,6 @@ const char *help(void) {
 		default:
 			return help_msg;
 	}
-}
-
-/* error exit including short usage information */
-void error_usage(void) {
-	usage();
-	fputs("Try the -h option for more information.\n", stderr);
-	myexit(1);
 }
 
 /* normal usage message */
@@ -141,7 +136,7 @@ void longusage(void) {
 		NAMEFILE);
 	fprintf(stderr,
 		"-k            Kernel Mode - don't use %s for #include files.\n",
-		DFLT_INCDIR);
+		DEFAULT_INCLUDE_DIRECTORY);
 	fputs(
 		"-L            Do a single search with line-oriented output.\n"
 		"-l            Line-oriented interface.\n"

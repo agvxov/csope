@@ -58,8 +58,6 @@ static pid_t myfork(void);
 /* execute forks and executes a program or shell script, waits for it to
  * finish, and returns its exit code.
  */
-
-/*VARARGS1*/
 int execute(char *a, ...) /* NOTE: "exec" is already defined on u370 */
 {
 	va_list ap;
@@ -73,7 +71,7 @@ int execute(char *a, ...) /* NOTE: "exec" is already defined on u370 */
 	fflush(stdout);
 	va_start(ap, a);
 
-	for(p = 0; (argv[p] = va_arg(ap, char *)) != 0; p++) { }
+	for(p = 0; (argv[p] = va_arg(ap, char *)) != 0; p++) { ; }
 
 #ifdef __MSDOS__
 	/* HBB 20010313: in MSDOG, everything is completely different.
@@ -144,7 +142,6 @@ static pid_t myfork(void) {
 }
 
 /* join is the compliment of fork */
-
 static int join(pid_t p) {
 	int	  status = -1;
 	pid_t w;

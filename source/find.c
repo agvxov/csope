@@ -41,6 +41,7 @@
 #include "scanner.h" /* for token definitions */
 
 #include <assert.h>
+#include <signal.h>
 #include <ncurses.h>
 #include <regex.h>
 #include <setjmp.h> /* jmp_buf */
@@ -89,6 +90,17 @@ typedef enum {				   /* findinit return code */
 	REGCMPERROR
 } FINDINIT;
 
+static char *findsymbol(const char *pattern);
+static char *finddef(const char *pattern);
+static char *findcalledby(const char *pattern);
+static char *findcalling(const char *pattern);
+static char *findstring(const char *pattern);
+static char *findregexp(const char *egreppat);
+static char *findfile(const char *dummy);
+static char *findinclude(const char *pattern);
+static char *findassign(const char *pattern);
+static char *findallfcns(const char *dummy);
+
 typedef char *(*FP)(const char *); /* pointer to function returning a character pointer */
 /* Paralel array to "fields", indexed by "field" */
 FP field_searchers[FIELDS + 1] = {
@@ -107,8 +119,8 @@ FP field_searchers[FIELDS + 1] = {
 
 /**/
 struct TI {
-		char *text1;
-		char *text2;
+	char *text1;
+	char *text2;
 };
 extern struct TI fields[FIELDS + 1];
 
@@ -121,18 +133,21 @@ static void jumpback(int sig) {
 }
 
 /* find the symbol in the cross-reference */
+static
 char *findsymbol(const char *pattern) {
 	return find_symbol_or_assignment(pattern, false);
 }
 
 /* find the symbol in the cross-reference, and look for assignments */
+static
 char *findassign(const char *pattern) {
 	return find_symbol_or_assignment(pattern, true);
 }
 
 /* Test reference whether it's an assignment to the symbol found at
  * (global variable) 'blockp' */
-static bool check_for_assignment(void) {
+static
+bool check_for_assignment(void) {
 	/* Do the extra work here to determine if this is an
 	 * assignment or not.  Do this by examining the next character
 	 * or two in blockp */
@@ -144,7 +159,9 @@ static bool check_for_assignment(void) {
 		if(asgn_char[0] == '\0') {
 			/* get the next block when we reach the end of
 			 * the current block */
-			if(NULL == (asgn_char = read_block())) return false;
+			if(NULL == (asgn_char = read_crossreference_block())){
+				return false;
+			}
 		}
 	}
 	/* check for digraph starting with = */
@@ -159,13 +176,12 @@ static bool check_for_assignment(void) {
 	}
 
 	/* check for operator assignments: +=, ... ^= ? */
-	if(((asgn_char[0] == '+') || (asgn_char[0] == '-') || (asgn_char[0] == '*') ||
+	if((asgn_char[1] == '=')
+    || (((asgn_char[1] & 0x80) && (dichar1[(asgn_char[1] & 0177) / 8] == '='))
+	   && ((asgn_char[0] == '+') || (asgn_char[0] == '-') || (asgn_char[0] == '*') ||
 		   (asgn_char[0] == '/') || (asgn_char[0] == '%') || (asgn_char[0] == '&') ||
-		   (asgn_char[0] == '|') || (asgn_char[0] == '^')) &&
-		((asgn_char[1] == '=') ||
-			((asgn_char[1] & 0x80) && (dichar1[(asgn_char[1] & 0177) / 8] == '=')))
-
-	) {
+		   (asgn_char[0] == '|') || (asgn_char[0] == '^'))
+	)) {
 		return true;
 	}
 
@@ -173,16 +189,17 @@ static bool check_for_assignment(void) {
 	if(((asgn_char[0] == '<') || (asgn_char[0] == '>')) &&
 		(asgn_char[1] == asgn_char[0]) &&
 		((asgn_char[2] == '=') ||
-			((asgn_char[2] & 0x80) && (dichar1[(asgn_char[2] & 0177) / 8] == '=')))) {
+			((asgn_char[2] & 0x80) && (dichar1[(asgn_char[2] & 0177) / 8] == '=')))
+	) {
 		return true;
 	}
-
 	return false;
 }
 
 /* The actual routine that does the work for findsymbol() and
  * findassign() */
-static char *find_symbol_or_assignment(const char *pattern, bool assign_flag) {
+static
+char *find_symbol_or_assignment(const char *pattern, bool assign_flag) {
 	char   file[PATHLEN + 1];	 /* source file name */
 	char   function[PATLEN + 1]; /* function name */
 	char   macro[PATLEN + 1];	 /* macro name */
@@ -207,7 +224,7 @@ static char *find_symbol_or_assignment(const char *pattern, bool assign_flag) {
 		return NULL;
 	}
 
-	(void)scanpast('\t');	  /* find the end of the header */
+	scanpast('\t');	  /* find the end of the header */
 	skiprefchar();			  /* skip the file marker */
 	fetch_string_from_dbase(file, sizeof(file));
 	strcpy(function, global); /* set the dummy global function name */
@@ -223,10 +240,10 @@ static char *find_symbol_or_assignment(const char *pattern, bool assign_flag) {
 			while(*cp != '\n') {
 				++cp;
 			}
-		} while(*(cp + 1) == '\0' && (cp = read_block()) != NULL);
+		} while(*(cp + 1) == '\0' && (cp = read_crossreference_block()) != NULL);
 
 		/* skip the found character */
-		if(cp != NULL && *(++cp + 1) == '\0') { cp = read_block(); }
+		if(cp != NULL && *(++cp + 1) == '\0') { cp = read_crossreference_block(); }
 		if(cp == NULL) { break; }
 		/* look for a source file, function, or macro name */
 		if(*cp == '\t') {
@@ -362,7 +379,7 @@ static char *find_symbol_or_assignment(const char *pattern, bool assign_flag) {
 }
 
 /* find the function definition or #define */
-
+static
 char *finddef(const char *pattern) {
 	char file[PATHLEN + 1]; /* source file name */
 
@@ -424,7 +441,7 @@ char *finddef(const char *pattern) {
 }
 
 /* find all function definitions (used by samuel only) */
-
+static
 char *findallfcns(const char *dummy) {
 	char file[PATHLEN + 1];	   /* source file name */
 	char function[PATLEN + 1]; /* function name */
@@ -462,7 +479,7 @@ char *findallfcns(const char *dummy) {
 }
 
 /* find the functions calling this function */
-
+static
 char *findcalling(const char *pattern) {
 	char  file[PATHLEN + 1];	   /* source file name */
 	char  function[PATLEN + 1];	   /* function name */
@@ -549,7 +566,7 @@ char *findcalling(const char *pattern) {
 }
 
 /* find the text in the source files */
-
+static
 char *findstring(const char *pattern) {
 	char		egreppat[2 * PATLEN];
 	char	   *cp = egreppat;
@@ -567,7 +584,7 @@ char *findstring(const char *pattern) {
 }
 
 /* find this regular expression in the source files */
-
+static
 char *findregexp(const char *egreppat) {
 	unsigned int i;
 	char		*egreperror;
@@ -577,7 +594,7 @@ char *findregexp(const char *egreppat) {
 
 		/* search the files */
 		for(i = 0; i < nsrcfiles; ++i) {
-			char *file = filepath(srcfiles[i]);
+			const char * file = prepend_path(prependpath, srcfiles[i]);
 
 			progress("Search", searchcount, nsrcfiles);
 			if(egrep(file, refsfound, "%s <unknown> %ld ") < 0) {
@@ -589,11 +606,11 @@ char *findregexp(const char *egreppat) {
 }
 
 /* find matching file names */
-
+static
 char *findfile(const char *dummy) {
-	unsigned int i;
+	UNUSED(dummy);
 
-	(void)dummy; /* unused argument */
+	unsigned int i;
 
 	for(i = 0; i < nsrcfiles; ++i) {
 		char *s;
@@ -612,7 +629,7 @@ char *findfile(const char *dummy) {
 }
 
 /* find files #including this file */
-
+static
 char *findinclude(const char *pattern) {
 	char file[PATHLEN + 1]; /* source file name */
 
@@ -654,7 +671,6 @@ char *findinclude(const char *pattern) {
 }
 
 /* initialize */
-
 int findinit(const char *pattern_) {
 	char		 *pattern = strdup(pattern_);
 	int			  r		  = NOERROR;
@@ -706,9 +722,9 @@ int findinit(const char *pattern_) {
 		}
 		/* look for use of the -T option (truncate symbol to 8
 		   characters) on a database not built with -T */
-		if(trun_syms == true && isuptodate == true && dbtruncated == false &&
+		if(trun_syms == true && preserve_database == true && dbtruncated == false &&
 			s - pattern >= 8) {
-			(void)strcpy(pattern + 8, ".*");
+			strcpy(pattern + 8, ".*");
 			isregexp = true;
 		}
 	}
@@ -719,8 +735,8 @@ int findinit(const char *pattern_) {
 		/* remove a leading ^ */
 		s = pattern;
 		if(*s == '^') {
-			(void)strcpy(newpat, s + 1);
-			(void)strcpy(s, newpat);
+			strcpy(newpat, s + 1);
+			strcpy(s, newpat);
 		}
 		/* remove a trailing $ */
 		i = strlen(s) - 1;
@@ -733,7 +749,7 @@ int findinit(const char *pattern_) {
 		/* must be an exact match */
 		/* note: regcomp doesn't recognize ^*keypad$ as a syntax error
 				 unless it is given as a single arg */
-		(void)snprintf(buf, sizeof(buf), "^%s$", s);
+		snprintf(buf, sizeof(buf), "^%s$", s);
 		if(regcomp(&regexp, buf, REG_EXTENDED | REG_NOSUB) != 0) {
 			r = REGCMPERROR;
 			goto end;
@@ -765,7 +781,8 @@ void findcleanup(void) {
 
 /* match the pattern to the string */
 
-static bool match(void) {
+static
+bool match(void) {
 	char string[PATLEN + 1];
 
 	/* see if this is a regular expression pattern */
@@ -784,7 +801,8 @@ static bool match(void) {
 
 /* match the rest of the pattern to the name */
 
-static bool matchrest(void) {
+static
+bool matchrest(void) {
 	int i = 1;
 
 	skiprefchar();
@@ -793,7 +811,7 @@ static bool matchrest(void) {
 			++blockp;
 			++i;
 		}
-	} while(*(blockp + 1) == '\0' && read_block() != NULL);
+	} while(*(blockp + 1) == '\0' && read_crossreference_block() != NULL);
 
 	if(*blockp == '\n' && cpattern[i] == '\0') { return (true); }
 	return (false);
@@ -801,7 +819,8 @@ static bool matchrest(void) {
 
 /* put the reference into the file */
 
-static void putref(int seemore, const char *file, const char *func) {
+static
+void putref(int seemore, const char *file, const char *func) {
 	FILE *output;
 
 	if(strcmp(func, global) == 0) {
@@ -809,21 +828,22 @@ static void putref(int seemore, const char *file, const char *func) {
 	} else {
 		output = nonglobalrefs;
 	}
-	(void)fprintf(output, "%s %s ", file, func);
+	fprintf(output, "%s %s ", file, func);
 	putsource(seemore, output);
 }
 
 /* put the source line into the file */
 
-static void putsource(int seemore, FILE *output) {
+static
+void putsource(int seemore, FILE *output) {
 	char *tmpblockp;
 	char *cp, nextc = '\0';
 	bool  Change = false, retreat = false;
 
 	if(fileversion <= 5) {
-		(void)scanpast(' ');
+		scanpast(' ');
 		putline(output);
-		(void)putc('\n', output);
+		putc('\n', output);
 		return;
 	}
 	/* scan back to the beginning of the source line */
@@ -833,7 +853,7 @@ static void putsource(int seemore, FILE *output) {
 		if(--cp < block) {
 			retreat = true;
 			/* read the previous block */
-			(void)dbseek((blocknumber - 1) * BUFSIZ);
+			dbseek((blocknumber - 1) * BUFSIZ);
 			cp = block + (BUFSIZ - 1);
 		}
 	}
@@ -862,13 +882,14 @@ static void putsource(int seemore, FILE *output) {
 		putline(output);
 		if(retreat == true) retreat = false;
 	} while(blockp != NULL && getrefchar() != '\n');
-	(void)putc('\n', output);
+	putc('\n', output);
 	if(Change == true) blockp = cp;
 }
 
 /* put the rest of the cross-reference line into the file */
 
-static void putline(FILE *output) {
+static
+void putline(FILE *output) {
 	char	*cp;
 	unsigned c;
 
@@ -880,20 +901,20 @@ static void putline(FILE *output) {
 			/* check for a compressed digraph */
 			if(c > '\177') {
 				c &= 0177;
-				(void)putc(dichar1[c / 8], output);
-				(void)putc(dichar2[c & 7], output);
+				putc(dichar1[c / 8], output);
+				putc(dichar2[c & 7], output);
 			}
 			/* check for a compressed keyword */
 			else if(c < ' ') {
-				(void)fputs(keyword[c].text, output);
-				if(keyword[c].delim != '\0') { (void)putc(' ', output); }
-				if(keyword[c].delim == '(') { (void)putc('(', output); }
+				fputs(keyword[c].text, output);
+				if(keyword[c].delim != '\0') { putc(' ', output); }
+				if(keyword[c].delim == '(') { putc('(', output); }
 			} else {
-				(void)putc((int)c, output);
+				putc((int)c, output);
 			}
 			++cp;
 		}
-	} while(*(cp + 1) == '\0' && (cp = read_block()) != NULL);
+	} while(*(cp + 1) == '\0' && (cp = read_crossreference_block()) != NULL);
 	blockp = cp;
 }
 
@@ -919,7 +940,7 @@ void fetch_string_from_dbase(char *s, size_t length) {
 			}
 			++cp;
 		}
-	} while(length > 0 && cp[1] == '\0' && (cp = read_block()) != NULL);
+	} while(length > 0 && cp[1] == '\0' && (cp = read_crossreference_block()) != NULL);
 	blockp = cp;
 	*s	   = '\0';
 }
@@ -934,15 +955,14 @@ char *scanpast(char c) {
 		while(*cp != c) {
 			++cp;
 		}
-	} while(*(cp + 1) == '\0' && (cp = read_block()) != NULL);
+	} while(*(cp + 1) == '\0' && (cp = read_crossreference_block()) != NULL);
 	blockp = cp;
 	if(cp != NULL) { skiprefchar(); /* skip the found character */ }
-	return (blockp);
+	return blockp;
 }
 
 /* read a block of the cross-reference */
-/* HBB 20040430: renamed from readblock(), to avoid name clash on QNX */
-char *read_block(void) {
+char *read_crossreference_block(void) {
 	/* read the next block */
 	blocklen = read(symrefs, block, BUFSIZ);
 	blockp	 = block;
@@ -960,7 +980,8 @@ char *read_block(void) {
 	return (blockp);
 }
 
-static char *lcasify(const char *s) {
+static
+char *lcasify(const char *s) {
 	static char ls[PATLEN + 1]; /* largest possible match string */
 	char	   *lptr = ls;
 
@@ -974,16 +995,10 @@ static char *lcasify(const char *s) {
 }
 
 /* find the functions called by this function */
-
-/* HBB 2000/05/05: for consitency of calling interface between the
- * different 'find...()' functions, this now returns a char pointer,
- * too. Implemented as a pointer to static storage containing 'y' or
- * 'n', for the boolean result values true and false */
-
-char *findcalledby(const char *pattern) {
-	char		file[PATHLEN + 1];	/* source file name */
-	static char found_caller = 'n'; /* seen calling function? */
-	bool		macro		 = false;
+char * findcalledby(const char *pattern) {
+	char   file[PATHLEN + 1];	/* source file name */
+	char * found_caller = NULL; /* seen calling function? */
+	bool   macro        = false;
 
 	if(invertedindex == true) {
 		POSTING *p;
@@ -995,12 +1010,12 @@ char *findcalledby(const char *pattern) {
 				case FCNDEF:
 					if(dbseek(p->lineoffset) != -1 &&
 						scanpast('\t') != NULL) { /* skip def */
-						found_caller = 'y';
+						found_caller = (char*)0x01;
 						findcalledbysub(srcfiles[p->fileindex], macro);
 					}
 			}
 		}
-		return (&found_caller);
+		return found_caller;
 	}
 	/* find the function definition(s) */
 	while(scanpast('\t') != NULL) {
@@ -1010,7 +1025,7 @@ char *findcalledby(const char *pattern) {
 				skiprefchar();		/* save file name */
 				fetch_string_from_dbase(file, sizeof(file));
 				if(*file == '\0') { /* if end of symbols */
-					return (&found_caller);
+					return found_caller;
 				}
 				progress("Search", searchcount, nsrcfiles);
 				break;
@@ -1023,19 +1038,19 @@ char *findcalledby(const char *pattern) {
 			case FCNDEF:
 				skiprefchar(); /* match name to pattern */
 				if(match()) {
-					found_caller = 'y';
+					found_caller = (char*)0x01;
 					findcalledbysub(file, macro);
 				}
 				break;
 		}
 	}
 
-	return (&found_caller);
+	return found_caller;
 }
 
 /* find this term, which can be a regular expression */
-
-static void findterm(const char *pattern) {
+static
+void findterm(const char *pattern) {
 	char *s;
 	int	  len;
 	char  prefix[PATLEN + 1];
@@ -1046,7 +1061,7 @@ static void findterm(const char *pattern) {
 	boolclear();	   /* clear the posting set */
 
 	/* get the string prefix (if any) of the regular expression */
-	(void)strcpy(prefix, pattern);
+	strcpy(prefix, pattern);
 	if((s = strpbrk(prefix, ".[{*+")) != NULL) { *s = '\0'; }
 	/* if letter case is to be ignored */
 	if(caseless == true) {
@@ -1060,16 +1075,16 @@ static void findterm(const char *pattern) {
 		}
 	}
 	/* find the term lexically >= the prefix */
-	(void)invfind(&invcontrol, prefix);
+	UNUSED(invfind(&invcontrol, prefix));
 	if(caseless == true) { /* restore lower case */
-		(void)strcpy(prefix, lcasify(prefix));
+		UNUSED(strcpy(prefix, lcasify(prefix)));
 	}
 	/* a null prefix matches the null term in the inverted index,
 	   so move to the first real term */
-	if(*prefix == '\0') { (void)invforward(&invcontrol); }
+	if(*prefix == '\0') { invforward(&invcontrol); }
 	len = strlen(prefix);
 	do {
-		(void)invterm(&invcontrol, term); /* get the term */
+		UNUSED(invterm(&invcontrol, term)); /* get the term */
 		s = term;
 		if(caseless == true) { s = lcasify(s); /* make it lower case */ }
 		/* if it matches */
@@ -1103,19 +1118,20 @@ static void findterm(const char *pattern) {
 }
 
 /* get the next posting for this term */
-
-static POSTING *getposting(void) {
+static
+POSTING *getposting(void) {
 	if(npostings-- <= 0) { return (NULL); }
 	/* display progress about every three seconds */
 	if(++searchcount % 100 == 0) {
 		progress("Possible references retrieved", searchcount, postingsfound);
 	}
-	return (postingp++);
+	return postingp++;
 }
 
 /* put the posting reference into the file */
 
-static void putpostingref(POSTING *p, const char *pat) {
+static
+void putpostingref(POSTING *p, const char *pat) {
 	// initialize function to "unknown" so that the first line of temp1
 	// is properly formed if symbol matches a header file entry first time
 	static char function[PATLEN + 1] = "unknown"; /* function name */
@@ -1152,17 +1168,18 @@ long dbseek(long offset) {
 	if((n = offset / BUFSIZ) != blocknumber) {
 		if((rc = lseek(symrefs, n * BUFSIZ, 0)) == -1) {
 			myperror("Lseek failed");
-			(void)sleep(3);
-			return (rc);
+			sleep(3);
+			return rc;
 		}
-		(void)read_block();
+		read_crossreference_block();
 		blocknumber = n;
 	}
 	blockp = block + offset % BUFSIZ;
-	return (rc);
+	return rc;
 }
 
-static void findcalledbysub(const char *file, bool macro) {
+static
+void findcalledbysub(const char *file, bool macro) {
 	/* find the next function call or the end of this function */
 	while(scanpast('\t') != NULL) {
 		switch(*blockp) {
@@ -1177,12 +1194,12 @@ static void findcalledbysub(const char *file, bool macro) {
 			case FCNCALL: /* function call */
 
 				/* output the file name */
-				(void)fprintf(refsfound, "%s ", file);
+				UNUSED(fprintf(refsfound, "%s ", file));
 
 				/* output the function name */
 				skiprefchar();
 				putline(refsfound);
-				(void)putc(' ', refsfound);
+				UNUSED(putc(' ', refsfound));
 
 				/* output the source line */
 				putsource(1, refsfound);
@@ -1213,16 +1230,16 @@ bool writerefsfound(void) {
 	if(refsfound == NULL) {
 		if((refsfound = myfopen(temp1, "wb")) == NULL) {
 			cannotopen(temp1);
-			return (false);
+			return false;
 		}
 	} else {
-		(void)fclose(refsfound);
+		fclose(refsfound);
 		if((refsfound = myfopen(temp1, "wb")) == NULL) {
 			postmsg("Cannot reopen temporary file");
-			return (false);
+			return false;
 		}
 	}
-	return (true);
+	return true;
 }
 
 /* Perform token search based on "field" */
@@ -1251,31 +1268,33 @@ bool search(const char *query) {
 				return (false);
 			}
 			if((rc = findinit(query)) == NOERROR) {
-				(void)dbseek(0L); /* read the first block */
+				UNUSED(dbseek(0L)); /* read the first block */
 				findresult = (*f)(query);
-				if(f == findcalledby) funcexist = (*findresult == 'y');
+				if(f == findcalledby){
+					funcexist = (bool)(findresult);
+				}
 				findcleanup();
 
 				/* append the non-global references */
-				(void)fclose(nonglobalrefs);
+				UNUSED(fclose(nonglobalrefs));
 				if((nonglobalrefs = myfopen(temp2, "rb")) == NULL) {
 					cannotopen(temp2);
 					return (false);
 				}
 				while((c = getc(nonglobalrefs)) != EOF) {
-					(void)putc(c, refsfound);
+					UNUSED(putc(c, refsfound));
 				}
 			}
-			(void)fclose(nonglobalrefs);
+			UNUSED(fclose(nonglobalrefs));
 		}
 	}
 	signal(SIGINT, savesig);
 
 	/* rewind the cross-reference file */
-	(void)lseek(symrefs, (long)0, 0);
+	lseek(symrefs, (long)0, 0);
 
 	/* reopen the references found file for reading */
-	(void)fclose(refsfound);
+	fclose(refsfound);
 	if((refsfound = myfopen(temp1, "rb")) == NULL) {
 		cannotopen(temp1);
 		return (false);
@@ -1286,26 +1305,26 @@ bool search(const char *query) {
 	/* see if it is empty */
 	if((c = getc(refsfound)) == EOF) {
 		if(findresult != NULL) {
-			(void)snprintf(msg,
+			snprintf(msg,
 				sizeof(msg),
 				"Egrep %s in this pattern: %s",
 				findresult,
 				query);
 		} else if(rc == NOTSYMBOL) {
-			(void)snprintf(msg, sizeof(msg), "This is not a C symbol: %s", query);
+			snprintf(msg, sizeof(msg), "This is not a C symbol: %s", query);
 		} else if(rc == REGCMPERROR) {
-			(void)snprintf(msg,
+			snprintf(msg,
 				sizeof(msg),
 				"Error in this regcomp(3) regular expression: %s",
 				query);
 
 		} else if(funcexist == false) {
-			(void)snprintf(msg,
+			snprintf(msg,
 				sizeof(msg),
 				"Function definition does not exist: %s",
 				query);
 		} else {
-			(void)snprintf(msg,
+			snprintf(msg,
 				sizeof(msg),
 				"Could not find the %s: %s",
 				fields[field].text2,
@@ -1315,7 +1334,7 @@ bool search(const char *query) {
 		return (false);
 	}
 	/* put back the character read */
-	(void)ungetc(c, refsfound);
+	ungetc(c, refsfound);
 
 	countrefs();
 

@@ -39,11 +39,11 @@
 #include "lookup.h"
 
 /* keyword text for fast testing of keywords in the scanner */
-char enumtext[]	   = "enum";
-char externtext[]  = "extern";
-char structtext[]  = "struct";
-char typedeftext[] = "typedef";
-char uniontext[]   = "union";
+const char enumtext[]	 = "enum";
+const char externtext[]  = "extern";
+const char structtext[]  = "struct";
+const char typedeftext[] = "typedef";
+const char uniontext[]   = "union";
 
 /* This keyword table is also used for keyword text compression.  Keywords
  * with an index less than the numeric value of a space are replaced with the
@@ -100,9 +100,8 @@ struct keystruct keyword[] = {
 static struct keystruct *hashtab[HASHMOD]; /* pointer table */
 
 /* put the keywords into the symbol table */
-
 void initsymtab(void) {
-	for(unsigned i = 1; i < KEYWORDS; ++i) {
+	for(unsigned i = 1; i < KEYWORDS; i++) {
 		struct keystruct *p	= keyword + i;
 		int j		        = hash(p->text) % HASHMOD;
 		p->next	   = hashtab[j];
@@ -111,8 +110,7 @@ void initsymtab(void) {
 }
 
 /* see if this identifier is a keyword */
-
-char *lookup(char *ident) {
+char * lookup(char *ident, bool do_compressed) {
 	struct keystruct *p;
 	int				  c;
 
@@ -126,15 +124,18 @@ char *lookup(char *ident) {
 		}
 	}
 	/* this is an identifier */
-	return (NULL);
+	return NULL;
 }
 
 /* form hash value for string */
-int hash(char *ss) {
-	int			   i;
+int hash(const char * ss) {
+	int			   i = 0;
 	unsigned char *s = (unsigned char *)ss;
 
-	for(i = 0; *s != '\0';)
+    while (*s != '\0') {
 		i += *s++; /* += is faster than <<= for cscope */
+
+    }
+
 	return (i);
 }

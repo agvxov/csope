@@ -42,6 +42,7 @@
 #endif
 #include "invlib.h"
 #include "global.h"
+#include "vpath.h"
 
 #include <assert.h>
 
@@ -88,8 +89,8 @@ static char			 *SUPFING, *supfing;
 static char			  thisterm[TERMMAX];
 
 typedef union logicalblk {
-		long invblk[BLOCKSIZE / sizeof(long)];
-		char chrblk[BLOCKSIZE];
+	long invblk[BLOCKSIZE / sizeof(long)];
+	char chrblk[BLOCKSIZE];
 } t_logicalblk;
 
 static t_logicalblk logicalblk;
@@ -497,8 +498,8 @@ static int invnewterm(void) {
  * 'to' substring (which must be of the exact same length), and the function
  * returns 0. Otherwise, returns -1.
  */
-
-static int invflipname(char *invname, const char *from, const char *to) {
+static
+int invflipname(char *invname, const char *from, const char *to) {
 	char *temp, *i = NULL;
 
 	assert(strlen(from) == strlen(to));
@@ -514,7 +515,8 @@ static int invflipname(char *invname, const char *from, const char *to) {
 
 /* small helper function to centralize handling of binary opening
  * for reading, and use of the 'stat" flag */
-static FILE *open_for_reading(char *name, int stat) {
+static
+FILE *open_for_reading(char *name, int stat) {
 	return vpfopen(name, ((stat == 0) ? "rb" : "r+b"));
 }
 

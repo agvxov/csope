@@ -49,14 +49,14 @@
 
 /* get the next character in the cross-reference */
 /* note that blockp is assumed not to be null */
-#define getrefchar()                                                                     \
-	(*(++blockp + 1) != '\0' ? *blockp : (read_block() != NULL ? *blockp : '\0'))
+#define getrefchar() \
+	(*(++blockp + 1) != '\0' ? *blockp : (read_crossreference_block() != NULL ? *blockp : '\0'))
 
 /* skip the next character in the cross-reference */
 /* note that blockp is assumed not to be null and that
    this macro will always be in a statement by itself */
-#define skiprefchar()                                                                    \
-	if(*(++blockp + 1) == '\0') (void)read_block()
+#define skiprefchar() \
+	if(*(++blockp + 1) == '\0') (void)read_crossreference_block()
 
 #define DUMMYCHAR	   ' '			   /* use space as a dummy character */
 #define MSGLEN		   ((PATLEN) + 80) /* displayed message length */
@@ -73,11 +73,15 @@
 
 #define STMTMAX 10000				   /* maximum source statement length */
 
-#define STR2(x)			   #x
-#define STRINGIZE(x)	   STR2(x)
-#define PATLEN_STR		   STRINGIZE(PATLEN)
-#define PATHLEN_STR		   STRINGIZE(PATHLEN)
-#define NUMLEN_STR		   STRINGIZE(NUMLEN)
+/* NOTE: _STRINGIZE ensures that if the argument is a macro,
+ *        its expanded before stringinization
+ */
+#define _STRINGIZE(x) #x
+#define STRINGIZE(x)  _STRINGIZE(x)
+
+#define PATLEN_STR         STRINGIZE(PATLEN)
+#define PATHLEN_STR        STRINGIZE(PATHLEN)
+#define NUMLEN_STR         STRINGIZE(NUMLEN)
 #define TEMPSTRING_LEN_STR STRINGIZE(TEMPSTRING_LEN)
 
 /* input fields (value matches field order on screen) */
@@ -101,6 +105,7 @@ enum {
 #else
 # define READ 4
 #endif
+
 #ifdef W_OK
 # define WRITE W_OK
 #else
@@ -110,5 +115,19 @@ enum {
 #define O_TEXT	 0x00
 #define O_BINARY 0x00
 
+/* Represents switch cases '0'...'9'.
+ * Slightly hacky.
+ * Should be use gcc/clang ranges?
+ */
+#define ASCII_DIGIT '0': \
+    case '1': \
+    case '2': \
+    case '3': \
+    case '4': \
+    case '5': \
+    case '6': \
+    case '7': \
+    case '8': \
+    case '9'
 
 #endif /* CSCOPE_CONSTANTS_H */

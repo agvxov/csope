@@ -54,7 +54,7 @@
 static pid_t popen_pid[20];
 static void (*tstat)(int);
 
-int myopen(char *path, int flag, int mode) {
+int myopen(const char * path, int flag, int mode) {
 	/* opens a file descriptor and then sets close-on-exec for the file */
 	int fd;
 
@@ -82,7 +82,7 @@ int myopen(char *path, int flag, int mode) {
 	}
 }
 
-FILE *myfopen(char *path, char *mode) {
+FILE *myfopen(const char * path, const char * mode) {
 	/* opens a file pointer and then sets close-on-exec for the file */
 	FILE *fp;
 
@@ -102,6 +102,8 @@ FILE *myfopen(char *path, char *mode) {
 	return (NULL);
 }
 
+/* XXX: these functions should go as soon as build.c is sorted out
+ */
 FILE *mypopen(char *cmd, char *mode) {
 	int	   p[2];
 	pid_t *poptr;
@@ -148,8 +150,7 @@ int mypclose(FILE *ptr) {
 	istat = signal(SIGINT, SIG_IGN);
 	qstat = signal(SIGQUIT, SIG_IGN);
 	hstat = signal(SIGHUP, SIG_IGN);
-	while((r = wait(&status)) != popen_pid[f] && r != -1)
-		; /* nothing */
+	while((r = wait(&status)) != popen_pid[f] && r != -1) { ; }
 	if(r == -1) status = -1;
 	UNUSED(signal(SIGINT, istat));
 	UNUSED(signal(SIGQUIT, qstat));

@@ -62,9 +62,9 @@ extern INVCONTROL invcontrol; /* inverted file control structure */
 
 void build(void);
 void free_newbuildfiles(void);
-void opendatabase(void);
+void opendatabase(const char * const reffile);
 void rebuild(void);
-void setup_build_filenames(char *reffile);
+void setup_build_filenames(const char * const reffile);
 void seek_to_trailer(FILE *f);
 
 #endif /* CSCOPE_BUILD_H */
