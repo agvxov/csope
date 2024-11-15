@@ -172,15 +172,17 @@ function_call       {ws}*\(([*&[\]=,.]|{identifier}|{number}|{wsnl})*
 			}
 		}
 
-<SDL>STATE[ \t]+({identifier}|\*)	{ /* sdl state, treat as function def */
+<SDL>{
+STATE[ \t]+({identifier}|\*)	{ /* sdl state, treat as function def */
 			braces = 1;
 			fcndef = true;
 			token = FCNDEF;
 			goto findident;
 		}
-<SDL>ENDSTATE[ \t]	{ /* end of an sdl state, treat as end of a function */
+ENDSTATE[ \t]	{ /* end of an sdl state, treat as end of a function */
 			goto endstate;
 		}
+}
 
 \{		{	/* count unmatched left braces for fcn def detection */
 			++braces;
@@ -208,7 +210,8 @@ function_call       {ws}*\(([*&[\]=,.]|{identifier}|{number}|{wsnl})*
 			goto more;
 		}
 
-<WAS_ENDIF>\n{wsnl}*#{ws}*if(ndef|def)?{ws}+		{
+<WAS_ENDIF>{
+\n{wsnl}*#{ws}*if(ndef|def)?{ws}+		{
 			/* attempt to correct erroneous brace count caused by:
 			 *
 			 * #if ...
@@ -230,7 +233,7 @@ function_call       {ws}*\(([*&[\]=,.]|{identifier}|{number}|{wsnl})*
 			goto eol;
 			/* NOTREACHED */
 		}
-<WAS_ENDIF>\n{wsnl}*		 { 	/* an #endif with no #if right after it */
+\n{wsnl}*		 { 	/* an #endif with no #if right after it */
 		endif:
 			if (iflevel > 0) {
 				/* get the maximum brace count for this #if */
@@ -244,6 +247,7 @@ function_call       {ws}*\(([*&[\]=,.]|{identifier}|{number}|{wsnl})*
 			goto eol;
 			/* NOTREACHED */
 		}
+}
 
 \}		{
 			/* could be the last enum member initializer */
