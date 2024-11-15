@@ -90,7 +90,7 @@ static	bool	template;		/* function template */
 static	int	templateparens;		/* function template outer parentheses count */
 static	int	typedefbraces = -1;	/* initial typedef brace count */
 static	int	token;			/* token found */
-static	int 	ident_start;		/* begin of preceding identifier */
+static	int	ident_start;		/* begin of preceding identifier */
 
 static	void	my_yymore(void);
 
@@ -98,7 +98,7 @@ static	void	my_yymore(void);
 identifier	[a-zA-Z_$][a-zA-Z_0-9$]*
 number		\.?[0-9][.0-9a-fA-FlLuUxX]*
 comment		"/*"([^*]*("*"+[^/])?)*"*/"|"//"[^\n]*\n
-ws		[ \t\r\v\f]
+ws		    [ \t\r\v\f]
 wsnl		[ \t\r\v\f\n]|{comment}
 
 /* flex options: stack of start conditions, and don't use yywrap() */
@@ -195,7 +195,7 @@ wsnl		[ \t\r\v\f\n]|{comment}
 		}
 
 \#{ws}*	{ /* start a preprocessor line */
-			if (rules == false)		/* don't consider CPP for lex/yacc rules */
+			if (rules == false) {		/* don't consider CPP for lex/yacc rules */
 				BEGIN(IN_PREPROC);
 			yyleng = 1;	/* get rid of the blanks, if any */
 			goto more;
@@ -850,8 +850,7 @@ initscanner(char *srcfile)
 	typedefbraces = -1;	/* initial typedef braces count */
 	ident_start = 0;	/* start of previously found identifier */
 
-	if (my_yytext)
-		*my_yytext = '\0';
+	if (my_yytext) { *my_yytext = '\0'; }
 	my_yyleng = 0;
 
 	BEGIN(INITIAL);
@@ -886,9 +885,8 @@ initscanner(char *srcfile)
 }
 
 #define MY_YY_ALLOCSTEP 1000
-static void
-my_yymore(void)
-{
+static
+void my_yymore(void) {
 	static size_t yytext_size = 0;
 
 	/* my_yytext is an ever-growing buffer. It will not ever
