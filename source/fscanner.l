@@ -207,12 +207,7 @@ function_call       {ws}*\(([*&[\]=,.]|{identifier}|{number}|{wsnl})*
 			yyleng = 1;	/* get rid of the blanks, if any */
 			goto more;
 		}
-<IN_PREPROC>endif([^a-zA-Z0-9_$\n].*)?	{	/* #endif */
-			/* delay treatment of #endif depending on whether an
-			 * #if comes right after it, or not */
-			BEGIN(WAS_ENDIF);
-			goto more;
-		}
+
 <WAS_ENDIF>\n{wsnl}*#{ws}*if(ndef|def)?{ws}+		{
 			/* attempt to correct erroneous brace count caused by:
 			 *
@@ -247,82 +242,6 @@ function_call       {ws}*\(([*&[\]=,.]|{identifier}|{number}|{wsnl})*
 			yyless(1);
 			yy_set_bol(1);
 			goto eol;
-			/* NOTREACHED */
-		}
-
-<IN_PREPROC>{
-ifndef{ws}+	|
-ifdef{ws}+	|
-if{ws}+		{ /* #if directive */
-			elseelif = false;
-			if (pseudoelif == true) {
-				pseudoelif = false;
-				goto elif;
-				/* NOTREACHED */
-			}
-			/* make sure there is room for the current brace count */
-			if (iflevel == miflevel) {
-				miflevel += IFLEVELINC;
-				maxifbraces = realloc(maxifbraces, miflevel * sizeof(*maxifbraces));
-				preifbraces = realloc(preifbraces, miflevel * sizeof(*preifbraces));
-			}
-			/* push the current brace count */
-			preifbraces[iflevel] = braces;
-			maxifbraces[iflevel++] = 0;
-			BEGIN(INITIAL);
-			goto more;
-			/* NOTREACHED */
-		}
-else({ws}.*)?	{ /* #else --- eat up whole line */
-			elseelif = true;
-			if (iflevel > 0) {
-
-				/* save the maximum brace count for this #if */
-				if (braces > maxifbraces[iflevel - 1]) {
-					maxifbraces[iflevel - 1] = braces;
-				}
-				/* restore the brace count to before the #if */
-				braces = preifbraces[iflevel - 1];
-			}
-			BEGIN(INITIAL);
-			goto more;
-			/* NOTREACHED */
-		}
-elif{ws}+	{ /* #elif */
-			/* elseelif = true; --- HBB I doubt this is correct */
-		elif:
-			if (iflevel > 0) {
-
-				/* save the maximum brace count for this #if */
-				if (braces > maxifbraces[iflevel - 1]) {
-					maxifbraces[iflevel - 1] = braces;
-				}
-				/* restore the brace count to before the #if */
-				braces = preifbraces[iflevel - 1];
-			}
-			BEGIN(INITIAL);
-			goto more;
-			/* NOTREACHED */
-		}
-
-include{ws}*\"[^"\n]+\" |
-include{ws}*<[^>\n]+> 	{ /* #include file */
-			char	*s;
-			char remember = yytext[yyleng-1];
-
-			my_yymore();
-			s = strpbrk(my_yytext, "\"<");
-			if (!s) { return(LEXERR); }
-			my_yytext[my_yyleng-1] = '\0';
-			incfile(s + 1, s);
-			my_yytext[my_yyleng-1] = remember;
-			first = s - my_yytext;
-			last = my_yyleng - 1;
-			if (compress == true) {
-				my_yytext[0] = '\2';	/* compress the keyword */
-			}
-			BEGIN(INITIAL);
-			return(INCLUDE);
 			/* NOTREACHED */
 		}
 
@@ -414,6 +333,88 @@ include{ws}*<[^>\n]+> 	{ /* #include file */
 			structfield = false;
 			initializer = false;
 			goto more;
+			/* NOTREACHED */
+		}
+
+<IN_PREPROC>{
+ifndef{ws}+	|
+ifdef{ws}+	|
+if{ws}+		{ /* #if directive */
+			elseelif = false;
+			if (pseudoelif == true) {
+				pseudoelif = false;
+				goto elif;
+				/* NOTREACHED */
+			}
+			/* make sure there is room for the current brace count */
+			if (iflevel == miflevel) {
+				miflevel += IFLEVELINC;
+				maxifbraces = realloc(maxifbraces, miflevel * sizeof(*maxifbraces));
+				preifbraces = realloc(preifbraces, miflevel * sizeof(*preifbraces));
+			}
+			/* push the current brace count */
+			preifbraces[iflevel] = braces;
+			maxifbraces[iflevel++] = 0;
+			BEGIN(INITIAL);
+			goto more;
+			/* NOTREACHED */
+		}
+else({ws}.*)?	{ /* #else --- eat up whole line */
+			elseelif = true;
+			if (iflevel > 0) {
+
+				/* save the maximum brace count for this #if */
+				if (braces > maxifbraces[iflevel - 1]) {
+					maxifbraces[iflevel - 1] = braces;
+				}
+				/* restore the brace count to before the #if */
+				braces = preifbraces[iflevel - 1];
+			}
+			BEGIN(INITIAL);
+			goto more;
+			/* NOTREACHED */
+		}
+elif{ws}+	{ /* #elif */
+			/* elseelif = true; --- HBB I doubt this is correct */
+		elif:
+			if (iflevel > 0) {
+
+				/* save the maximum brace count for this #if */
+				if (braces > maxifbraces[iflevel - 1]) {
+					maxifbraces[iflevel - 1] = braces;
+				}
+				/* restore the brace count to before the #if */
+				braces = preifbraces[iflevel - 1];
+			}
+			BEGIN(INITIAL);
+			goto more;
+			/* NOTREACHED */
+		}
+endif([^a-zA-Z0-9_$\n].*)?	{	/* #endif */
+			/* delay treatment of #endif depending on whether an
+			 * #if comes right after it, or not */
+			BEGIN(WAS_ENDIF);
+			goto more;
+		}
+
+include{ws}*\"[^"\n]+\" |
+include{ws}*<[^>\n]+> 	{ /* #include file */
+			char	*s;
+			char remember = yytext[yyleng-1];
+
+			my_yymore();
+			s = strpbrk(my_yytext, "\"<");
+			if (!s) { return(LEXERR); }
+			my_yytext[my_yyleng-1] = '\0';
+			incfile(s + 1, s);
+			my_yytext[my_yyleng-1] = remember;
+			first = s - my_yytext;
+			last = my_yyleng - 1;
+			if (compress == true) {
+				my_yytext[0] = '\2';	/* compress the keyword */
+			}
+			BEGIN(INITIAL);
+			return(INCLUDE);
 			/* NOTREACHED */
 		}
 define{ws}+{identifier}	{
