@@ -125,41 +125,38 @@ void usage(void) {
 void longusage(void) {
 	usage();
 	fprintf(stderr,
-		"\
-\n\
--b            Build the cross-reference only.\n\
--C            Ignore letter case when searching.\n\
--c            Use only ASCII characters in the cross-ref file (don't compress).\n\
--d            Do not update the cross-reference.\n\
--e            Suppress the <Ctrl>-e command prompt between files.\n\
--F symfile    Read symbol reference lines from symfile.\n\
--f reffile    Use reffile as cross-ref file name instead of %s.\n",
+		"\n"
+		"-b            Build the cross-reference only.\n"
+		"-C            Ignore letter case when searching.\n"
+		"-c            Use only ASCII characters in the cross-ref file (don't compress).\n"
+		"-d            Do not update the cross-reference.\n"
+		"-e            Suppress the <Ctrl>-e command prompt between files.\n"
+		"-F symfile    Read symbol reference lines from symfile.\n"
+		"-f reffile    Use reffile as cross-ref file name instead of %s.\n",
 		REFFILE);
 	fprintf(stderr,
-		"\
--h            This help screen.\n\
--I incdir     Look in incdir for any #include files.\n\
--i namefile   Browse through files listed in namefile, instead of %s\n",
+		"-h            This help screen.\n"
+		"-I incdir     Look in incdir for any #include files.\n"
+		"-i namefile   Browse through files listed in namefile, instead of %s\n",
 		NAMEFILE);
 	fprintf(stderr,
-		"\
--k            Kernel Mode - don't use %s for #include files.\n",
+		"-k            Kernel Mode - don't use %s for #include files.\n",
 		DFLT_INCDIR);
-	fputs("\
--L            Do a single search with line-oriented output.\n\
--l            Line-oriented interface.\n\
--num pattern  Go to input field num (counting from 0) and find pattern.\n\
--P path       Prepend path to relative file names in pre-built cross-ref file.\n\
--p n          Display the last n file path components.\n\
--q            Build an inverted index for quick symbol searching.\n\
--R            Recurse directories for files.\n\
--s dir        Look in dir for additional source  files.\n\
--T            Use only the first eight characters to match against C symbols.\n\
--U            Check file time stamps.\n\
--u            Unconditionally build the cross-reference file.\n\
--v            Be more verbose in line mode.\n\
--V            Print the version number.\n\
-\n\
-Please see the manpage for more information.\n",
+	fputs(
+		"-L            Do a single search with line-oriented output.\n"
+		"-l            Line-oriented interface.\n"
+		"-num pattern  Go to input field num (counting from 0) and find pattern.\n"
+		"-P path       Prepend path to relative file names in pre-built cross-ref file.\n"
+		"-p n          Display the last n file path components.\n"
+		"-q            Build an inverted index for quick symbol searching.\n"
+		"-R            Recurse directories for files.\n"
+		"-s dir        Look in dir for additional source files.\n"
+		"-T            Use only the first eight characters to match against C symbols.\n"
+		"-U            Check file time stamps.\n"
+		"-u            Unconditionally build the cross-reference file.\n"
+		"-v            Be more verbose in line mode.\n"
+		"-V            Print the version number.\n"
+		"\n"
+		"Please see the manpage for more information.\n",
 		stderr);
 }
