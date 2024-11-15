@@ -679,24 +679,23 @@ if{wsnl}*\(	{ 	/* ignore 'if' */
 
 				/* FIXME HBB 20001007: should call input() instead */
 				switch (input()) {	/* tab and EOF just fall through */
-				case ' ':	/* breakpoint number line */
-				case '[':
-					for (i = 1; i < 8 && input() > LEXEOF; ++i)
-						;
-					break;
-				case '.':	/* header line */
-				case '/':
-					/* skip to the end of the line */
-					while ((c = input()) > LEXEOF) {
-						if (c == '\n') {
-							unput(c);
-							break;
-						}
-					}
-					break;
-				case '\n':	/* empty line */
-					unput('\n');
-					break;
+                    case ' ':	/* breakpoint number line */
+                    case '[': {
+                        for (i = 1; i < 8 && input() > LEXEOF; ++i) { ; }
+                    } break;
+                    case '.':	/* header line */
+                    case '/':
+                        /* skip to the end of the line */
+                        while ((c = input()) > LEXEOF) {
+                            if (c == '\n') {
+                                unput(c);
+                                break;
+                            }
+                        }
+                        break;
+                    case '\n': {	/* empty line */
+                        unput('\n');
+                    } break;
 				}
 			}
 		eol:
@@ -770,30 +769,31 @@ if{wsnl}*\(	{ 	/* ignore 'if' */
  		}
 
 "/*"					yy_push_state(COMMENT);
+
 <COMMENT>{
 [^*\n]*			|
 "*"+[^*/\n]*	; /* do nothing */
 [^*\n]*\n		|
 "*"+[^*/\n]*\n	{
-			if (ppdefine == false) {
-				goto eol;
-			} else {
-				++myylineno;
-			}
-			/* NOTREACHED */
-		}
-"*"+"/"		{
-			/* replace the comment by a single blank */
-			unput(' ');
-			yy_pop_state();
-		}
+                if (ppdefine == false) {
+                    goto eol;
+                } else {
+                    ++myylineno;
+                }
+                /* NOTREACHED */
+		    }
+"*"+"/"	    {
+                /* replace the comment by a single blank */
+                unput(' ');
+                yy_pop_state();
+		    }
 }
 
-"//".*\n?		{
-			/* C++-style one-line comment */
-			goto eol;
-			/* NOTREACHED */
-		}
+"//".*\n?	{
+                /* C++-style one-line comment */
+                goto eol;
+                /* NOTREACHED */
+		    }
 
 {number}				|	/* number */
 <SDL>STATE[ \t]+		|   /* ... and other syntax error catchers... */
@@ -853,29 +853,29 @@ initscanner(char *srcfile)
 	/* if this is not a C file */
 	if ((s = strrchr(srcfile, '.')) != NULL) {
 		switch (*++s) {	/* this switch saves time on C files */
-		case 'b':
-			if (strcmp(s, "bp") == 0) {	/* breakpoint listing */
-				bplisting = true;
-			}
-			break;
-		case 'l':
-			if (strcmp(s, "l") == 0) {	/* lex */
-				lex = true;
-				global = false;
-			}
-			break;
-		case 's':
-			if (strcmp(s, "sd") == 0) {	/* sdl */
-				sdl = true;
-				BEGIN(SDL);
-			}
-			break;
-		case 'y':
-			if (strcmp(s, "y") == 0) {	/* yacc */
-				global = false;
-			}
-			break;
-		}
+            case 'b': {
+                if (strcmp(s, "bp") == 0) {	/* breakpoint listing */
+                    bplisting = true;
+                }
+            } break;
+            case 'l': {
+                if (strcmp(s, "l") == 0) {	/* lex */
+                    lex = true;
+                    global = false;
+                }
+            } break;
+            case 's': {
+                if (strcmp(s, "sd") == 0) {	/* sdl */
+                    sdl = true;
+                    BEGIN(SDL);
+                }
+            } break;
+            case 'y': {
+                if (strcmp(s, "y") == 0) {	/* yacc */
+                    global = false;
+                }
+            } break;
+        }
 	}
 }
 
