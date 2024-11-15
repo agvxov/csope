@@ -126,22 +126,20 @@ static bool samelist(FILE *oldrefs, char **names, int count) {
 
 /* create the file name(s) used for a new cross-referene */
 void setup_build_filenames(char *reffile) {
-	char *path; /* file pathname */
-	char *s;	/* pointer to basename in path */
-
-	path = malloc(strlen(reffile) + 10u);
+	char path[strlen(reffile)+10]; /* file pathname */
 	strcpy(path, reffile);
-	s  = (char *)basename(path);	// this is safe because the returned pointer is inside $path, and we know we can edit it
+
+	char * s = (char*)basename(path);	// this is safe because the returned pointer is inside $path, and we know we can edit it
 	*s = '\0';
 	strcat(path, "n"); // XXX: prefix signalling "new"
 	++s;
+
 	strcpy(s, basename(reffile));
 	newreffile = strdup(path);
 	strcpy(s, basename(invname));
 	newinvname = strdup(path);
 	strcpy(s, basename(invpost));
 	newinvpost = strdup(path);
-	free(path);
 }
 
 /* open the database */
