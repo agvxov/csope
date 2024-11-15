@@ -101,6 +101,10 @@ comment		"/*"([^*]*("*"+[^/])?)*"*/"|"//"[^\n]*\n
 ws		    [ \t\r\v\f]
 wsnl		[ \t\r\v\f\n]|{comment}
 
+class_definition    class{wsnl}+{identifier}({wsnl}|{identifier}|[():])*\{
+function_definition {ws}*\(({wsnl}|{identifier}|{number}|[*&[\]=,.:])*\)([()]|{wsnl})*[:a-zA-Z_#{]
+function_call       {ws}*\(([*&[\]=,.]|{identifier}|{number}|{wsnl})*
+
 /* flex options: stack of start conditions, and don't use yywrap() */
 %option stack
 %option noyywrap
@@ -451,7 +455,7 @@ wsnl		[ \t\r\v\f\n]|{comment}
 			/* NOTREACHED */
 		}
 
-class{wsnl}+{identifier}({wsnl}|{identifier}|[():])*\{	{	/* class definition */
+{class_definition}	{	/* class definition */
 			classdef = true;
 			tagdef =  'c';
 			yyless(5);		/* eat up 'class', and re-scan */
@@ -503,7 +507,7 @@ if{wsnl}*\(	{ 	/* ignore 'if' */
 		}
 
 <WAS_IDENTIFIER>{
-{ws}*\(({wsnl}|{identifier}|{number}|[*&[\]=,.:])*\)([()]|{wsnl})*[:a-zA-Z_#{]	{
+{function_definition}	{
 			/* a function definition */
 			/* note: "#define a (b) {" and "#if defined(a)\n#"
 			 * are not fcn definitions! */
@@ -525,7 +529,7 @@ if{wsnl}*\(	{ 	/* ignore 'if' */
 			goto fcncal;
 			/* NOTREACHED */
 		}
-{ws}*\(([*&[\]=,.]|{identifier}|{number}|{wsnl})*		{ 	/* function call */
+{function_call}		{ 	/* function call */
 		fcncal:	if (fcndef == true || ppdefine == true || rules == true) {
 				token = FCNCALL;
 				goto fcn;
