@@ -46,7 +46,7 @@
 #endif
 
 #include <ncurses.h>
-#include <stdarg.h> /* va_list stuff */
+#include <stdarg.h>
 #include <time.h>
 #include <errno.h>
 #include <stdarg.h>
@@ -233,7 +233,6 @@ void dispinit(void) {
 	current_window = &winput;
 }
 
-/* enter curses mode */
 void entercurses(void) {
 	incurses	  = true;
 	window_change = CH_ALL;
@@ -250,7 +249,6 @@ void entercurses(void) {
 	standend(); /* turn off reverse video */
 }
 
-/* exit curses mode */
 void exitcurses(void) {
 	/* clear the bottom line */
 	move(LINES - 1, 0);
