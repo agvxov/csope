@@ -121,12 +121,10 @@ function_call       {ws}*\(([*&[\]=,.]|{identifier}|{number}|{wsnl})*
 %\{		{	/* lex/yacc C declarations/definitions */
 			global = true;
 			goto more;
-			/* NOTREACHED */
 		}
 %\}		{
 			global = false;
 			goto more;
-			/* NOTREACHED */
 		}
 ^%%		{	/* lex/yacc rules delimiter */
 			braces = 0;
@@ -163,7 +161,6 @@ function_call       {ws}*\(([*&[\]=,.]|{identifier}|{number}|{wsnl})*
 				last = first;
 				my_yymore();
 				return(FCNEND);
-				/* NOTREACHED */
 			}
 		}
 
@@ -172,11 +169,9 @@ function_call       {ws}*\(([*&[\]=,.]|{identifier}|{number}|{wsnl})*
 			fcndef = true;
 			token = FCNDEF;
 			goto findident;
-			/* NOTREACHED */
 		}
 <SDL>ENDSTATE[ \t]	{ /* end of an sdl state, treat as end of a function */
 			goto endstate;
-			/* NOTREACHED */
 		}
 
 \{		{	/* count unmatched left braces for fcn def detection */
@@ -195,24 +190,20 @@ function_call       {ws}*\(([*&[\]=,.]|{identifier}|{number}|{wsnl})*
 				return(token);
 			}
 			goto more;
-			/* NOTREACHED */
 		}
 
 \#{ws}*	{ /* start a preprocessor line */
 			if (rules == false) {		/* don't consider CPP for lex/yacc rules */
 				BEGIN(IN_PREPROC);
+            }
 			yyleng = 1;	/* get rid of the blanks, if any */
 			goto more;
-			/* NOTREACHED */
 		}
 <IN_PREPROC>endif([^a-zA-Z0-9_$\n].*)?	{	/* #endif */
 			/* delay treatment of #endif depending on whether an
 			 * #if comes right after it, or not */
-			/* HBB 20010619: new pattern allows trailing garbage
-			 * after the #endif */
 			BEGIN(WAS_ENDIF);
 			goto more;
-			/* NOTREACHED */
 		}
 <WAS_ENDIF>\n{wsnl}*#{ws}*if(ndef|def)?{ws}+		{
 			/* attempt to correct erroneous brace count caused by:
