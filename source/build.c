@@ -46,11 +46,7 @@
 #include "version.inc"
 #include "vpath.h"
 
-#if defined(USE_NCURSES) && !defined(RENAMED_NCURSES)
 # include <ncurses.h>
-#else
-# include <curses.h>
-#endif
 
 /* Exported variables: */
 bool buildonly	   = false; /* only build the database */
