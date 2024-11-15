@@ -2,8 +2,8 @@
 
 #include "ctags.h"
 
-int backend_mode;
-backend_t backend = CSCOPE_BACKEND;
+int backend_mode = CSCOPE_BACKEND;
+backend_t backend;
 
 void change_backend(int backend_mode) {
     switch (backend_mode) {

@@ -45,6 +45,7 @@
 #endif
 
 #include "keys.h"
+#include "backend.h"
 
 extern const void *const		winput;
 extern const void *const		wmode;
@@ -355,7 +356,7 @@ static int global_input(const int c) {
 			egrepcaseless(caseless);
 			window_change |= CH_CASE;
 			break;
-		case ctrl('M'):	// toggle caseless
+		case ctrl('M'):	// toggle mode
 			backend_mode = !backend_mode;
 			window_change |= CH_BACKEND;
 			break;
