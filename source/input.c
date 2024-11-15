@@ -68,6 +68,7 @@ static void catchint(int sig) {
 	longjmp(env, 1);
 }
 
+/* XXX: move */
 static inline bool rebuild_reference() {
 	if(isuptodate == true) {
 		postmsg("The -d option prevents rebuilding the symbol database");
