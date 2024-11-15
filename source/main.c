@@ -465,7 +465,7 @@ int main(const int argc, const char * const * const argv) {
 		}
 	}
 
-	opendatabase();
+	opendatabase(reffile);
 
 	/* if using the line oriented user interface so cscope can be a
 	   subprocess to emacs or samuel */

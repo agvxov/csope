@@ -143,7 +143,7 @@ void setup_build_filenames(const char * const reffile) {
 }
 
 /* open the database */
-void opendatabase(void) {
+void opendatabase(const char * const reffile) {
 	if((symrefs = vpopen(reffile, O_BINARY | O_RDONLY)) == -1) {
 		cannotopen(reffile);
 		myexit(1);
@@ -151,7 +151,8 @@ void opendatabase(void) {
 	blocknumber = -1; /* force next seek to read the first block */
 
 	/* open any inverted index */
-	if(invertedindex == true && invopen(&invcontrol, invname, invpost, INVAVAIL) == -1) {
+	if (invertedindex == true
+    &&  invopen(&invcontrol, invname, invpost, INVAVAIL) == -1) {
 		askforreturn(); /* so user sees message */
 		invertedindex = false;
 	}
@@ -166,7 +167,7 @@ void rebuild(void) {
 		npostings  = 0;
 	}
 	build();
-	opendatabase();
+	opendatabase(reffile);
 
 	/* revert to the initial display */
 	if(refsfound != NULL) {
