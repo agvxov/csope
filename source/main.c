@@ -581,6 +581,10 @@ int main(int argc, char **argv) {
 		readrefs(reflines);
 	}
 
+    /* XXX temp XXX */
+    gen_tags_file();
+    // ---
+
 	screenmode_event_loop();
 	/* cleanup and exit */
 	myexit(0);
