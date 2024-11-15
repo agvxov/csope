@@ -160,7 +160,6 @@ static void initcompress(void) {
 }
 
 /* skip the list in the cross-reference file */
-
 static void skiplist(FILE *oldrefs) {
 	int i;
 
