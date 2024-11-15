@@ -231,6 +231,7 @@ static inline void linemode_event_loop(void) {
 				putchar(c);
 		}
 	}
+
 	if(onesearch == true) {
 		myexit(0);
 		/* NOTREACHED */
