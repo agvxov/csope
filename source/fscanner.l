@@ -782,7 +782,7 @@ if{wsnl}*\(	{ 	/* ignore 'if' */
 
 <COMMENT>{
 [^*\n]*			|
-"*"+[^*/\n]*	; /* do nothing */
+"*"+[^*/\n]*	{ ; }
 [^*\n]*\n		|
 "*"+[^*/\n]*\n	{
                 if (ppdefine == false) {
