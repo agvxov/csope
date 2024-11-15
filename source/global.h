@@ -75,8 +75,8 @@ struct cmd {					 /* command history struct */
 		char	   *text;		 /* input field text */
 };
 
- /* bitmask type to mark which windows have to be rerendered by
-    display() */
+/* bitmask type to mark which windows have to be rerendered by
+   display() */
 enum {
 	CH_NONE	  = 0x0000,
 	CH_RESULT = 0x0001 << 0,
@@ -94,7 +94,7 @@ enum {
 	INPUT_PIPE,
 	INPUT_READ,
 	INPUT_CHANGE_TO,
-	INPUT_CHANGE
+	INPUT_CHANGE,
 };
 extern int input_mode;
 

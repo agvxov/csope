@@ -275,7 +275,8 @@ void force_window(){
 	}
 }
 
-static inline void display_help() {
+static
+inline void display_help() {
 	// XXX: this could be optimized by only overriding the buffer if theres an actual
 	// change
 	werase(whelp);
@@ -290,14 +291,16 @@ static inline void display_help() {
 	do_press_any_key = true;
 }
 
-static inline void display_case(){
+static
+inline void display_case(){
 	wmove(wcase, 0, 0);
 	wattron(wcase, COLOR_PAIR(COLOR_PAIR_CASE));
 	waddstr(wcase, (caseless ? "Case: OFF" : "Case:  ON"));
 	wattroff(wcase, COLOR_PAIR(COLOR_PAIR_CASE));
 }
 
-static inline void display_frame(const bool border_only) {
+static
+inline void display_backend(){
 	wattron(stdscr, COLOR_PAIR(COLOR_PAIR_FRAME));
 
 	box(stdscr, 0, 0);
@@ -329,7 +332,8 @@ static inline void display_frame(const bool border_only) {
 	wattroff(stdscr, COLOR_PAIR(COLOR_PAIR_FRAME));
 }
 
-static inline void display_mode() {
+static inline
+void display_mode() {
 	werase(wmode);
 
 	for(int i = 0; i < FIELDS; ++i) {
@@ -347,7 +351,8 @@ static inline void display_mode() {
 	}
 }
 
-static inline void display_command_field() {
+static inline
+void display_command_field() {
 	werase(winput);
 	wattron(winput, COLOR_PAIR(COLOR_PAIR_PROMPT));
 	mvwaddstr(winput, 0, 0, prompts[input_mode]);
@@ -357,7 +362,8 @@ static inline void display_command_field() {
 	display_cursor();
 }
 
-static inline void display_results() {
+static inline
+void display_results() {
 	int	  i;
 	char *s;
 	int	  screenline;			/* screen line number */
@@ -862,7 +868,7 @@ void redisplay(void) {
 	delwin(winput);
 	delwin(wmode);
 	delwin(wresult);
-	delwin(whelp );
+	delwin(whelp);
 	delwin(wtooltip);
 	delwin(wcase);
 
