@@ -40,8 +40,6 @@
 #include "scanner.h"
 #include "lookup.h"
 
-#include <assert.h>
-
 /* the line counting has been moved from character reading for speed */
 /* comments are discarded */
 
