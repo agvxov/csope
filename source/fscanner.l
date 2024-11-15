@@ -242,9 +242,10 @@ function_call       {ws}*\(([*&[\]=,.]|{identifier}|{number}|{wsnl})*
 			/* NOTREACHED */
 		}
 
-<IN_PREPROC>ifndef{ws}+	|
-<IN_PREPROC>ifdef{ws}+		|
-<IN_PREPROC>if{ws}+		{ /* #if directive */
+<IN_PREPROC>{
+ifndef{ws}+	|
+ifdef{ws}+	|
+if{ws}+		{ /* #if directive */
 			elseelif = false;
 			if (pseudoelif == true) {
 				pseudoelif = false;
@@ -264,7 +265,7 @@ function_call       {ws}*\(([*&[\]=,.]|{identifier}|{number}|{wsnl})*
 			goto more;
 			/* NOTREACHED */
 		}
-<IN_PREPROC>else({ws}.*)?	{ /* #else --- eat up whole line */
+else({ws}.*)?	{ /* #else --- eat up whole line */
 			elseelif = true;
 			if (iflevel > 0) {
 
@@ -279,7 +280,7 @@ function_call       {ws}*\(([*&[\]=,.]|{identifier}|{number}|{wsnl})*
 			goto more;
 			/* NOTREACHED */
 		}
-<IN_PREPROC>elif{ws}+	{ /* #elif */
+elif{ws}+	{ /* #elif */
 			/* elseelif = true; --- HBB I doubt this is correct */
 		elif:
 			if (iflevel > 0) {
@@ -296,8 +297,8 @@ function_call       {ws}*\(([*&[\]=,.]|{identifier}|{number}|{wsnl})*
 			/* NOTREACHED */
 		}
 
-<IN_PREPROC>include{ws}*\"[^"\n]+\" |
-<IN_PREPROC>include{ws}*<[^>\n]+> 	{ /* #include file */
+include{ws}*\"[^"\n]+\" |
+include{ws}*<[^>\n]+> 	{ /* #include file */
 			char	*s;
 			char remember = yytext[yyleng-1];
 
@@ -410,7 +411,7 @@ function_call       {ws}*\(([*&[\]=,.]|{identifier}|{number}|{wsnl})*
 			goto more;
 			/* NOTREACHED */
 		}
-<IN_PREPROC>define{ws}+{identifier}	{
+define{ws}+{identifier}	{
 
 			/* preprocessor macro or constant definition */
 			ppdefine = true;
@@ -433,18 +434,19 @@ function_call       {ws}*\(([*&[\]=,.]|{identifier}|{number}|{wsnl})*
 			goto definition;
 			/* NOTREACHED */
 		}
-<IN_PREPROC>\n	{   /* unknown preprocessor line */
+\n	{   /* unknown preprocessor line */
 			BEGIN(INITIAL);
                         ++myylineno;
 			goto more;
 			/* NOTREACHED */
 		}
-<IN_PREPROC>.		 |
-<IN_PREPROC>{identifier}	{   /* unknown preprocessor line */
+.		 |
+{identifier}	{   /* unknown preprocessor line */
 			BEGIN(INITIAL);
 			goto more;
 			/* NOTREACHED */
 		}
+}
 
 {class_definition}	{	/* class definition */
 			classdef = true;
@@ -460,6 +462,7 @@ function_call       {ws}*\(([*&[\]=,.]|{identifier}|{number}|{wsnl})*
 			BEGIN(WAS_ESU);
 			goto more;
 		}
+
 <WAS_ESU>{
 ({wsnl}+{identifier}){wsnl}*\{		{ /* e/s/u definition */
 			tagdef = my_yytext[ident_start];
