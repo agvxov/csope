@@ -224,14 +224,12 @@ ENDSTATE[ \t]	{ /* end of an sdl state, treat as end of a function */
 			/* the current #if must not have an #else or #elif */
 			if (elseelif == true) {
 				goto endif;
-				/* NOTREACHED */
 			}
 			pseudoelif = true;
 			BEGIN(INITIAL);
 			yyless(1);	/* rescan all but the line ending */
 			yy_set_bol(1);
 			goto eol;
-			/* NOTREACHED */
 		}
 \n{wsnl}*		 { 	/* an #endif with no #if right after it */
 		endif:
@@ -245,7 +243,6 @@ ENDSTATE[ \t]	{ /* end of an sdl state, treat as end of a function */
 			yyless(1);
 			yy_set_bol(1);
 			goto eol;
-			/* NOTREACHED */
 		}
 }
 
@@ -275,13 +272,11 @@ ENDSTATE[ \t]	{ /* end of an sdl state, treat as end of a function */
 				}
 			}
 			goto more;
-			/* NOTREACHED */
 		}
 
 \(		{	/* count unmatched left parentheses for function templates */
 			++parens;
 			goto more;
-			/* NOTREACHED */
 		}
 \)		{
 			if (--parens <= 0) {
@@ -293,7 +288,6 @@ ENDSTATE[ \t]	{ /* end of an sdl state, treat as end of a function */
 				template = false;
 			}
 			goto more;
-			/* NOTREACHED */
 		}
 =		{	/* if a global definition initializer */
 			if (!my_yytext) { return(LEXERR); }
@@ -302,7 +296,6 @@ ENDSTATE[ \t]	{ /* end of an sdl state, treat as end of a function */
 				initializer = true;
 			}
 			goto more;
-			/* NOTREACHED */
 		}
 :		{	/* a if global structure field */
 			if (!my_yytext) { return(LEXERR); }
@@ -310,7 +303,6 @@ ENDSTATE[ \t]	{ /* end of an sdl state, treat as end of a function */
 				structfield = true;
 			}
 			goto more;
-			/* NOTREACHED */
 		}
 \,		{
 			if (braces == initializerbraces) {
@@ -319,7 +311,6 @@ ENDSTATE[ \t]	{ /* end of an sdl state, treat as end of a function */
 			}
 			structfield = false;
 			goto more;
-			/* NOTREACHED */
 		}
 ;		{	/* if the enum/struct/union was not a definition */
 			if (braces == 0) {
@@ -337,7 +328,6 @@ ENDSTATE[ \t]	{ /* end of an sdl state, treat as end of a function */
 			structfield = false;
 			initializer = false;
 			goto more;
-			/* NOTREACHED */
 		}
 
 <IN_PREPROC>{
@@ -348,7 +338,6 @@ if{ws}+		{ /* #if directive */
 			if (pseudoelif == true) {
 				pseudoelif = false;
 				goto elif;
-				/* NOTREACHED */
 			}
 			/* make sure there is room for the current brace count */
 			if (iflevel == miflevel) {
@@ -361,7 +350,6 @@ if{ws}+		{ /* #if directive */
 			maxifbraces[iflevel++] = 0;
 			BEGIN(INITIAL);
 			goto more;
-			/* NOTREACHED */
 		}
 else({ws}.*)?	{ /* #else --- eat up whole line */
 			elseelif = true;
@@ -376,7 +364,6 @@ else({ws}.*)?	{ /* #else --- eat up whole line */
 			}
 			BEGIN(INITIAL);
 			goto more;
-			/* NOTREACHED */
 		}
 elif{ws}+	{ /* #elif */
 			/* elseelif = true; --- HBB I doubt this is correct */
@@ -392,7 +379,6 @@ elif{ws}+	{ /* #elif */
 			}
 			BEGIN(INITIAL);
 			goto more;
-			/* NOTREACHED */
 		}
 endif([^a-zA-Z0-9_$\n].*)?	{	/* #endif */
 			/* delay treatment of #endif depending on whether an
@@ -419,7 +405,6 @@ include{ws}*<[^>\n]+> 	{ /* #include file */
 			}
 			BEGIN(INITIAL);
 			return(INCLUDE);
-			/* NOTREACHED */
 		}
 define{ws}+{identifier}	{
 
@@ -442,19 +427,16 @@ define{ws}+{identifier}	{
 			last = my_yyleng;
 			BEGIN(INITIAL);
 			goto definition;
-			/* NOTREACHED */
 		}
 \n	{   /* unknown preprocessor line */
 			BEGIN(INITIAL);
                         ++myylineno;
 			goto more;
-			/* NOTREACHED */
 		}
 .		 |
 {identifier}	{   /* unknown preprocessor line */
 			BEGIN(INITIAL);
 			goto more;
-			/* NOTREACHED */
 		}
 }
 
@@ -464,7 +446,6 @@ define{ws}+{identifier}	{
 			yyless(5);		/* eat up 'class', and re-scan */
 			yy_set_bol(0);
 			goto more;
-			/* NOTREACHED */
 		}
 
 ("enum"|"struct"|"union")	{
@@ -507,7 +488,6 @@ if{wsnl}*\(	{ 	/* ignore 'if' */
 			BEGIN(WAS_IDENTIFIER);
 			ident_start = first;
 			goto more;
-			/* NOTREACHED */
 		}
 
 <WAS_IDENTIFIER>{
@@ -528,27 +508,22 @@ if{wsnl}*\(	{ 	/* ignore 'if' */
 				fcndef = true;
 				token = FCNDEF;
 				goto fcn;
-				/* NOTREACHED */
 			}
 			goto fcncal;
-			/* NOTREACHED */
 		}
 {function_call}		{ 	/* function call */
 		fcncal:	if (fcndef == true || ppdefine == true || rules == true) {
 				token = FCNCALL;
 				goto fcn;
-				/* NOTREACHED */
 			}
 			if (template == false) {
 				templateparens = parens;
 				template = true;
 			}
 			goto ident;
-			/* NOTREACHED */
 		}
 ("*"|{wsnl})+{identifier}		{	/* typedef name or modifier use */
 			goto ident;
-			/* NOTREACHED */
 		}
 .|\n	{		/* general identifer usage */
 			char	*s;
@@ -655,7 +630,6 @@ if{wsnl}*\(	{ 	/* ignore 'if' */
 				}
 				/* my_yymore(); */
 				return(token);
-				/* NOTREACHED */
 			}
 		}
 }
@@ -663,19 +637,16 @@ if{wsnl}*\(	{ 	/* ignore 'if' */
 \[		{	/* array dimension (don't worry or about subscripts) */
 			arraydimension = true;
 			goto more;
-			/* NOTREACHED */
 		}
 \]		{
 			arraydimension = false;
 			goto more;
-			/* NOTREACHED */
 		}
 \\\n		{	/* preprocessor statement is continued on next line */
 			/* save the '\\' to the output file, but not the '\n': */
 			yyleng = 1;
 			my_yymore();
 			goto eol;
-			/* NOTREACHED */
 		}
 \n		{	/* end of the line */
 			if (ppdefine == true) {	/* end of a #define */
@@ -729,38 +700,31 @@ if{wsnl}*\(	{ 	/* ignore 'if' */
 \'		{	/* character constant */
 			if (filetype == FILETYPE_SDL) { BEGIN(IN_SQUOTE); }
 			goto more;
-			/* NOTREACHED */
 		}
 <IN_SQUOTE>\'	{
 			BEGIN(INITIAL);
 			goto more;
-			/* NOTREACHED */
 		}
 \"		{	/* string constant */
 			BEGIN(IN_DQUOTE);
 			goto more;
-			/* NOTREACHED */
 		}
 <IN_DQUOTE>\"	{
 			BEGIN(INITIAL);
 			goto more;
-			/* NOTREACHED */
 		}
 <IN_DQUOTE,IN_SQUOTE>{
 \n	  	{	/* syntax error: unexpected EOL */
 			BEGIN(INITIAL);
 			goto eol;
-			/* NOTREACHED */
 		}
 \\.	|
 .		{
 			goto more;
-			/* NOTREACHED */
 		}
 \\\n 	{		/* line continuation inside a string! */
 			myylineno++;
 			goto more;
-			/* NOTREACHED */
 		}
 }
 
@@ -794,7 +758,6 @@ if{wsnl}*\(	{ 	/* ignore 'if' */
                 } else {
                     ++myylineno;
                 }
-                /* NOTREACHED */
 		    }
 "*"+"/"	    {
                 /* replace the comment by a single blank */
@@ -806,7 +769,6 @@ if{wsnl}*\(	{ 	/* ignore 'if' */
 "//".*\n?	{
                 /* C++-style one-line comment */
                 goto eol;
-                /* NOTREACHED */
 		    }
 
 {number}				|	/* number */
