@@ -300,7 +300,7 @@ static int global_input(const int c) {
 			egrepcaseless(caseless);
 			window_change |= CH_CASE;
 			break;
-		case ctrl('M'):	// toggle mode
+		case ctrl('B'):	// toggle mode
 			backend_mode = !backend_mode;
 			window_change |= CH_BACKEND;
 			break;
