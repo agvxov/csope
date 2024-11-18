@@ -80,7 +80,7 @@ static long	 traileroffset; /* file trailer offset */
 
 /* Internal prototypes: */
 static void	 cannotindex(void);
-static int	 compare(const void *s1, const void *s2);
+static int	 qsort_compare(const void *s1, const void *s2);
 static void	 copydata(void);
 static void	 copyinverted(void);
 static char *getoldfile(void);
@@ -202,7 +202,7 @@ void build(void) {
 		snprintf(newdir, sizeof(newdir), "$HOME%s", currentdir + strlen(home));
 	}
 	/* sort the source file names (needed for rebuilding) */
-	qsort(srcfiles, nsrcfiles, sizeof(*srcfiles), compare);
+	qsort(srcfiles, nsrcfiles, sizeof(*srcfiles), qsort_compare);
 
 	/* if there is an old cross-reference and its current directory matches */
 	/* or this is an unconditional build */
@@ -389,7 +389,7 @@ void build(void) {
 			srcoffset = realloc(srcoffset, (nsrcfiles + 1) * sizeof(*srcoffset));
 		}
 		/* sort the included file names */
-		qsort(srcfiles + firstfile, lastfile - firstfile, sizeof(*srcfiles), compare);
+		qsort(srcfiles + firstfile, lastfile - firstfile, sizeof(*srcfiles), qsort_compare);
 	}
 	/* add a null file name to the trailing tab */
 	putfilename("");
@@ -452,7 +452,7 @@ void build(void) {
 
 /* string comparison function for qsort */
 static
-int compare(const void *arg_s1, const void *arg_s2) {
+int qsort_compare(const void *arg_s1, const void *arg_s2) {
 	const char **s1 = (const char **)arg_s1;
 	const char **s2 = (const char **)arg_s2;
 
