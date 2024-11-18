@@ -5,6 +5,7 @@
 #include "version.inc"
 #include "auto_vararg.h"
 #include "help.h"
+#include "egrep.h"
 
 #include <stdlib.h>	 /* atoi */
 #include <getopt.h>

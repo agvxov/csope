@@ -298,7 +298,7 @@ static inline
 void display_backend(){
 	wmove(wbackend, 0, 0);
 	wattron(wbackend, COLOR_PAIR(COLOR_PAIR_BACKEND));
-	waddstr(wbackend, (backend_mode ? "Backend:  Ctags" : "Backend: CScope"));
+	wprintw(wbackend, "Backend: %6s", backend.name);
 	wattroff(wbackend, COLOR_PAIR(COLOR_PAIR_BACKEND));
 }
 
@@ -363,7 +363,6 @@ void display_command_field() {
 
 static inline
 void display_results() {
-	int	  i;
 	char *s;
 	int	  screenline;			/* screen line number */
 	int	  srctxtw;				/* source line display width */
@@ -377,13 +376,9 @@ void display_results() {
 								 * (at attron & attroff)
 								 * because of selections
 								 */
-								/* column headings */
-	char  file[PATHLEN + 1];	/* file name */
-	char  function[PATLEN + 1]; /* function name */
-	char  linenum[NUMLEN + 1];	/* line number */
 
 	werase(wresult);
-	nextline   = 1;
+	nextline = 1;
 
 	/* --- Display the message --- */
 	if(totallines == 0) {	 // Its a real message
@@ -394,7 +389,7 @@ void display_results() {
 		wattroff(wresult, COLOR_PAIR(COLOR_PAIR_MESSAGE));
 		return;
 	}
-	if(input_mode == INPUT_CHANGE) {	// Its a pattern
+	if(input_mode == INPUT_CHANGE) {
 		snprintf(lastmsg, MSGLEN, "Change \"%s\" to \"%s\"", input_line, newpat);
 	} else {
 		snprintf(lastmsg,
@@ -448,15 +443,17 @@ void display_results() {
 		attr_swp = (disprefs != curdispline) ? A_NORMAL : ATTRIBUTE_RESULT_SELECTED;
 		wattron(wresult, attr_swp);
 		/* read the reference line */
-		if(fscanf(refsfound,
-			   "%" PATHLEN_STR "s%" PATHLEN_STR "s%" NUMLEN_STR "s %" TEMPSTRING_LEN_STR
-			   "[^\n]",
-			   file,
-			   function,
-			   linenum,
-			   tempstring) < 4) {
-			break;
-		}
+	    char  file_buffer[PATHLEN + 1];
+	    char  scope_buffer[PATLEN + 1];
+	    char  linenum_buffer[NUMLEN + 1];
+	    char  text_buffer[PATLEN + 1];
+        symbol_t current_symbol = (symbol_t) {
+            .filename = file_buffer,
+            .scope    = scope_buffer,
+            .text     = text_buffer,
+            .linenum  = linenum_buffer,
+        };
+        if (!get_next_symbol(&current_symbol)) { break; }
 
 		++nextline;
 		displine[disprefs] = screenline;
@@ -483,7 +480,7 @@ void display_results() {
 												COLOR_PAIR_TABLE_COL_SELECTED_FILE;
 		wattron(wresult, COLOR_PAIR(color_swp));
 		if(field == FILENAME) {
-			wprintw(wresult, "%-*s ", filelen, file);
+			wprintw(wresult, "%-*s ", filelen, current_symbol.filename);
 		} else {
 			/* display the requested path components */
 			if(dispcomponents > 0) {
@@ -491,9 +488,9 @@ void display_results() {
 					"%-*.*s ",
 					filelen,
 					filelen,
-					pathcomponents(file, dispcomponents));
+					pathcomponents(current_symbol.filename, dispcomponents));
 			}
-		} /* else(field == FILENAME) */
+		}
 		wattroff(wresult, COLOR_PAIR(color_swp));
 
 		/* display the function name */
@@ -502,7 +499,7 @@ void display_results() {
 							COLOR_PAIR_TABLE_COL_FUNCTION :
 							COLOR_PAIR_TABLE_COL_SELECTED_FUNCTION;
 			wattron(wresult, COLOR_PAIR(color_swp));
-			wprintw(wresult, "%-*.*s ", fcnlen, fcnlen, function);
+			wprintw(wresult, "%-*.*s ", fcnlen, fcnlen, current_symbol.scope);
 			wattroff(wresult, COLOR_PAIR(color_swp));
 		}
 		if(field == FILENAME) {
@@ -514,10 +511,10 @@ void display_results() {
 		color_swp = (disprefs != curdispline) ? COLOR_PAIR_TABLE_COL_LINE :
 												COLOR_PAIR_TABLE_COL_SELECTED_LINE;
 		wattron(wresult, COLOR_PAIR(color_swp));
-		wprintw(wresult, "%*s ", numlen, linenum);
+		wprintw(wresult, "%*s ", numlen, current_symbol.linenum);
 		wattroff(wresult, COLOR_PAIR(color_swp));
 		/* there may be tabs in egrep output */
-		while((s = strchr(tempstring, '\t')) != NULL) {
+		while((s = strchr(current_symbol.text, '\t')) != NULL) {
 			*s = ' ';
 		}
 
@@ -525,8 +522,8 @@ void display_results() {
 		color_swp = (disprefs != curdispline) ? COLOR_PAIR_TABLE_COL_TEXT :
 												COLOR_PAIR_TABLE_COL_SELECTED_TEXT;
 		wattron(wresult, COLOR_PAIR(color_swp));
-		s = tempstring;
-		for(;;) {
+		s = current_symbol.text;
+		for(int i;;) {
 			/* if the source line does not fit */
 			if((i = strlen(s)) > srctxtw) {
 
@@ -583,23 +580,23 @@ endrefs:
 	wattroff(wresult, attr_swp);
 	/* --- display pager message --- */
 	/* position cursor */
-	i = result_window_height - 1;
-	if(screenline < i) {
+	int rh = result_window_height - 1;
+	if(screenline < rh) {
 		waddch(wresult, '\n');
 	} else {
-		wmove(wresult, i, 0);
+		wmove(wresult, rh, 0);
 	}
 	/**/
 	wattron(wresult, COLOR_PAIR(COLOR_PAIR_PAGER_MSG));
 	/* check for more references */
-	i		   = totallines - nextline + 1;
-	if(i > 0) {
+	int tn = totallines - nextline + 1;
+	if(tn > 0) {
 		wprintw(wresult,
 			"* Lines %d-%d of %d, %d more. *",
 			topref,
 			topref + nextline,
 			totallines,
-			i);
+			tn);
 	}
 	/* if this is the last page of references */
 	else if(current_page > 0 && nextline > totallines) {
@@ -699,17 +696,25 @@ void myperror(char *text) {
 }
 
 /* postmsg clears the message line and prints the message */
-void postmsg(char *msg) {
+void postmsg(const char * fmt, ...) {
+    va_list va;
+	va_start(va, fmt);
+
 	if (linemode == true
     ||  incurses == false) {
-        puts(msg);
+        vprintf(fmt, va);
 		fflush(stdout);
 	} else {
+        // XXX we should actually update the window
+        // so that long running processes can use the function
 		window_change |= CH_RESULT;
 	}
-	UNUSED(strncpy(lastmsg, msg, sizeof(lastmsg) - 1));
+    vsprintf(lastmsg, fmt, va);
+
+    va_end(va);
 }
 
+// XXX
 /* clearmsg2 clears the second message line */
 void clearmsg2(void) {
 	if(linemode == false) {

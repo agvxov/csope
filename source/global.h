@@ -94,6 +94,25 @@ extern int input_mode;
 #define DEFAULT_INCLUDE_DIRECTORY "/usr/include"
 extern const char * incdir;
 
+/* NOTE:
+ *  These values correspont to how types are denoted in tags files,
+ *   except TYPE_UNKNOWN, which is used for symbols constructed by Cscope.
+ */
+typedef enum {
+    TYPE_UNKNOWN  = 'u',
+    TYPE_FUNCTION = 'f',
+    TYPE_VARIABLE = 'v',
+} symbol_type_t;
+
+typedef struct {
+    char * name;
+    char * scope;
+    char * filename;
+    char * text;
+    char * linenum;
+    symbol_type_t type;
+} symbol_t;
+
 /* digraph data for text compression */
 extern char dichar1[]; /* 16 most frequent first chars */
 extern char dichar2[]; /* 8 most frequent second chars using the above as first chars */
@@ -223,6 +242,7 @@ void deinit_temp_files(void);
 long seekpage(const size_t i);
 long seekrelline(unsigned i);
 void PCS_reset(void);
+symbol_t * get_next_symbol(symbol_t * symbol);
 
 void rlinit(void);
 
@@ -252,7 +272,8 @@ void myexit(int sig);
 void myperror(char *text);
 void progress(char *what, long current, long max);
 void putfilename(char *srcfile);
-void postmsg(char *msg);
+void curses_postmsg(const char * fmt, ...);
+void postmsg(const char * fmt, ...);
 void postmsg2(char *msg);
 void posterr(char *msg, ...);
 void postfatal(const char *msg, ...);
@@ -272,14 +293,13 @@ void redisplay(void);
 
 void shellpath(char *out, int limit, char *in);
 
+int search(const char *query);
 bool infilelist(const char * file);
 bool readrefs(char *filename);
-bool search(const char *query);
 bool writerefsfound(void);
 
 int	findinit(const char *pattern_);
 
-int	 egrep(const char * file, FILE *output, char *format);
 int	 hash(const char * ss);
 int	 execute(char *a, ...);
 long dbseek(long offset);

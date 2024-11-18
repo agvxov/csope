@@ -42,6 +42,8 @@
 #include "vpath.h"
 #include "version.inc"
 #include "scanner.h"
+#include "backend.h"
+#include "egrep.h"
 
 #include <stdlib.h>	   /* atoi */
 #include <ncurses.h>
@@ -173,7 +175,7 @@ void myexit(int sig) {
 static inline
 void linemode_event_loop(void) {
 	if (*input_line != '\0') { /* do any optional search */
-		if (search(input_line) == true) {
+		if (!search(input_line)) {
 			/* print the total number of lines in
 			 * verbose mode */
 			if (verbosemode == true) printf(PROGRAM_NAME ": %d lines\n", totallines);
@@ -199,7 +201,7 @@ void linemode_event_loop(void) {
 			case ASCII_DIGIT:
 				field = *buf - '0';
 				strcpy(input_line, buf + 1);
-				if (search(input_line) == false) {
+				if (!search(input_line)) {
 					printf("Unable to search database\n");
 				} else {
 					printf("cscope: %d lines\n", totallines);
@@ -435,11 +437,16 @@ int main(const int argc, const char * const * const argv) {
 
 	siginit();
 
+    /* XXX:
+     *  maybe we shouldnt enter curses at all until the crossrefrence is ready
+     */
+  #if 1
 	if (linemode == false) {
 		dispinit();	 /* initialize display parameters */
 		postmsg(""); /* clear any build progress message */
 		display();	 /* display the version number and input fields */
 	}
+  #endif
 
 
 	/* if the cross-reference is to be considered up-to-date */
@@ -480,8 +487,15 @@ int main(const int argc, const char * const * const argv) {
 
 	opendatabase(reffile);
 
-    /* XXX temp XXX */
+    backend_mode = CTAGS_BACKEND;
+    change_backend(backend_mode);
     gen_tags_file();
+    #if 0
+    /* XXX temp XXX */
+    read_tags_file("tags");
+    myexit(0);
+    // ---
+    #endif
 
 	if (linemode == true) {
         /* if using the line oriented user interface so cscope can be a

@@ -38,6 +38,7 @@
 #include "global.h"
 
 #include "build.h"
+#include "egrep.h"
 #include "scanner.h" /* for token definitions */
 
 #include <assert.h>
@@ -75,7 +76,6 @@ static char	   *lcasify(const char *s);
 static void		findcalledbysub(const char *file, bool macro);
 static void		findterm(const char *pattern);
 static void		putline(FILE *output);
-static char	   *find_symbol_or_assignment(const char *pattern, bool assign_flag);
 static bool		check_for_assignment(void);
 static void		putpostingref(POSTING *p, const char *pat);
 static void		putref(int seemore, const char *file, const char *func);
@@ -90,20 +90,23 @@ typedef enum {				   /* findinit return code */
 	REGCMPERROR
 } FINDINIT;
 
-static char *findsymbol(const char *pattern);
-static char *finddef(const char *pattern);
-static char *findcalledby(const char *pattern);
-static char *findcalling(const char *pattern);
-static char *findstring(const char *pattern);
-static char *findregexp(const char *egreppat);
-static char *findfile(const char *dummy);
-static char *findinclude(const char *pattern);
-static char *findassign(const char *pattern);
-static char *findallfcns(const char *dummy);
+static int findsymbol(const char *pattern);
+static int finddef(const char *pattern);
+static int findcalledby(const char *pattern);
+static int findcalling(const char *pattern);
+static int findstring(const char *pattern);
+static int findregexp(const char *egreppat);
+static int findfile(const char *dummy);
+static int findinclude(const char *pattern);
+static int findassign(const char *pattern);
+static int findallfcns(const char *dummy);
 
-typedef char *(*FP)(const char *); /* pointer to function returning a character pointer */
+static int find_symbol_or_assignment(const char *pattern, bool assign_flag);
+
+typedef int (*search_function_t)(const char *);
+
 /* Paralel array to "fields", indexed by "field" */
-FP field_searchers[FIELDS + 1] = {
+search_function_t field_searchers[FIELDS + 1] = {
 	findsymbol,
 	finddef,
 	findcalledby,
@@ -125,8 +128,6 @@ struct TI {
 extern struct TI fields[FIELDS + 1];
 
 /* Internal prototypes: */
-static void jumpback(int sig);
-
 static void jumpback(int sig) {
 	signal(sig, jumpback);
 	siglongjmp(env, 1);
@@ -134,13 +135,13 @@ static void jumpback(int sig) {
 
 /* find the symbol in the cross-reference */
 static
-char *findsymbol(const char *pattern) {
+int findsymbol(const char *pattern) {
 	return find_symbol_or_assignment(pattern, false);
 }
 
 /* find the symbol in the cross-reference, and look for assignments */
 static
-char *findassign(const char *pattern) {
+int findassign(const char *pattern) {
 	return find_symbol_or_assignment(pattern, true);
 }
 
@@ -199,7 +200,7 @@ bool check_for_assignment(void) {
 /* The actual routine that does the work for findsymbol() and
  * findassign() */
 static
-char *find_symbol_or_assignment(const char *pattern, bool assign_flag) {
+int find_symbol_or_assignment(const char *pattern, bool assign_flag) {
 	char   file[PATHLEN + 1];	 /* source file name */
 	char   function[PATLEN + 1]; /* function name */
 	char   macro[PATLEN + 1];	 /* macro name */
@@ -221,7 +222,7 @@ char *find_symbol_or_assignment(const char *pattern, bool assign_flag) {
 				lastline = p->lineoffset;
 			}
 		}
-		return NULL;
+		return 0;
 	}
 
 	scanpast('\t');	  /* find the end of the header */
@@ -257,7 +258,7 @@ char *find_symbol_or_assignment(const char *pattern, bool assign_flag) {
 					fetch_string_from_dbase(file, sizeof(file));
 
 					/* check for the end of the symbols */
-					if(*file == '\0') { return NULL; }
+					if(*file == '\0') { return 0; }
 					progress("Search", searchcount, nsrcfiles);
 					/* FALLTHROUGH */
 
@@ -368,19 +369,19 @@ char *find_symbol_or_assignment(const char *pattern, bool assign_flag) {
 				}
 			}
 		notmatched:
-			if(blockp == NULL) { return NULL; }
+			if(blockp == NULL) { return 0; }
 			fcndef = false;
 			cp	   = blockp;
 		}
 	}
 	blockp = cp;
 
-	return NULL;
+	return 0;
 }
 
 /* find the function definition or #define */
 static
-char *finddef(const char *pattern) {
+int finddef(const char *pattern) {
 	char file[PATHLEN + 1]; /* source file name */
 
 	if(invertedindex == true) {
@@ -401,7 +402,7 @@ char *finddef(const char *pattern) {
 					putpostingref(p, pattern);
 			}
 		}
-		return NULL;
+		return 0;
 	}
 
 
@@ -413,7 +414,7 @@ char *finddef(const char *pattern) {
 				skiprefchar();		/* save file name */
 				fetch_string_from_dbase(file, sizeof(file));
 				if(*file == '\0') { /* if end of symbols */
-					return NULL;
+					return 0;
 				}
 				progress("Search", searchcount, nsrcfiles);
 				break;
@@ -437,12 +438,12 @@ char *finddef(const char *pattern) {
 		}
 	}
 
-	return NULL;
+	return 0;
 }
 
 /* find all function definitions (used by samuel only) */
 static
-char *findallfcns(const char *dummy) {
+int findallfcns(const char *dummy) {
 	char file[PATHLEN + 1];	   /* source file name */
 	char function[PATLEN + 1]; /* function name */
 
@@ -456,7 +457,7 @@ char *findallfcns(const char *dummy) {
 				skiprefchar();		/* save file name */
 				fetch_string_from_dbase(file, sizeof(file));
 				if(*file == '\0') { /* if end of symbols */
-					return NULL;
+					return 0;
 				}
 				progress("Search", searchcount, nsrcfiles);
 				/* FALLTHROUGH */
@@ -475,12 +476,12 @@ char *findallfcns(const char *dummy) {
 				break;
 		}
 	}
-	return NULL;
+	return 0;
 }
 
 /* find the functions calling this function */
 static
-char *findcalling(const char *pattern) {
+int findcalling(const char *pattern) {
 	char  file[PATHLEN + 1];	   /* source file name */
 	char  function[PATLEN + 1];	   /* function name */
 	char  tmpfunc[10][PATLEN + 1]; /* 10 temporary function names */
@@ -495,7 +496,7 @@ char *findcalling(const char *pattern) {
 		while((p = getposting()) != NULL) {
 			if(p->type == FCNCALL) { putpostingref(p, 0); }
 		}
-		return NULL;
+		return 0;
 	}
 	/* find the next file name or function definition */
 	*macro	  = '\0'; /* a macro can be inside a function, but not vice versa */
@@ -510,7 +511,7 @@ char *findcalling(const char *pattern) {
 				skiprefchar();
 				fetch_string_from_dbase(file, sizeof(file));
 				if(*file == '\0') { /* if end of symbols */
-					return NULL;
+					return 0;
 				}
 				progress("Search", searchcount, nsrcfiles);
 				(void)strcpy(function, global);
@@ -562,38 +563,35 @@ char *findcalling(const char *pattern) {
 		}
 	}
 
-	return NULL;
+	return 0;
 }
 
 /* find the text in the source files */
 static
-char *findstring(const char *pattern) {
-	char		egreppat[2 * PATLEN];
-	char	   *cp = egreppat;
-	const char *pp;
+int findstring(const char *pattern) {
+	char egreppat[2 * PATLEN];
+	char *copy_pointer = egreppat;
 
 	/* translate special characters in the regular expression */
-	for(pp = pattern; *pp != '\0'; ++pp) {
-		if(strchr(".*[\\^$+?|()", *pp) != NULL) { *cp++ = '\\'; }
-		*cp++ = *pp;
+	for(const char * s = pattern; *s != '\0'; ++s) {
+		if(strchr(".*[\\^$+?|()", *s) != NULL) { *copy_pointer++ = '\\'; }
+		*copy_pointer++ = *s;
 	}
-	*cp = '\0';
+	*copy_pointer = '\0';
 
 	/* search the source files */
-	return (findregexp(egreppat));
+	return findregexp(egreppat);
 }
 
 /* find this regular expression in the source files */
 static
-char *findregexp(const char *egreppat) {
-	unsigned int i;
-	char		*egreperror;
+int findregexp(const char *egreppat) {
+	int r = egrepinit(egreppat);
 
 	/* compile the pattern */
-	if((egreperror = egrepinit(egreppat)) == NULL) {
-
+	if(r == 0) {
 		/* search the files */
-		for(i = 0; i < nsrcfiles; ++i) {
+		for(unsigned i = 0; i < nsrcfiles; ++i) {
 			const char * file = prepend_path(prependpath, srcfiles[i]);
 
 			progress("Search", searchcount, nsrcfiles);
@@ -602,12 +600,13 @@ char *findregexp(const char *egreppat) {
 			}
 		}
 	}
-	return (egreperror);
+
+	return r;
 }
 
 /* find matching file names */
 static
-char *findfile(const char *dummy) {
+int findfile(const char *dummy) {
 	UNUSED(dummy);
 
 	unsigned int i;
@@ -625,12 +624,12 @@ char *findfile(const char *dummy) {
 		}
 	}
 
-	return NULL;
+	return 0;
 }
 
 /* find files #including this file */
 static
-char *findinclude(const char *pattern) {
+int findinclude(const char *pattern) {
 	char file[PATHLEN + 1]; /* source file name */
 
 	if(invertedindex == true) {
@@ -640,7 +639,7 @@ char *findinclude(const char *pattern) {
 		while((p = getposting()) != NULL) {
 			if(p->type == INCLUDE) { putpostingref(p, 0); }
 		}
-		return NULL;
+		return 0;
 	}
 
 	/* find the next file name or function definition */
@@ -651,7 +650,7 @@ char *findinclude(const char *pattern) {
 				skiprefchar();
 				fetch_string_from_dbase(file, sizeof(file));
 				if(*file == '\0') { /* if end of symbols */
-					return NULL;
+					return 0;
 				}
 				progress("Search", searchcount, nsrcfiles);
 				break;
@@ -667,7 +666,7 @@ char *findinclude(const char *pattern) {
 		}
 	}
 
-	return NULL;
+	return 0;
 }
 
 /* initialize */
@@ -676,12 +675,9 @@ int findinit(const char *pattern_) {
 	int			  r		  = NOERROR;
 	char		  buf[PATLEN + 3];
 	bool		  isregexp = false;
-	int			  i;
 	char		 *s;
-	unsigned char c;
 
-	/* HBB: be nice: free regexp before allocating a new one */
-	if(isregexp_valid == true) regfree(&regexp);
+	if (isregexp_valid == true) { regfree(&regexp); }
 
 	isregexp_valid = false;
 
@@ -738,7 +734,7 @@ int findinit(const char *pattern_) {
 			strcpy(s, newpat);
 		}
 		/* remove a trailing $ */
-		i = strlen(s) - 1;
+		int i = strlen(s) - 1;
 		if(s[i] == '$') {
 			if(i > 0 && s[i - 1] == '\\') { s[i - 1] = '$'; }
 			s[i] = '\0';
@@ -760,7 +756,8 @@ int findinit(const char *pattern_) {
 		if(trun_syms == true && field <= CALLING) { pattern[8] = '\0'; }
 		/* compress the string pattern for matching */
 		s = cpattern;
-		for(i = 0; (c = pattern[i]) != '\0'; ++i) {
+        unsigned char c;
+		for(int i = 0; (c = pattern[i]) != '\0'; ++i) {
 			if(IS_A_DICODE(c, pattern[i + 1])) {
 				c = DICODE_COMPRESS(c, pattern[i + 1]);
 				++i;
@@ -989,10 +986,10 @@ char *lcasify(const char *s) {
 }
 
 /* find the functions called by this function */
-char * findcalledby(const char *pattern) {
-	char   file[PATHLEN + 1];	/* source file name */
-	char * found_caller = NULL; /* seen calling function? */
-	bool   macro        = false;
+int findcalledby(const char *pattern) {
+	char file[PATHLEN + 1];	/* source file name */
+	bool found_caller = false; /* seen calling function? */
+	bool macro        = false;
 
 	if(invertedindex == true) {
 		POSTING *p;
@@ -1032,7 +1029,7 @@ char * findcalledby(const char *pattern) {
 			case FCNDEF:
 				skiprefchar(); /* match name to pattern */
 				if(match()) {
-					found_caller = (char*)0x01;
+					found_caller = true;
 					findcalledbysub(file, macro);
 				}
 				break;
@@ -1236,51 +1233,77 @@ bool writerefsfound(void) {
 	return true;
 }
 
-/* Perform token search based on "field" */
-bool search(const char *query) {
-	char		 msg[MSGLEN + 1];
-	char		*findresult = NULL;	   /* find function output */
-	bool		 funcexist	= true;	   /* find "function" error */
-	FINDINIT	 rc			= NOERROR; /* findinit return code */
-	sighandler_t savesig;			   /* old value of signal */
-	FP			 f;					   /* searching function */
-	int			 c;
+// NOTE: assuming the file has been just opened
+static inline
+bool is_empty(FILE * file) {
+    char c = getc(file);
+	ungetc(c, file);
+    return (c == EOF);
+}
 
+static inline
+int find_pattern(const char * query, search_function_t search_function_reference) {
+    int r = 0;
+    
+	if (search_function_reference == findregexp
+    ||  search_function_reference == findstring) {
+		return (*search_function_reference)(query);
+    }
+
+	if((nonglobalrefs = myfopen(temp2, "wb")) == NULL) {
+		cannotopen(temp2);
+		return 1;
+	}
+
+    int findinit_r = findinit(query);
+    switch (findinit_r) {
+        case NOERROR: {
+            UNUSED(dbseek(0L)); /* read the first block */
+            bool search_r = (*search_function_reference)(query);
+            if(search_function_reference == findcalledby
+            && search_r){
+                postmsg("Function definition does not exist: %s", query);
+                r = 1;
+            }
+            findcleanup();
+
+            /* append the non-global references */
+            UNUSED(fclose(nonglobalrefs));
+            if((nonglobalrefs = myfopen(temp2, "rb")) == NULL) {
+                cannotopen(temp2);
+                return 1;
+            }
+            for (char c; (c = getc(nonglobalrefs)) != EOF;) {
+                UNUSED(putc(c, refsfound));
+            }
+        } break;
+        case NOTSYMBOL: {
+            r = 1;
+            postmsg("This is not a C symbol: %s", query);
+        } break;
+        case REGCMPERROR: {
+            r = 1;
+            postmsg("Error in this regcomp(3) regular expression: %s", query);
+        } break;
+    }
+	UNUSED(fclose(nonglobalrefs));
+
+    return r;
+}
+
+/* Perform token search based on "field" */
+int search(const char *query) {
+    int r;
 	/* open the references found file for writing */
-	if(writerefsfound() == false) { return (false); }
+	if(writerefsfound() == false) { return 1; }
+
+	searchcount = 0;
+
 	/* find the pattern - stop on an interrupt */
 	if(linemode == false) { postmsg("Searching"); }
-	searchcount = 0;
-	savesig		= signal(SIGINT, jumpback);
-	if(sigsetjmp(env, 1) == 0) {
-		f = field_searchers[field];
-		if(f == findregexp || f == findstring) {
-			findresult = (*f)(query);
-		} else {
-			if((nonglobalrefs = myfopen(temp2, "wb")) == NULL) {
-				cannotopen(temp2);
-				return (false);
-			}
-			if((rc = findinit(query)) == NOERROR) {
-				UNUSED(dbseek(0L)); /* read the first block */
-				findresult = (*f)(query);
-				if(f == findcalledby){
-					funcexist = (bool)(findresult);
-				}
-				findcleanup();
-
-				/* append the non-global references */
-				UNUSED(fclose(nonglobalrefs));
-				if((nonglobalrefs = myfopen(temp2, "rb")) == NULL) {
-					cannotopen(temp2);
-					return (false);
-				}
-				while((c = getc(nonglobalrefs)) != EOF) {
-					UNUSED(putc(c, refsfound));
-				}
-			}
-			UNUSED(fclose(nonglobalrefs));
-		}
+	sighandler_t savesig = signal(SIGINT, jumpback);
+	if (sigsetjmp(env, 1) == 0) {
+        r = find_pattern(query, field_searchers[field]);
 	}
 	signal(SIGINT, savesig);
 
@@ -1291,48 +1314,20 @@ bool search(const char *query) {
 	fclose(refsfound);
 	if((refsfound = myfopen(temp1, "rb")) == NULL) {
 		cannotopen(temp1);
-		return (false);
+		return 1;
 	}
 	totallines = 0;
 	disprefs   = 0;
 
-	/* see if it is empty */
-	if((c = getc(refsfound)) == EOF) {
-		if(findresult != NULL) {
-			snprintf(msg,
-				sizeof(msg),
-				"Egrep %s in this pattern: %s",
-				findresult,
-				query);
-		} else if(rc == NOTSYMBOL) {
-			snprintf(msg, sizeof(msg), "This is not a C symbol: %s", query);
-		} else if(rc == REGCMPERROR) {
-			snprintf(msg,
-				sizeof(msg),
-				"Error in this regcomp(3) regular expression: %s",
-				query);
-
-		} else if(funcexist == false) {
-			snprintf(msg,
-				sizeof(msg),
-				"Function definition does not exist: %s",
-				query);
-		} else {
-			snprintf(msg,
-				sizeof(msg),
-				"Could not find the %s: %s",
-				fields[field].text2,
-				query);
-		}
-		postmsg(msg);
-		return (false);
+	if (!r
+    &&  is_empty(refsfound)) {
+		postmsg("Could not find the %s: %s", fields[field].text2, query);
+		return 1;
 	}
-	/* put back the character read */
-	ungetc(c, refsfound);
 
 	countrefs();
 
 	window_change |= CH_RESULT;
 
-	return (true);
+	return r;
 }

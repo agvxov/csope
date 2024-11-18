@@ -43,8 +43,6 @@
 
 #include <setjmp.h>	/* jmp_buf */
 
-#define nextch()	(*input++)
-
 #define MAXLIN 350
 #define MAXPOS 4000
 #define NCHARS 256
@@ -68,11 +66,13 @@ static	int initstat[MAXLIN];
 static	int xstate;
 static	int count;
 static	int icount;
-static	char *input;
 static	long lnum;
 static	int iflag;
 static	jmp_buf	env;	/* setjmp/longjmp buffer */
-static	char *message;	/* error message */
+
+#define nextch()	(*input++)
+static char *input;
+static char *input_base;
 
 /* Internal prototypes: */
 static	void cfoll(int v);
@@ -174,7 +174,14 @@ r
 %%
 static
 int yyerror(char *s) {
-	message = s;
+	char msg[MSGLEN + 1];
+	snprintf(msg, sizeof(msg),
+		"Egrep %s in this pattern: %s",
+		s,
+		input_base
+    );
+    postmsg(msg);
+
 	longjmp(env, 1);
 	return 1;		/* silence a warning */
 }
@@ -522,7 +529,8 @@ void follow(unsigned int v) {
     }
 }
 
-char * egrepinit(const char *egreppat) {
+int egrepinit(const char *egreppat) {
+    int r = 0;
     /* initialize the global data */
     memset(gotofn, 0, sizeof(gotofn));
     memset(state, 0, sizeof(state));
@@ -542,14 +550,14 @@ char * egrepinit(const char *egreppat) {
     xstate = 0;
     count = 0;
     icount = 0;
-    input = egreppat;
-    message = NULL;
+    input_base = egreppat;
+    input = input_base;
     if (setjmp(env) == 0) {
-        yyparse();
+        r = yyparse();
         cfoll(line-1);
         cgotofn();
     }
-    return(message);
+    return r;
 }
 
 static char buf[2 * BUFSIZ];

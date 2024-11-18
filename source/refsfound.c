@@ -43,3 +43,17 @@ long seekrelline(unsigned i) {
 void PCS_reset(void) {
 	PCS_top = 0;
 }
+
+symbol_t * get_next_symbol(symbol_t * symbol) {
+    const int scanr = fscanf(refsfound,
+		   "%" PATHLEN_STR "s%" PATHLEN_STR "s%" NUMLEN_STR "s %" TEMPSTRING_LEN_STR "[^\n]",
+		   symbol->filename,
+		   symbol->scope,
+		   symbol->linenum,
+		   symbol->text
+    );
+
+    if (scanr < 4) { return NULL; }
+
+    return symbol;
+}

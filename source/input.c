@@ -48,6 +48,7 @@
 
 #include "keys.h"
 #include "backend.h"
+#include "egrep.h"
 
 extern const void *const		winput;
 extern const void *const		wmode;
@@ -302,7 +303,13 @@ int global_input(const int c) {
 			window_change |= CH_CASE;
 			break;
 		case ctrl('B'):	// toggle mode
-			backend_mode = !backend_mode;
+            // XXX
+            if (backend_mode == CSCOPE_BACKEND) {
+                backend_mode = CTAGS_BACKEND;
+            } else {
+                backend_mode = CSCOPE_BACKEND;
+            }
+            change_backend(backend_mode);
 			window_change |= CH_BACKEND;
 			break;
 		case EOF:
@@ -552,7 +559,7 @@ int handle_input(const int c) {
 	if(r) { return 0; }
 	/* --- mode specific --- */
 	switch(input_mode) {
-		case INPUT_NORMAL:
+		case INPUT_NORMAL: {
 			const int r = normal_global_input(c);
 			if(r) { return 0; }
 			//
@@ -564,7 +571,7 @@ int handle_input(const int c) {
 				return wresult_input(c);
 			}
 			assert("'current_window' dangling.");
-			break; /* NOTREACHED */
+		} break;
 		case INPUT_CHANGE_TO:
 		case INPUT_APPEND:
 		case INPUT_READ:

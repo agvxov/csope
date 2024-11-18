@@ -104,7 +104,7 @@ static int zipf[ZIPFSIZE + 1];
 #endif
 
 long invmake(char *invname, char *invpost, FILE *infile) {
-	unsigned char *s;
+	char *s;
 	long		   num;
 	int			   i;
 	long		   fileindex = 0; /* initialze, to avoid warning */

@@ -74,14 +74,13 @@ static long			 fcnoffset;			   /* function name database offset */
 static long			 macrooffset;		   /* macro name database offset */
 static unsigned long msymbols = SYMBOLINC; /* maximum number of symbols */
 
-typedef struct {							   /* symbol data */
+struct {							   /* symbol data */
     int			 type;				   /* type */
     unsigned int first;				   /* index of first character in text */
     unsigned int last;				   /* index of last+1 character in text */
     unsigned int length;			   /* symbol length */
     unsigned int fcn_level;			   /* function level of the symbol */
-} symbol_t;
-static symbol_t * symbol;
+} * symbol;
 
 static void putcrossref(void);
 static void savesymbol(int token, int num);
