@@ -241,7 +241,7 @@ static int wresult_input(const int c) {
 	}
 
 	window_change |= CH_RESULT;
-noredisp:
+  noredisp:
 	return 1;
 }
 

@@ -275,8 +275,8 @@ void force_window(){
 	}
 }
 
-static
-inline void display_help() {
+static inline
+void display_help() {
 	// XXX: this could be optimized by only overriding the buffer if theres an actual
 	// change
 	werase(whelp);
@@ -291,16 +291,16 @@ inline void display_help() {
 	do_press_any_key = true;
 }
 
-static
-inline void display_case(){
+static inline
+void display_case(){
 	wmove(wcase, 0, 0);
 	wattron(wcase, COLOR_PAIR(COLOR_PAIR_CASE));
 	waddstr(wcase, (caseless ? "Case: OFF" : "Case:  ON"));
 	wattroff(wcase, COLOR_PAIR(COLOR_PAIR_CASE));
 }
 
-static
-inline void display_backend(){
+static inline
+void display_backend(){
 	wmove(wbackend, 0, 0);
 	wattron(wbackend, COLOR_PAIR(COLOR_PAIR_BACKEND));
 	waddstr(wbackend, (backend_mode ? "Backend:  Ctags" : "Backend: CScope"));
