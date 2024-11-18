@@ -243,7 +243,6 @@ void entercurses(void) {
 	// mouseinit(); /* initialize any mouse interface */
 	// drawscrollbar(topline, nextline);
 	keypad(stdscr, TRUE); /* enable the keypad */
-	// fixkeypad();    /* fix for getch() intermittently returning garbage */
 	standend(); /* turn off reverse video */
 }
 
