@@ -470,11 +470,9 @@ int qsort_compare(const void *arg_s1, const void *arg_s2) {
 void seek_to_trailer(FILE *f) {
 	if(fscanf(f, "%ld", &traileroffset) != 1) {
 		postfatal(PROGRAM_NAME ": cannot read trailer offset from file %s\n", reffile);
-		/* NOTREACHED */
 	}
 	if(fseek(f, traileroffset, SEEK_SET) == -1) {
 		postfatal(PROGRAM_NAME ": cannot seek to trailer in file %s\n", reffile);
-		/* NOTREACHED */
 	}
 }
 
