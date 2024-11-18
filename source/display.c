@@ -44,11 +44,7 @@
 #include "colors.h"
 #include "help.h"
 
-#ifdef CCS
-# include "sgs.h"	  /* ESG_PKG and ESG_REL */
-#else
-# include "version.inc"
-#endif
+#include "version.inc"
 
 /* XXX */
 #define MSGLINE 0							/* message line */
@@ -303,11 +299,7 @@ void display_frame(const bool border_only) {
 	/* Title*/
 	const int LEFT_PADDING = 5;
 	wmove(stdscr, 0, LEFT_PADDING);
-#if CCS
-	wprintw(stdscr, PROGRAM_NAME " %s", ESG_REL);
-#else
 	wprintw(stdscr, PROGRAM_NAME " version %d%s", FILEVERSION, FIXVERSION);
-#endif
 	/* --- */
 	if(!border_only) {
 		/* Vertical line */
