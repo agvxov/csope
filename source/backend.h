@@ -10,10 +10,6 @@ typedef struct {
 enum {
 	CSCOPE_BACKEND = 0,
 	CTAGS_BACKEND  = 1,
-	/* if you plan to add more, you will have to modify logic,
-	 *  because we depend on value flipping
-     *  XXX
-	 */
 };
 
 extern backend_t backend;
