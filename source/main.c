@@ -170,6 +170,17 @@ void myexit(int sig) {
 	exit(sig);
 }
 
+
+/* Remove a singular newline from the end of a string (if any). */
+static inline
+void remove_trailing_newline(char *buf, size_t len) {
+
+	if ((len > 0) &&
+		(buf[len - 1] == '\n')) {
+		buf[len - 1] = '\0';
+	}
+}
+
 static inline
 void linemode_event_loop(void) {
 	if (*input_line != '\0') { /* do any optional search */
@@ -200,7 +211,8 @@ void linemode_event_loop(void) {
 		fflush(stdout);
 		if (fgets(buf, sizeof(buf), stdin) == NULL) { myexit(0); }
 		/* remove any trailing newline character */
-		if (*(s = buf + strlen(buf) - 1) == '\n') { *s = '\0'; }
+		remove_trailing_newline(buf, strlen(buf));
+
 		switch (*buf) {
 			case ASCII_DIGIT:
 				field = *buf - '0';
