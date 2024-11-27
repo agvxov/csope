@@ -173,19 +173,25 @@ void myexit(int sig) {
 static inline
 void linemode_event_loop(void) {
 	if (*input_line != '\0') { /* do any optional search */
-		if (search(input_line) == true) {
-			/* print the total number of lines in
-			 * verbose mode */
-			if (verbosemode == true) printf(PROGRAM_NAME ": %d lines\n", totallines);
 
-            int c;
-			while((c = getc(refsfound)) != EOF) {
+		if (search(input_line) == true) {
+
+			/* print the total number of lines in verbose mode */
+			if (verbosemode == true) {
+				printf(PROGRAM_NAME ": %d lines\n", totallines);
+			}
+
+			int c = getc(refsfound);
+			while(c != EOF) {
 				putchar(c);
+				c = getc(refsfound);
             }
 		}
 	}
 
-	if (onesearch == true) { myexit(0); }
+	if (onesearch == true) {
+		myexit(0);
+	}
 
 	for (char *s;;) {
 		char buf[PATLEN + 2];
