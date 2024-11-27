@@ -287,6 +287,6 @@ int	 execute(char *a, ...);
 long dbseek(long offset);
 
 void mousecleanup(void);
-int process_mouse();
+int process_mouse(void);
 
 #endif /* CSCOPE_GLOBAL_H */
