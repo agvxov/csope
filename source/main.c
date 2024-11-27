@@ -212,13 +212,11 @@ void linemode_event_loop(void) {
 
 			case 'c': /* toggle caseless mode */
 			case ctrl('C'):
-				if (caseless == false) {
-					caseless = true;
-				} else {
-					caseless = false;
-				}
-				egrepcaseless(caseless);
-				break;
+				/* 27-11-2024 20:42 yama XXX: The logic works but I am unable
+				to test functionality in the terminal? */
+						  caseless = !(caseless);
+                          egrepcaseless(caseless);
+                          break;
 
 			case 'r': /* rebuild database cscope style */
 			case ctrl('R'):
