@@ -1,3 +1,5 @@
+.PHONY: test
+
 LIBS:=ncurses readline
 
 CFLAGS += $(if $(SAN),-fsanitize=${SAN}) -Wno-unused-result
@@ -46,3 +48,6 @@ clean:
 	-${RM} ${GENYACC}
 	-${RM} ${object}
 	-${RM} ${OUTPUT}
+
+test:
+	cmdtest --fast
