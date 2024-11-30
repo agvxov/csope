@@ -173,22 +173,39 @@ void myexit(int sig) {
 	exit(sig);
 }
 
+
+/* Remove a singular newline from the end of a string (if any). */
+static inline
+void remove_trailing_newline(char *buf, size_t len) {
+
+	if ((len > 0) &&
+		(buf[len - 1] == '\n')) {
+		buf[len - 1] = '\0';
+	}
+}
+
 static inline
 void linemode_event_loop(void) {
 	if (*input_line != '\0') { /* do any optional search */
-		if (!search(input_line)) {
-			/* print the total number of lines in
-			 * verbose mode */
-			if (verbosemode == true) printf(PROGRAM_NAME ": %d lines\n", totallines);
 
-            int c;
-			while((c = getc(refsfound)) != EOF) {
+		if (search(input_line) == true) {
+
+			/* print the total number of lines in verbose mode */
+			if (verbosemode == true) {
+				printf(PROGRAM_NAME ": %d lines\n", totallines);
+			}
+
+			int c = getc(refsfound);
+			while(c != EOF) {
 				putchar(c);
+				c = getc(refsfound);
             }
 		}
 	}
 
-	if (onesearch == true) { myexit(0); }
+	if (onesearch == true) {
+		myexit(0);
+	}
 
 	for (char *s;;) {
 		char buf[PATLEN + 2];
@@ -197,7 +214,8 @@ void linemode_event_loop(void) {
 		fflush(stdout);
 		if (fgets(buf, sizeof(buf), stdin) == NULL) { myexit(0); }
 		/* remove any trailing newline character */
-		if (*(s = buf + strlen(buf) - 1) == '\n') { *s = '\0'; }
+		remove_trailing_newline(buf, strlen(buf));
+
 		switch (*buf) {
 			case ASCII_DIGIT:
 				field = *buf - '0';
@@ -215,13 +233,11 @@ void linemode_event_loop(void) {
 
 			case 'c': /* toggle caseless mode */
 			case ctrl('C'):
-				if (caseless == false) {
-					caseless = true;
-				} else {
-					caseless = false;
-				}
-				egrepcaseless(caseless);
-				break;
+				/* 27-11-2024 20:42 yama XXX: The logic works but I am unable
+				to test functionality in the terminal? */
+						  caseless = !(caseless);
+                          egrepcaseless(caseless);
+                          break;
 
 			case 'r': /* rebuild database cscope style */
 			case ctrl('R'):
@@ -491,7 +507,7 @@ int main(const int argc, const char * const * const argv) {
 
 	opendatabase(reffile);
 
-    //backend.build();
+    backend.build();
     //dump_tags_file("results.tags");
     //dump_tags_file("tags");
 

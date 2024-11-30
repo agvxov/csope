@@ -4,4 +4,6 @@
 csope
 source/lex.yy.c
 main.plist
+tmp-cmdtest-*
+.cmdtest-filter
 tags

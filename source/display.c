@@ -257,7 +257,7 @@ void exitcurses(void) {
 	fflush(stdout);
 }
 
-void force_window(){
+void force_window(void){
 	switch(input_mode){
 		case INPUT_CHANGE:
 			current_window = &wresult;
@@ -271,7 +271,7 @@ void force_window(){
 }
 
 static inline
-void display_help() {
+void display_help(void) {
 	// XXX: this could be optimized by only overriding the buffer if theres an actual
 	// change
 	werase(whelp);
@@ -287,7 +287,7 @@ void display_help() {
 }
 
 static inline
-void display_case(){
+void display_case(void){
 	wmove(wcase, 0, 0);
 	wattron(wcase, COLOR_PAIR(COLOR_PAIR_CASE));
 	waddstr(wcase, (caseless ? "Case: OFF" : "Case:  ON"));
@@ -332,7 +332,7 @@ void display_frame(const bool border_only) {
 }
 
 static inline
-void display_mode() {
+void display_mode(void) {
 	werase(wmode);
 
 	for(int i = 0; i < FIELDS; ++i) {
@@ -351,7 +351,7 @@ void display_mode() {
 }
 
 static inline
-void display_command_field() {
+void display_command_field(void) {
 	werase(winput);
 	wattron(winput, COLOR_PAIR(COLOR_PAIR_PROMPT));
 	mvwaddstr(winput, 0, 0, prompts[input_mode]);
@@ -362,7 +362,8 @@ void display_command_field() {
 }
 
 static inline
-void display_results() {
+void display_results(void) {
+	int	  i;
 	char *s;
 	int	  screenline;			/* screen line number */
 	int	  srctxtw;				/* source line display width */

@@ -386,7 +386,14 @@ int build(void) {
 		firstfile = lastfile;
 		lastfile  = nsrcfiles;
 		if(invertedindex == true) {
-			srcoffset = realloc(srcoffset, (nsrcfiles + 1) * sizeof(*srcoffset));
+			long *tempoffset = realloc(srcoffset, (nsrcfiles + 1) * sizeof(*srcoffset));
+			/* Check for whether reallocation was a success */
+			if (tempoffset != NULL) {
+				srcoffset = tempoffset;
+			} else {
+				/* Cannot allocate any more memory, exit */
+                postfatal(PROGRAM_NAME ": cannot allocate any more memory\n");
+			}
 		}
 		/* sort the included file names */
 		qsort(srcfiles + firstfile, lastfile - firstfile, sizeof(*srcfiles), qsort_compare);

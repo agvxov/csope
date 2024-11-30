@@ -130,8 +130,11 @@ extern char dicode2[]; /* digraph second character code */
 #define PROGRAM_NAME "Csope"
 
 /* main.c global data */
-extern char		   *editor, *home, *shell, *lineflag; /* environment variables */
-extern char		   *home;							  /* Home directory */
+extern char *editor, /* EDITOR env var */
+	*home,           /* Home directory */
+	*shell,          /* Users shell */
+	*lineflag;       /* Flag used to open EDITOR at a specified line */
+
 extern bool			lineflagafterfile;
 extern bool			compress;		/* compress the characters in the crossref */
 extern bool			dbtruncated;	/* database symbols truncated to 8 chars */
@@ -305,6 +308,6 @@ int	 execute(char *a, ...);
 long dbseek(long offset);
 
 void mousecleanup(void);
-int process_mouse();
+int process_mouse(void);
 
 #endif /* CSCOPE_GLOBAL_H */
