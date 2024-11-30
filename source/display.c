@@ -406,12 +406,12 @@ void display_results() {
 	/* --- Display the column headings --- */
 	wattron(wresult, COLOR_PAIR(COLOR_PAIR_TABLE_HEADER));
 	wmove(wresult, 2, 2);
-	if(dispcomponents > 0) wprintw(wresult, "%-*s ", filelen, "File");
+	if (dispcomponents > 0) { wprintw(wresult, "%-*s ", filelen, "File"); }
 
-	if(field == SYMBOL || field == CALLEDBY || field == CALLING) {
+	if (field == SYMBOL || field == CALLEDBY || field == CALLING) {
 		wprintw(wresult, "%-*s ", fcnlen, "Function");
 	}
-	if(field != FILENAME) { waddstr(wresult, "Line"); }
+	if (field != FILENAME) { waddstr(wresult, "Line"); }
 	wattroff(wresult, COLOR_PAIR(COLOR_PAIR_TABLE_HEADER));
 
 	/* --- Display table entries --- */
