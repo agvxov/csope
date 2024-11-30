@@ -173,7 +173,7 @@ void rebuild(void) {
 }
 
 /* build the cross-reference */
-void build(void) {
+int build(void) {
 	unsigned long i;
 	FILE		 *oldrefs;				/* old cross-reference file */
 	time_t		  reftime;				/* old crossref modification time */
@@ -288,7 +288,7 @@ void build(void) {
 			addsrcfile(oldname);
 		}
 		fclose(oldrefs);
-		return;
+		return 0;
 
 	outofdate:
 		/* if the database format has changed, rebuild it all */
@@ -448,6 +448,8 @@ void build(void) {
 	if(oldrefs != NULL) { fclose(oldrefs); }
 	/* replace it with the new database file */
 	movefile(newreffile, reffile);
+
+    return 0; // XXX: we dont return actual status values yet
 }
 
 /* string comparison function for qsort */

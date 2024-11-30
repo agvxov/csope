@@ -1,10 +1,13 @@
 #ifndef BACKEND_H
 #define BACKEND_H
 
+#include "global.h"
+
 typedef struct {
     const char * name;
     int (*build)(void);
-    int (*get_result)(char * * file, char * * function, char * * linenum, char * * tempstring);
+    symbol_t * (*get_result)(symbol_t * symbol);
+    int (*search)(const char * query);
 } backend_t;
 
 enum {

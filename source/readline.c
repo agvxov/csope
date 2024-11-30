@@ -1,9 +1,10 @@
 #include <stdio.h>
 #include <readline/readline.h>
 #include <readline/history.h>
+#include <ncurses.h>
 #include "global.h"
 #include "build.h"
-#include <ncurses.h>
+#include "backend.h"
 
 static int	input_available = 0;
 static int  input_char;
@@ -96,7 +97,7 @@ static void callback_handler(char *line) {
 	switch(input_mode) {
 		case INPUT_NORMAL: {
 			strncpy(input_line, line, PATLEN);
-			search(input_line);
+			backend.search(input_line);
 			horswp_window();
 			curdispline = 0;
 			current_page = 0;

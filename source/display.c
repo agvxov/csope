@@ -421,14 +421,15 @@ void display_results() {
 	/* NOTE: the +1s are column gaps */
 	srctxtw = second_col_width;
 	srctxtw -= 1 + 1;	 // dispchars
-	if(dispcomponents > 0) { srctxtw -= filelen + 1; }
-	if(field == SYMBOL || field == CALLEDBY || field == CALLING) {
+	if (dispcomponents > 0) { srctxtw -= filelen + 1; }
+	if (field == SYMBOL || field == CALLEDBY || field == CALLING) {
 		srctxtw -= fcnlen + 1;
 	}
 	srctxtw -= numlen + 1;
 
 	/* decide where to list from */
-	{
+    // XXX
+	if (backend_mode == CSCOPE_BACKEND) {
 		int seekerr;
 		do {
 			seekerr = seekpage(current_page);
@@ -437,23 +438,25 @@ void display_results() {
 
 	/* until the max references have been displayed or
 	   there is no more room */
-	for(disprefs = 0, screenline = WRESULT_TABLE_BODY_START;
+	for (disprefs = 0, screenline = WRESULT_TABLE_BODY_START;
 		disprefs < mdisprefs && screenline < (result_window_height - 1);
 		++disprefs, ++screenline) {
 		attr_swp = (disprefs != curdispline) ? A_NORMAL : ATTRIBUTE_RESULT_SELECTED;
 		wattron(wresult, attr_swp);
 		/* read the reference line */
+	    char  name_buffer[PATHLEN + 1];
 	    char  file_buffer[PATHLEN + 1];
 	    char  scope_buffer[PATLEN + 1];
 	    char  linenum_buffer[NUMLEN + 1];
 	    char  text_buffer[PATLEN + 1];
         symbol_t current_symbol = (symbol_t) {
+            .name     = name_buffer,
             .filename = file_buffer,
             .scope    = scope_buffer,
             .text     = text_buffer,
             .linenum  = linenum_buffer,
         };
-        if (!get_next_symbol(&current_symbol)) { break; }
+        if (!backend.get_result(&current_symbol)) { break; }
 
 		++nextline;
 		displine[disprefs] = screenline;

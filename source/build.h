@@ -60,7 +60,7 @@ extern INVCONTROL invcontrol; /* inverted file control structure */
 
 /* Prototypes of external functions defined by build.c */
 
-void build(void);
+int build(void);
 void free_newbuildfiles(void);
 void opendatabase(const char * const reffile);
 void rebuild(void);

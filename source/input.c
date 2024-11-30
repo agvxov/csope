@@ -432,7 +432,7 @@ int change_input(const int c) {
 			input_mode = INPUT_NORMAL;
 			horswp_window();
 			rebuild_reference();
-			search(newpat);
+			backend.search(newpat);
 			break;
 		default:
 			{

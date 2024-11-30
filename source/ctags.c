@@ -3,6 +3,16 @@
 #include <unistd.h>
 #include <sys/wait.h>
 
+/* NOTE:
+ *  We assume entry lines look something like this:
+ *      siginit	source/main.c	/^void siginit(void) {$/;"	f	line:89
+ *  (name|file|text|type|line)
+ *  Notice that fiels are delimited by tabs.
+ */
+
+const char * results_file_name = "results.tags";
+FILE * results_file = NULL;
+
 int gen_tags_file(void) {
     const int NON_FILE_ARGUMENTS = 3;
 	const char * execve_args[nsrcfiles + NON_FILE_ARGUMENTS + 1];
@@ -84,23 +94,58 @@ int read_line_field(FILE * f) {
     return r;
 }
 
-int read_tags_file(const char * filepath) {
-    /* NOTE:
-     *  We assume entry lines look something like this:
-     *      siginit	source/main.c	/^void siginit(void) {$/;"	f	line:89
-     *  (name|file|text|type|line)
-     *  Notice that fiels are delimited by tabs.
-     */
-    // XXX temp
-    symbol_t ctags_symbol;
+static inline
+int read_symbol(FILE * f, symbol_t * symbol) {
+    char typebuf[2];
+    read_field(f, symbol->name);
+    read_field(f, symbol->filename);
+    read_text_field(f, symbol->text);
+    symbol->type = read_field(f, typebuf)[0];
+    sprintf(symbol->linenum, "%d", read_line_field(f));
 
-    FILE * f = fopen(filepath, "r");
+    if (symbol->type == '\00') {    // XXX
+        symbol->type = 'u';
+    }
+
+    return 0;
+}
+
+static inline
+int append_symbol(const symbol_t * symbol, FILE * f) {
+    fprintf(f, "%s\t%s\t/%s/;\"\t%c\tline:%s\n",
+        symbol->name,
+        symbol->filename,
+        symbol->text,
+        symbol->type,
+        symbol->linenum
+    );
+
+    return 0;
+}
+
+int tags_search(const char * query) {
+    extern unsigned totallines;
+    totallines = 0;
+
+    symbol_t ctags_symbol;
+    ctags_symbol.name     = alloca(100);
+    ctags_symbol.filename = alloca(100);
+    ctags_symbol.text     = alloca(100);
+    ctags_symbol.linenum  = alloca(100);
+
+    //FILE * f = fopen(filepath, "r");
+    FILE * f = fopen("tags", "r");
     if (!f) {
-        cannotopen(filepath);
+        cannotopen("tags");
         return 1;
     }
 
-    char buffer[PATH_MAX];
+    results_file = fopen(results_file_name, "w");
+    if (!results_file) {
+        cannotopen(results_file_name);
+        return 1;
+    }
+
     for (int c = getc(f); c != EOF; c = getc(f)) {
         // Ignore comment lines
         if (c == '!') {
@@ -110,23 +155,77 @@ int read_tags_file(const char * filepath) {
             ungetc(c, f);
         }
 
-        ctags_symbol.name     = strdup(read_field(f, buffer));
-        ctags_symbol.filename = strdup(read_field(f, buffer));
-        ctags_symbol.text     = strdup(read_text_field(f, buffer));
-        ctags_symbol.type     = read_field(f, buffer)[0];
-        asprintf(&ctags_symbol.linenum, "%d", read_line_field(f));
+        read_symbol(f, &ctags_symbol);
 
-        printf("{ .name = %s, .filename = %s, .text = %s, .type = %c, .line = %s }\n",
-            ctags_symbol.name,
-            ctags_symbol.filename,
-            ctags_symbol.text,
-            ctags_symbol.type,
-            ctags_symbol.linenum
-        );
-
-        // XXX: leak
+        if (!strcmp(query, ctags_symbol.name)) {
+            append_symbol(&ctags_symbol, results_file);
+            ++totallines;
+        }
     }
 
     fclose(f);
+
+    fclose(results_file);
+    results_file = fopen(results_file_name, "r");
+
+	window_change |= CH_RESULT;
+
     return 0;
+}
+
+symbol_t * tags_get_next_symbol(symbol_t * symbol) {
+    int c = getc(results_file);
+    if (c == EOF) {
+        return NULL;
+    } else {
+        ungetc(c, results_file);
+    }
+
+    read_symbol(results_file, symbol);
+    return symbol;
+}
+
+void dump_symbol(symbol_t * symbol) {
+    if (symbol == NULL) {
+        puts("(symbol_t)NULL");
+        return;
+    }
+
+    printf("{ .name = %s, .filename = %s, .text = %s, .type = %c, .line = %s }\n",
+        symbol->name,
+        symbol->filename,
+        symbol->text,
+        symbol->type,
+        symbol->linenum
+    );
+}
+
+void dump_tags_file(const char * filepath) {
+    symbol_t ctags_symbol;
+    ctags_symbol.name     = alloca(100);
+    ctags_symbol.filename = alloca(100);
+    ctags_symbol.text     = alloca(100);
+    ctags_symbol.linenum  = alloca(100);
+
+    FILE * f = fopen(filepath, "r");
+    if (!f) {
+        cannotopen(filepath);
+        return;
+    }
+
+    for (int c = getc(f); c != EOF; c = getc(f)) {
+        // Ignore comment lines
+        if (c == '!') {
+            while ((c = getc(f)) != '\n') { ; }
+            continue;
+        } else {
+            ungetc(c, f);
+        }
+
+        read_symbol(f, &ctags_symbol);
+
+        dump_symbol(&ctags_symbol);
+    }
+
+    fclose(f);
 }

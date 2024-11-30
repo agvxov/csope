@@ -44,6 +44,7 @@
 #include "scanner.h"
 #include "backend.h"
 #include "egrep.h"
+#include "ctags.h"
 
 #include <stdlib.h>	   /* atoi */
 #include <ncurses.h>
@@ -437,16 +438,19 @@ int main(const int argc, const char * const * const argv) {
 
 	siginit();
 
+    //backend_mode = CSCOPE_BACKEND;
+    //change_backend(backend_mode);
+    backend_mode = CTAGS_BACKEND;
+    change_backend(backend_mode);
+
     /* XXX:
      *  maybe we shouldnt enter curses at all until the crossrefrence is ready
      */
-  #if 1
 	if (linemode == false) {
 		dispinit();	 /* initialize display parameters */
 		postmsg(""); /* clear any build progress message */
 		display();	 /* display the version number and input fields */
 	}
-  #endif
 
 
 	/* if the cross-reference is to be considered up-to-date */
@@ -487,15 +491,9 @@ int main(const int argc, const char * const * const argv) {
 
 	opendatabase(reffile);
 
-    backend_mode = CTAGS_BACKEND;
-    change_backend(backend_mode);
-    gen_tags_file();
-    #if 0
-    /* XXX temp XXX */
-    read_tags_file("tags");
-    myexit(0);
-    // ---
-    #endif
+    //backend.build();
+    //dump_tags_file("results.tags");
+    //dump_tags_file("tags");
 
 	if (linemode == true) {
         /* if using the line oriented user interface so cscope can be a
