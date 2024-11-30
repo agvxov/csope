@@ -91,6 +91,27 @@ void readenv(bool preserve_database) {
     }
 }
 
+int option_sanity_check(void) {
+	/* XXX remove if/when clearerr() in dir.c does the right thing. */
+	if(namefile && strcmp(namefile, "-") == 0 && !buildonly) {
+		postfatal(PROGRAM_NAME ": Must use -b if file list comes from stdin\n");
+	}
+
+	/* make sure that tmpdir exists */
+	struct stat	stat_buf;
+	if(lstat(tmpdir, &stat_buf)) {
+        postfatal(
+            PROGRAM_NAME ": Temporary directory %s does not exist or cannot be accessed\n"
+            PROGRAM_NAME ": Please create the directory or set the environment variable\n"
+            PROGRAM_NAME ": TMPDIR to a valid directory\n",
+			tmpdir
+        );
+		myexit(1);
+	}
+
+    return 0;
+}
+
 char * * parse_options(const int argc, const char * const * const argv) {
 	int	  opt;
 	int	  longind;
@@ -181,11 +202,10 @@ char * * parse_options(const int argc, const char * const * const argv) {
 			case 'f': /* alternate cross-reference file */
 				reffile = optarg;
 				if(strlen(reffile) > sizeof(path) - 3) {
-					postfatal("\
-        			cscope: reffile too long, cannot \
-        			be > %d characters\n",
-						sizeof(path) - 3);
-					/* NOTREACHED */
+					postfatal(
+                        PROGRAM_NAME "reffile too long, cannot be > %d characters\n",
+						sizeof(path) - 3
+                    );
 				}
 				strcpy(path, reffile);
 
@@ -217,13 +237,6 @@ char * * parse_options(const int argc, const char * const * const argv) {
 				sourcedir(optarg);
 				break;
 		}
-	}
-
-    // Sanity checks
-	/* XXX remove if/when clearerr() in dir.c does the right thing. */
-	if(namefile && strcmp(namefile, "-") == 0 && !buildonly) {
-		postfatal(PROGRAM_NAME ": Must use -b if file list comes from stdin\n");
-		/* NOTREACHED */
 	}
 
 	/* NOTE:

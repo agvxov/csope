@@ -223,8 +223,11 @@ char *pathcomponents(char *path, int components);
 char *read_crossreference_block(void);
 char *scanpast(char c);
 
+int option_sanity_check(void);
 char **parse_options(const int argc, const char * const * const argv);
 void readenv(bool preserve_database);
+
+void initcompress(void);
 
 extern bool	 remove_symfile_onexit;
 extern bool	 onesearch;		   /* one search only in line mode */
@@ -258,6 +261,7 @@ void clearmsg(void);
 void clearmsg2(void);
 void countrefs(void);
 void crossref(char *srcfile);
+void read_old_reffile(const char * reffile);
 void edit(const char * filename, const char *const linenum);
 void editall(void);
 void editref(int);

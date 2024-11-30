@@ -75,8 +75,9 @@ char temp2[PATHLEN + 1];		/* temporary file name */
 /* Local variables: */
 static char *newinvname;	/* new inverted index file name */
 static char *newinvpost;	/* new inverted index postings file name */
-static long	 traileroffset; /* file trailer offset */
+static long traileroffset; /* file trailer offset */
 
+static char path[PATHLEN+1]; /* file path */
 
 /* Internal prototypes: */
 static void	 cannotindex(void);
@@ -89,6 +90,33 @@ static void	 putheader(char *dir);
 static void	 fetch_include_from_dbase(char *, size_t);
 static void	 putlist(char **names, int count);
 static bool	 samelist(FILE *oldrefs, char **names, int count);
+static void  skiplist(FILE *oldrefs);
+
+/* set up the digraph character tables for text compression */
+void initcompress(void) {
+	if(compress == true) {
+		for(int i = 0; i < 16; ++i) {
+			dicode1[(unsigned char)(dichar1[i])] = i * 8 + 1;
+		}
+		for(int i = 0; i < 8; ++i) {
+			dicode2[(unsigned char)(dichar2[i])] = i + 1;
+		}
+	}
+}
+
+/* skip the list in the cross-reference file */
+static void skiplist(FILE *oldrefs) {
+	int i;
+
+	if (fscanf(oldrefs, "%d", &i) != 1) {
+		postfatal(PROGRAM_NAME ": cannot read list size from file %s\n", reffile);
+	}
+	while (--i >= 0) {
+		if(fscanf(oldrefs, "%*s") != 0) {
+			postfatal(PROGRAM_NAME ": cannot read list name from file %s\n", reffile);
+		}
+	}
+}
 
 /* Error handling routine if inverted index creation fails */
 static void cannotindex(void) {
@@ -106,12 +134,14 @@ static void cannotindex(void) {
 static bool samelist(FILE *oldrefs, char **names, int count) {
 	char oldname[PATHLEN + 1]; /* name in old cross-reference */
 	int	 oldcount;
-	int	 i;
 
 	/* see if the number of names is the same */
-	if(fscanf(oldrefs, "%d", &oldcount) != 1 || oldcount != count) { return false; }
+	if (fscanf(oldrefs, "%d", &oldcount) != 1
+    || oldcount != count) {
+        return false;
+    }
 	/* see if the name list is the same */
-	for(i = 0; i < count; ++i) {
+	for (int i = 0; i < count; ++i) {
 		if((1 != fscanf(oldrefs, " %[^\n]", oldname))
         || strnotequal(oldname, names[i])) {
 			return false;
@@ -140,7 +170,7 @@ void setup_build_filenames(const char * const reffile) {
 
 /* open the database */
 void opendatabase(const char * const reffile) {
-	if((symrefs = vpopen(reffile, O_BINARY | O_RDONLY)) == -1) {
+	if ((symrefs = vpopen(reffile, O_BINARY | O_RDONLY)) == -1) {
 		cannotopen(reffile);
 		myexit(1);
 	}
@@ -531,14 +561,14 @@ void putlist(char **names, int count) {
 	int size = 0;
 
 	fprintf(newrefs, "%d\n", count);
-	if(names == srcfiles) {
+	if (names == srcfiles) {
 		/* calculate the string space needed */
 		for(int i = 0; i < count; ++i) {
 			size += strlen(names[i]) + 1;
 		}
 		fprintf(newrefs, "%d\n", size);
 	}
-	for(int i = 0; i < count; i++) {
+	for (int i = 0; i < count; i++) {
 		if(fputs(names[i], newrefs) == EOF
         || putc('\n', newrefs) == EOF) {
 			cannotwrite(newreffile);
@@ -670,20 +700,129 @@ void fetch_include_from_dbase(char *s, size_t length) {
 
 // -----------
 
+void read_old_reffile(const char * reffile) {
+	char * s;
+	FILE * names;	  /* name file pointer */
+	int	oldnum;  /* number in old cross-ref */
+	FILE * oldrefs = vpfopen(reffile, "rb"); /* old cross-reference file */
+	if (!oldrefs) {
+		postfatal(PROGRAM_NAME ": cannot open file %s\n", reffile);
+	}
+
+	/* get the crossref file version but skip the current directory */
+	if (fscanf(oldrefs, PROGRAM_NAME " %d %*s", &fileversion) != 1) {
+		postfatal(PROGRAM_NAME ": cannot read file version from file %s\n", reffile);
+	}
+	if (fileversion >= 8) {
+
+		/* override these command line options */
+		compress	  = true;
+		invertedindex = false;
+
+		/* see if there are options in the database */
+		for (int c;;) {
+			getc(oldrefs); /* skip the blank */
+			if ((c = getc(oldrefs)) != '-') {
+				ungetc(c, oldrefs);
+				break;
+			}
+			switch (getc(oldrefs)) {
+				case 'c': /* ASCII characters only */
+					compress = false;
+					break;
+				case 'q': /* quick search */
+					invertedindex = true;
+					fscanf(oldrefs, "%ld", &totalterms);
+					break;
+				case 'T': /* truncate symbols to 8 characters */
+					dbtruncated = true;
+					trun_syms	= true;
+					break;
+			}
+		}
+		initcompress();
+		seek_to_trailer(oldrefs);
+	}
+	/* skip the source and include directory lists */
+	skiplist(oldrefs);
+	skiplist(oldrefs);
+
+	/* get the number of source files */
+	if (fscanf(oldrefs, "%lu", &nsrcfiles) != 1) {
+		postfatal(
+            PROGRAM_NAME ": cannot read source file size from file %s\n",
+			reffile
+        );
+	}
+	/* get the source file list */
+	srcfiles = malloc(nsrcfiles * sizeof(*srcfiles));
+	if (fileversion >= 9) {
+
+		/* allocate the string space */
+		if (fscanf(oldrefs, "%d", &oldnum) != 1) {
+			postfatal(
+                PROGRAM_NAME ": cannot read string space size from file %s\n",
+				reffile
+            );
+		}
+		s = malloc(oldnum);
+		getc(oldrefs); /* skip the newline */
+
+		/* read the strings */
+		if (fread(s, oldnum, 1, oldrefs) != 1) {
+			postfatal(
+                PROGRAM_NAME ": cannot read source file names from file %s\n",
+				reffile
+            );
+		}
+		/* change newlines to nulls */
+		for (int i = 0; i < nsrcfiles; i++) {
+			srcfiles[i] = s;
+			for (++s; *s != '\n'; ++s) { ; }
+			*s = '\0';
+			++s;
+		}
+		/* if there is a file of source file names */
+		if ((namefile != NULL && (names = vpfopen(namefile, "r")) != NULL)
+        ||  (names = vpfopen(NAMEFILE, "r")) != NULL) {
+			/* read any -p option from it */
+			while(fgets(path, sizeof(path), names) != NULL && *path == '-') {
+				char orig_path1 = path[1];
+				s = path + 2;	 /* for "-Ipath" */
+				if (*s == '\0') { /* if "-I path" */
+					fgets(path, sizeof(path), names);
+					s = path;
+				}
+				switch (orig_path1) {
+					case 'p': /* file path components to display */
+						if (*s < '0' || *s > '9') {
+							posterr(
+                                PROGRAM_NAME ": -p option in file %s: missing or invalid numeric value\n",
+								namefile
+                            );
+						}
+						dispcomponents = atoi(s);
+				}
+			}
+			fclose(names);
+		}
+	} else {
+		for (int i = 0; i < nsrcfiles; ++i) {
+			if (!fgets(path, sizeof(path), oldrefs)) {
+				postfatal(PROGRAM_NAME
+					": cannot read source file name from file %s\n",
+					reffile);
+				/* NOTREACHED */
+			}
+			srcfiles[i] = strdup(path);
+		}
+	}
+	fclose(oldrefs);
+}
+
 static char tempdirpv[PATHLEN + 1];	/* private temp directory */
 
 void init_temp_files(void) {
-	/* make sure that tmpdir exists */
-	struct stat	stat_buf;
-	if(lstat(tmpdir, &stat_buf)) {
-        postfatal(
-            PROGRAM_NAME ": Temporary directory %s does not exist or cannot be accessed\n"
-            PROGRAM_NAME ": Please create the directory or set the environment variable\n"
-            PROGRAM_NAME ": TMPDIR to a valid directory\n",
-			tmpdir
-        );
-	}
-
 	/* create the temporary file names */
 	mode_t orig_umask = umask(S_IRWXG | S_IRWXO);
 	pid_t pid		  = getpid();
