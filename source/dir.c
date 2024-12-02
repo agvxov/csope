@@ -278,15 +278,16 @@ static
 void add_source_directory(char *dir) {
 	struct stat statstruct;
 
+	char *compressed_path = compress_path(dir);
 	/* make sure it is a directory */
-	if(lstat(compress_path(dir), &statstruct) == 0 && S_ISDIR(statstruct.st_mode)) {
+	if(lstat(compressed_path, &statstruct) == 0 && S_ISDIR(statstruct.st_mode)) {
 
 		/* note: there already is a source directory list */
 		if(nsrcdirs == msrcdirs) {
 			msrcdirs += DIRINC;
 			srcdirs = realloc(srcdirs, msrcdirs * sizeof(*srcdirs));
 		}
-		srcdirs[nsrcdirs++] = strdup(dir);
+		srcdirs[nsrcdirs++] = compressed_path;
 	}
 }
 
@@ -295,8 +296,9 @@ static
 void add_include_directory(char *name, char *path) {
 	struct stat statstruct;
 
+	char *compressed_path = compress_path(path);
 	/* make sure it is a directory */
-	if(lstat(compress_path(path), &statstruct) == 0 && S_ISDIR(statstruct.st_mode)) {
+	if(lstat(compressed_path, &statstruct) == 0 && S_ISDIR(statstruct.st_mode)) {
 		if(incdirs == NULL) {
 			incdirs	 = malloc(mincdirs * sizeof(*incdirs));
 			incnames = malloc(mincdirs * sizeof(*incnames));
@@ -305,7 +307,7 @@ void add_include_directory(char *name, char *path) {
 			incdirs	 = realloc(incdirs, mincdirs * sizeof(*incdirs));
 			incnames = realloc(incnames, mincdirs * sizeof(*incnames));
 		}
-		incdirs[nincdirs]	 = strdup(path);
+		incdirs[nincdirs]	 = compressed_path;
 		incnames[nincdirs++] = strdup(name);
 	}
 }
@@ -354,10 +356,12 @@ void scan_dir(const char *adir, bool recurse_dir) {
  * database */
 static
 bool is_accessible_file(const char *file) {
-	if(access(compress_path(file), READ) == 0) {
-		struct stat stats;
 
-		if(lstat(file, &stats) == 0 && S_ISREG(stats.st_mode)) { return true; }
+	if(access(file, READ) == 0) {
+		struct stat stats;
+		if(lstat(file, &stats) == 0 && S_ISREG(stats.st_mode)) {
+			return true;
+		}
 	}
 	return false;
 }
@@ -597,7 +601,8 @@ void incfile(char *file, char *type) {
 			(int)(PATHLEN - 2 - file_len),
 			incdirs[i],
 			file);
-		if(access(compress_path(path), READ) == 0) {
+
+		if(access(path, READ) == 0) {
 			addsrcfile(path);
 			break;
 		}
@@ -608,9 +613,17 @@ void incfile(char *file, char *type) {
 bool infilelist(const char * path) {
 	struct listitem *p;
 
-	for(p = srcnames[hash(compress_path(path)) % HASHMOD]; p != NULL; p = p->next) {
-		if(strequal(path, p->text)) { return (true); }
+	char *dir_path = compress_path(path);
+
+	for(p = srcnames[hash(dir_path) % HASHMOD]; p != NULL; p = p->next) {
+		if(strequal(path, p->text)) {
+			free(dir_path);
+			return (true);
+
+		}
 	}
+
+	free(dir_path);
 	return (false);
 }
 
@@ -657,9 +670,11 @@ void addsrcfile(char *path) {
 		srcfiles = realloc(srcfiles, msrcfiles * sizeof(*srcfiles));
 	}
 	/* add the file to the list */
-	srcfiles[nsrcfiles++] = strdup(compress_path(path));
+	char *dir_path = compress_path(path);
+	srcfiles[nsrcfiles++] = strdup(dir_path);
 	p					  = malloc(sizeof(*p));
-	p->text				  = strdup(compress_path(path));
+	p->text				  = strdup(dir_path);
+	free(dir_path);
 	i					  = hash(p->text) % HASHMOD;
 	p->next				  = srcnames[i];
 	srcnames[i]			  = p;
