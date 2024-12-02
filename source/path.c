@@ -70,7 +70,12 @@ char *pathcomponents(char *path, int components) {
  *         and stored in global structures.
  */
 char *compress_path(const char *pathname_) {
-    char * pathname = strdup(pathname_);
+	if (pathname_ == NULL) {
+		return NULL;
+	}
+
+	char *pathname = strdup(pathname_);
+
 	char *nextchar;
 	char *lastchar;
 	char *sofar;
@@ -81,7 +86,9 @@ char *compress_path(const char *pathname_) {
 	/*
 	 *	do not change the path if it has no "/"
 	 */
-	if(strchr(pathname, '/') == NULL) return (pathname);
+	if(strchr(pathname, '/') == NULL) {
+		return (pathname);
+	}
 
 	/*
 	 *	find all strings consisting of more than one '/'
