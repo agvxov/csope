@@ -56,6 +56,64 @@ char *pathcomponents(char *path, int components) {
 	return (s);
 }
 
+/* Remove multiple slashes from a path string. */
+static inline
+void path_remove_multiple_slashes(char *path) {
+	char *read = path;
+	char *write = path;
+
+	while (*read) {
+		*write++ = *read++;
+		if (*(write - 1) == '/') {
+			while (*read == '/') {
+				read++;
+			}
+		}
+	}
+	*write = '\0';
+}
+
+
+static inline
+void path_remove_current_directory_references(char *path) {
+	char *read = path;
+	char *write = path;
+
+	while (*read) {
+		if (read[0] == '.' && read[1] == '/' &&
+			(read == path || *(read - 1) == '/')) {
+			read += 2; // Skip "./"
+		} else {
+			*write++ = *read++;
+		}
+	}
+	*write = '\0';
+}
+
+
+static inline
+void path_remove_parent_directory_references(char *path) {
+	char *read = path;
+	char *write = path;
+
+    while (*read) {
+		if (read[0] == '/' && read[1] == '.' && read[2] == '.' &&
+			(read[3] == '/' || read[3] == '\0')) {
+			read += (read[3] == '/') ? 4 : 3; // Skip "/.."
+			if (write > path) {
+				write--; // Go back to previous slash
+				while (write > path && *(write - 1) != '/') {
+					write--;
+				}
+			}
+		} else {
+			*write++ = *read++;
+		}
+	}
+	*write = '\0';
+}
+
+
 /*
  *    compress_path(pathname)
  *
@@ -76,13 +134,6 @@ char *compress_path(const char *pathname_) {
 
 	char *pathname = strdup(pathname_);
 
-	char *nextchar;
-	char *lastchar;
-	char *sofar;
-	char *pnend;
-
-	int pnlen;
-
 	/*
 	 *	do not change the path if it has no "/"
 	 */
@@ -90,132 +141,27 @@ char *compress_path(const char *pathname_) {
 		return (pathname);
 	}
 
-	/*
-	 *	find all strings consisting of more than one '/'
-	 */
-	for(lastchar = pathname + 1; *lastchar != '\0'; lastchar++)
-		if((*lastchar == '/') && (*(lastchar - 1) == '/')) {
+	/* Step 1: Remove multiple slashes */
+	path_remove_multiple_slashes(pathname);
 
-			/*
-			 *	find the character after the last slash
-			 */
-			nextchar = lastchar;
-			while(*++lastchar == '/') { }
+	/* Step 2: Remove curr dir "./" references */
+	path_remove_current_directory_references(pathname);
 
-			/*
-			 *	eliminate the extra slashes by copying
-			 *	everything after the slashes over the slashes
-			 */
-			sofar = nextchar;
-			while((*nextchar++ = *lastchar++) != '\0')
-				;
-			lastchar = sofar;
-		}
+	/* Step 3: Remove parent dir "/.." references */
+	path_remove_parent_directory_references(pathname);
 
-	/*
-	 *	find all strings of "./"
-	 */
-	for(lastchar = pathname + 1; *lastchar != '\0'; lastchar++)
-		if((*lastchar == '/') && (*(lastchar - 1) == '.') &&
-			((lastchar - 1 == pathname) || (*(lastchar - 2) == '/'))) {
-
-			/*
-			 *	copy everything after the "./" over the "./"
-			 */
-			nextchar = lastchar - 1;
-			sofar	 = nextchar;
-			while((*nextchar++ = *++lastchar) != '\0')
-				;
-			lastchar = sofar;
-		}
-
-	/*
-	 *	find each occurrence of "/.."
-	 */
-
-	for(lastchar = pathname + 1; *lastchar != '\0'; lastchar++)
-		if((lastchar != pathname) && (*lastchar == '/') && (*(lastchar + 1) == '.') &&
-			(*(lastchar + 2) == '.') &&
-			((*(lastchar + 3) == '/') || (*(lastchar + 3) == '\0'))) {
-
-			/*
-			 *	find the directory name preceding the "/.."
-			 */
-
-			nextchar = lastchar - 1;
-			while((nextchar != pathname) && (*(nextchar - 1) != '/'))
-				--nextchar;
-
-			/*
-			 *	make sure the preceding directory's name
-			 *	is not "." or ".."
-			 */
-
-			if((*nextchar == '.') &&
-				((*(nextchar + 1) == '/') ||
-					((*(nextchar + 1) == '.') && (*(nextchar + 2) == '/'))))
-				/* EMPTY */;
-			else {
-
-				/*
-				 * 	prepare to eliminate either
-				 *	"dir_name/../" or "dir_name/.."
-				 */
-
-				if(*(lastchar + 3) == '/')
-					lastchar += 4;
-				else
-					lastchar += 3;
-
-				/*
-				 *	copy everything after the "/.." to
-				 *	before the preceding directory name
-				 */
-
-				sofar = nextchar - 1;
-				while((*nextchar++ = *lastchar++) != '\0')
-					;
-
-				lastchar = sofar;
-
-				/*
-				 *	if the character before what was taken
-				 *	out is '/', set up to check if the
-				 *	slash is part of "/.."
-				 */
-
-				if((sofar + 1 != pathname) && (*sofar == '/')) --lastchar;
-			}
-		}
-
-	/*
-	 *    if the string is more than a character long and ends
-	 *    in '/', eliminate the '/'.
-	 */
-
-	pnlen = strlen(pathname);
-	pnend = strchr(pathname, '\0') - 1;
-
-	if((pnlen > 1) && (*pnend == '/')) {
-		*pnend-- = '\0';
-		pnlen--;
+	/* Handle trailing slashes */
+	size_t len = strlen(pathname);
+	if (len > 1 && pathname[len - 1] == '/') {
+		pathname[len - 1] = '\0';
 	}
 
-	/*
-	 *    if the string has more than two characters and ends in
-	 *    "/.", remove the "/.".
-	 */
+	/* Step 5: If the path is empty, return "." */
+	if (*pathname == '\0') {
+		strcpy(pathname, ".");
+	}
 
-	if((pnlen > 2) && (*(pnend - 1) == '/') && (*pnend == '.')) *--pnend = '\0';
-
-	/*
-	 *    if all characters were deleted, return ".";
-	 *    otherwise return pathname
-	 */
-
-	if(*pathname == '\0') (void)strcpy(pathname, ".");
-
-	return (pathname);
+	return pathname;
 }
 
 static
