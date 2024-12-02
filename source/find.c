@@ -672,6 +672,11 @@ char *findinclude(const char *pattern) {
 
 /* initialize */
 int findinit(const char *pattern_) {
+
+	if (pattern_ == NULL) {
+		return NOTSYMBOL;
+	}
+
 	char		 *pattern = strdup(pattern_);
 	int			  r		  = NOERROR;
 	char		  buf[PATLEN + 3];
@@ -685,8 +690,20 @@ int findinit(const char *pattern_) {
 
 	isregexp_valid = false;
 
-	/* remove trailing white space */
-	for(s = pattern + strlen(pattern) - 1; isspace((unsigned char)*s); --s) {
+	/* Pattern length */
+	size_t pattlen = strlen(pattern);
+
+	/* 04-12-2024 23:27 yama
+	 * NOTE: It is necessary to check the length because 'pattern' && 'pattern_'
+	   could be non-null while still being 0 length.
+	 */
+	if (pattlen == 0) {
+		free(pattern);
+		return NOTSYMBOL;
+	}
+
+		/* remove trailing white space */
+		for(s = pattern + (pattlen - 1); isspace((unsigned char)*s); --s) {
 		*s = '\0';
 	}
 
@@ -772,6 +789,7 @@ int findinit(const char *pattern_) {
 	}
 
 end:
+	free(pattern);
 	return r;
 }
 
