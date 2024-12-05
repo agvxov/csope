@@ -121,8 +121,8 @@ static const char dispchars[] = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJK
 
 int dispchar2int(const char c) {
 	int i = 0;
-	while(dispchars[i] != c){
-		if(dispchars[i] == '\00'){ return -1; }
+	while (dispchars[i] != c) {
+		if (dispchars[i] == '\00') { return -1; }
 		++i;
 	}
 	return i;
@@ -259,8 +259,8 @@ void exitcurses(void) {
 	fflush(stdout);
 }
 
-void force_window(void){
-	switch(input_mode){
+void force_window(void) {
+	switch (input_mode) {
 		case INPUT_CHANGE:
 			current_window = &wresult;
 		break;
@@ -272,7 +272,8 @@ void force_window(void){
 	}
 }
 
-static inline void display_help(void) {
+static inline
+void display_help(void) {
 	// XXX: this could be optimized by only overriding the buffer if theres an actual
 	// change
 	werase(whelp);
@@ -287,14 +288,16 @@ static inline void display_help(void) {
 	do_press_any_key = true;
 }
 
-static inline void display_case(void){
+static inline
+void display_case(void) {
 	wmove(wcase, 0, 0);
 	wattron(wcase, COLOR_PAIR(COLOR_PAIR_CASE));
 	waddstr(wcase, (caseless ? "Case: OFF" : "Case:  ON"));
 	wattroff(wcase, COLOR_PAIR(COLOR_PAIR_CASE));
 }
 
-static inline void display_frame(const bool border_only) {
+static inline
+void display_frame(const bool border_only) {
 	wattron(stdscr, COLOR_PAIR(COLOR_PAIR_FRAME));
 
 	box(stdscr, 0, 0);
@@ -326,7 +329,8 @@ static inline void display_frame(const bool border_only) {
 	wattroff(stdscr, COLOR_PAIR(COLOR_PAIR_FRAME));
 }
 
-static inline void display_mode(void) {
+static inline
+void display_mode(void) {
 	werase(wmode);
 
 	for(int i = 0; i < FIELDS; ++i) {
@@ -344,7 +348,8 @@ static inline void display_mode(void) {
 	}
 }
 
-static inline void display_command_field(void) {
+static inline
+void display_command_field(void) {
 	werase(winput);
 	wattron(winput, COLOR_PAIR(COLOR_PAIR_PROMPT));
 	mvwaddstr(winput, 0, 0, prompts[input_mode]);
@@ -354,7 +359,8 @@ static inline void display_command_field(void) {
 	display_cursor();
 }
 
-static inline void display_results(void) {
+static inline
+void display_results(void) {
 	int	  i;
 	char *s;
 	int	  screenline;			/* screen line number */
@@ -403,12 +409,12 @@ static inline void display_results(void) {
 	/* --- Display the column headings --- */
 	wattron(wresult, COLOR_PAIR(COLOR_PAIR_TABLE_HEADER));
 	wmove(wresult, 2, 2);
-	if(dispcomponents > 0) wprintw(wresult, "%-*s ", filelen, "File");
+	if (dispcomponents > 0) { wprintw(wresult, "%-*s ", filelen, "File"); }
 
-	if(field == SYMBOL || field == CALLEDBY || field == CALLING) {
+	if (field == SYMBOL || field == CALLEDBY || field == CALLING) {
 		wprintw(wresult, "%-*s ", fcnlen, "Function");
 	}
-	if(field != FILENAME) { waddstr(wresult, "Line"); }
+	if (field != FILENAME) { waddstr(wresult, "Line"); }
 	wattroff(wresult, COLOR_PAIR(COLOR_PAIR_TABLE_HEADER));
 
 	/* --- Display table entries --- */
@@ -600,7 +606,8 @@ endrefs:
 	wattroff(wresult, COLOR_PAIR(COLOR_PAIR_PAGER_MSG));
 }
 
-static inline void display_cursor(void) {
+static inline
+void display_cursor(void) {
 	chtype i;
 	int	   yoffset = 0, xoffset = 0;
 
@@ -614,7 +621,7 @@ static inline void display_cursor(void) {
 }
 
 void horswp_window(void) {
-	if(input_mode != INPUT_NORMAL){ return; }
+	if (input_mode != INPUT_NORMAL) { return; }
 
 	if(current_window != &wresult) {
 		if(totallines == 0) { return; }

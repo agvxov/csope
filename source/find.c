@@ -740,7 +740,6 @@ int findinit(const char *pattern_) {
 	/* if this is a regular expression or letter case is to be ignored */
 	/* or there is an inverted index */
 	if(isregexp == true || caseless == true || invertedindex == true) {
-
 		/* remove a leading ^ */
 		s = pattern;
 		if(*s == '^') {
@@ -790,7 +789,6 @@ void findcleanup(void) {
 }
 
 /* match the pattern to the string */
-
 static
 bool match(void) {
 	char string[PATLEN + 1];
@@ -810,7 +808,6 @@ bool match(void) {
 }
 
 /* match the rest of the pattern to the name */
-
 static
 bool matchrest(void) {
 	int i = 1;
@@ -828,7 +825,6 @@ bool matchrest(void) {
 }
 
 /* put the reference into the file */
-
 static
 void putref(int seemore, const char *file, const char *func) {
 	FILE *output;
@@ -843,7 +839,6 @@ void putref(int seemore, const char *file, const char *func) {
 }
 
 /* put the source line into the file */
-
 static
 void putsource(int seemore, FILE *output) {
 	char *tmpblockp;
@@ -897,7 +892,6 @@ void putsource(int seemore, FILE *output) {
 }
 
 /* put the rest of the cross-reference line into the file */
-
 static
 void putline(FILE *output) {
 	char	*cp;

@@ -244,7 +244,8 @@ noredisp:
 	return 1;
 }
 
-static int global_input(const int c) {
+static
+int global_input(const int c) {
 	switch(c) {
 		case '\t':
 			horswp_window();
