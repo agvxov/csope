@@ -101,6 +101,9 @@ static char *findinclude(const char *pattern);
 static char *findassign(const char *pattern);
 static char *findallfcns(const char *dummy);
 
+
+static inline void trim_trailing_ws(char *str, size_t len);
+
 typedef char *(*FP)(const char *); /* pointer to function returning a character pointer */
 /* Paralel array to "fields", indexed by "field" */
 FP field_searchers[FIELDS + 1] = {
@@ -670,6 +673,23 @@ char *findinclude(const char *pattern) {
 	return NULL;
 }
 
+static inline
+void trim_trailing_ws(char *str, size_t len) {
+
+	/* Jump to end of string */
+	char *end = str;
+	end += len;
+
+	/* While character is space and not NULL.
+	* Checking for NULL is required otherwise 'isspace' will produce undefined
+	 behaviour when encountering a nonstandard character. */
+	while ((end != NULL) && isspace(end)) {
+		/* Move backwards */
+		--end;
+	}
+	*end = '\0';
+}
+
 /* initialize */
 int findinit(const char *pattern_) {
 
@@ -694,7 +714,7 @@ int findinit(const char *pattern_) {
 	/* Pattern length */
 	size_t pattlen = strlen(pattern);
 
-	/* 04-12-2024 23:27 yama
+	/* 14-12-2024 23:27 yama
 	 * NOTE: It is necessary to check the length because 'pattern' && 'pattern_'
 	   could be non-null while still being 0 length.
 	 */
@@ -702,6 +722,9 @@ int findinit(const char *pattern_) {
 		free(pattern);
 		return NOTSYMBOL;
 	}
+
+	/* Trim trailing whitespace */
+	trim_trailing_ws(pattern, pattlen);
 
 	/* Make sure pattern is lowercased. Curses
 	 * mode gets this right all on its own, but at least -L mode
