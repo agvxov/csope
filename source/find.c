@@ -103,6 +103,7 @@ static char *findallfcns(const char *dummy);
 
 
 static inline void trim_trailing_ws(char *str, size_t len);
+static inline bool is_valid_c_symbol(char *str);
 
 typedef char *(*FP)(const char *); /* pointer to function returning a character pointer */
 /* Paralel array to "fields", indexed by "field" */
@@ -690,6 +691,23 @@ void trim_trailing_ws(char *str, size_t len) {
 	*end = '\0';
 }
 
+
+static inline
+bool is_valid_c_symbol(char *str) {
+	/* A symbol must start with an underscore or an alpha-numerical char */
+	if ((!isalpha((unsigned char)*str)) && (*str != '_')) {
+		return false;
+	}
+
+	/* Check whole string to ensure it is indeed all alpha and/or underscores */
+	while (*++str != '\0') {
+		if ((!isalpha((unsigned char)*str)) && (*str != '_')) {
+			return false;
+		}
+	}
+	return true;
+}
+
 /* initialize */
 int findinit(const char *pattern_) {
 
@@ -747,16 +765,11 @@ int findinit(const char *pattern_) {
 	} else {
 		/* check for a valid C symbol */
 		s = pattern;
-		if(!isalpha((unsigned char)*s) && *s != '_') {
+		if (!is_valid_c_symbol(s)) {
 			r = NOTSYMBOL;
 			goto end;
 		}
-		while(*++s != '\0') {
-			if(!isalnum((unsigned char)*s) && *s != '_') {
-				r = NOTSYMBOL;
-				goto end;
-			}
-		}
+
 		/* look for use of the -T option (truncate symbol to 8
 		   characters) on a database not built with -T */
 		if(trun_syms == true && preserve_database == true && dbtruncated == false &&
