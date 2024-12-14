@@ -694,9 +694,13 @@ int findinit(const char *pattern_) {
 	/* Pattern length */
 	size_t pattlen = strlen(pattern);
 
-	/* remove trailing white space */
-	for(s = pattern + (pattlen - 1); isspace((unsigned char)*s); --s) {
-		*s = '\0';
+	/* 04-12-2024 23:27 yama
+	 * NOTE: It is necessary to check the length because 'pattern' && 'pattern_'
+	   could be non-null while still being 0 length.
+	 */
+	if (pattlen == 0) {
+		free(pattern);
+		return NOTSYMBOL;
 	}
 
 	/* Make sure pattern is lowercased. Curses
