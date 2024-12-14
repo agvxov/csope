@@ -1,3 +1,11 @@
 > a space is inserted into the end of function head argument lists {`int f(void )`}
 
+> 14th December 2024 (yama):
+> Searching for symbol 'pp' (using 'Find assignments to this symbol' for e.g.)
+>will return search results for symbols named 'p', for example:
+>    `p = malloc(sizeof(*p));`
+>
+> The symbol identifiers we return should match 'pp' exclusively, not
+>substrings.
+
 // No known bugs.
