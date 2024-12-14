@@ -200,6 +200,11 @@ bool check_for_assignment(void) {
 	return false;
 }
 
+
+/* 14-12-2024 21:24 yama
+ * FIXME If we use the 'find assignments to this symbol' for a search such as 'pp'
+   it will retrieve results of symbols named 'p'
+ */
 /* The actual routine that does the work for findsymbol() and
  * findassign() */
 static
