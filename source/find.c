@@ -705,6 +705,7 @@ int findinit(const char *pattern_) {
 	int			  i;
 	char		 *s;
 	unsigned char c;
+	const unsigned int truncation_len = 8;
 
 	/* HBB: be nice: free regexp before allocating a new one */
 	if(isregexp_valid == true) regfree(&regexp);
@@ -759,8 +760,8 @@ int findinit(const char *pattern_) {
 		/* look for use of the -T option (truncate symbol to 8
 		   characters) on a database not built with -T */
 		if(trun_syms == true && preserve_database == true && dbtruncated == false &&
-			s - pattern >= 8) {
-			strcpy(pattern + 8, ".*");
+			s - pattern >= truncation_len) {
+			strcpy(pattern + truncation_len, ".*");
 			isregexp = true;
 		}
 	}
@@ -780,7 +781,7 @@ int findinit(const char *pattern_) {
 			s[i] = '\0';
 		}
 		/* if requested, try to truncate a C symbol pattern */
-		if(trun_syms == true && strpbrk(s, "[{*+") == NULL) { s[8] = '\0'; }
+		if(trun_syms == true && strpbrk(s, "[{*+") == NULL) { s[truncation_len] = '\0'; }
 		/* must be an exact match */
 		/* note: regcomp doesn't recognize ^*keypad$ as a syntax error
 				 unless it is given as a single arg */
@@ -793,7 +794,7 @@ int findinit(const char *pattern_) {
 		}
 	} else {
 		/* if requested, truncate a C symbol pattern */
-		if(trun_syms == true && field <= CALLING) { pattern[8] = '\0'; }
+		if(trun_syms == true && field <= CALLING) { pattern[truncation_len] = '\0'; }
 		/* compress the string pattern for matching */
 		s = cpattern;
 		for(i = 0; (c = pattern[i]) != '\0'; ++i) {
