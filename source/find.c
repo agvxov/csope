@@ -699,14 +699,18 @@ void trim_trailing_ws(char *str, size_t len) {
 
 static inline
 bool is_valid_c_symbol(char *str) {
-	/* A symbol must start with an underscore or an alpha-numerical char */
-	if ((!isalpha((unsigned char)*str)) && (*str != '_')) {
+    /* C symbols are of the following pattern:
+     * [$_a-zA-Z][_a-zA-Z0-9]*
+     */
+	if ((!isalpha((unsigned char)*str))
+    &&  (*str != '_')
+    &&  (*str != '$')) {
 		return false;
 	}
 
-	/* Check whole string to ensure it is indeed all alpha and/or underscores */
 	while (*++str != '\0') {
-		if ((!isalpha((unsigned char)*str)) && (*str != '_')) {
+		if ((!isalnum((unsigned char)*str))
+        &&  (*str != '_')) {
 			return false;
 		}
 	}
