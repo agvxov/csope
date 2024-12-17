@@ -194,9 +194,11 @@ void read_listfile(FILE * names) {
 						 * quoted string */
 						length_of_name = in + 1;
 						break; /* found end of quoted string */
-					} else if(point_in_line[in] == '\\' && in < PATHLEN - 1 &&
-							  (point_in_line[in + 1] == '"' ||
-								  point_in_line[in + 1] == '\\')) {
+					}
+					if(point_in_line[in] == '\\'
+					   && in < PATHLEN - 1
+					   && (point_in_line[in + 1] == '"'
+						   || point_in_line[in + 1] == '\\')) {
 						/* un-escape \" or \\ sequence */
 						newpath[out++] = point_in_line[in + 1];
 						in += 2;
