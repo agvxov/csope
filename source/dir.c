@@ -75,12 +75,12 @@ static struct listitem {				/* source file names without view pathing */
 
 /* Internal prototypes: */
 static bool is_accessible_file(const char *file);
-static bool is_source_file(char *file);
+static bool is_source_file(char *path);
 static void add_source_directory(char *dir);
 static void add_include_directory(char *name, char *path);
-static void scan_dir(const char *dirfile, bool recurse);
+static void scan_dir(const char *adir, bool recurse);
 static void make_vp_source_directories(void);
-static void read_listfile(FILE * listfile);
+static void read_listfile(FILE * names);
 
 static
 void read_listfile(FILE * names) {
