@@ -366,75 +366,98 @@ bool is_accessible_file(const char *file) {
 	return false;
 }
 
-/* see if this is a source file */
-/* NOTE: these macros are somewhat faster than calling strcmp(),
- *        while not significantly uglier
+/* Known single, double, and triple character extensions for source files */
+static const char *known_source_extensions[4] = {
+	/* 1-char suffixes: "c", "h", "l", "y", "C", "G", "H", "L" */
+	[0] = "c:h:l:y:C:G:H:L",
+	/* 2-char suffixes: "bp", "qc", "qh", "sd", "cc", "hh" */
+	[1] = "bp:qc:qh:sd:cc:hh",
+	/* 3-char suffixes: "tcc", "cpp", "cxx", "hpp", "hxx", "inc" */
+	[2] = "tcc:cpp:cxx:hpp:hxx:inc",
+	/* Terminate list */
+	[3] = NULL
+};
+
+
+/* 'is_source_file' takes a NULL terminated string 'path'
+   and returns whether it is a file that we can work with.
+ * To determine whether it is a file we can work with, it checks whether the
+   file extension is one of the extensions we support, and also
+   checks if the file is regular.
  */
-#define IS_SUFFIX_OF_2(s, suffix) (s[0] == suffix[0] && s[1] == suffix[1])
-#define IS_SUFFIX_OF_3(s, suffix) (s[0] == suffix[0] && s[1] == suffix[1] && s[2] == suffix[2])
 static
 bool is_source_file(char *path) {
+
 	struct stat statstruct;
-	const char *file              = basename(path);
-	char	   *suffix            = strrchr(file, '.');
-	bool		looks_like_source = false;
+	const char *file = basename(path);
+	const char *suffix = strrchr(file, '.');
 
-	/* ensure there is some file suffix */
-	if(suffix == NULL || *(++suffix) == '\0') { return false; }
+	/* If no suffix or suffix is empty, not a source file */
+	if (suffix == NULL
+		|| suffix[1] == '\0') {
+		return false;
+	}
+	/* Move suffix pointer forward to skip the '.' */
+	suffix++;
 
-	/* if an SCCS or versioned file */
-	if(file[1] == '.' && file + 2 != suffix) { /* 1 character prefix */
-		switch(*file) {
+	/* Special handling for SCCS or versioned files:
+	If file looks like s.filename or S.filename and suffix is not directly after that */
+	if ((file[1] == '.')
+		&& ((file + 2) != suffix)) {
+		switch (*file) {
 			case 's':
 			case 'S':
 				return false;
 		}
 	}
 
-	if(suffix[1] == '\0') { /* 1 character suffix */
-		switch(*suffix) {
-			case 'c':
-			case 'h':
-			case 'l':
-			case 'y':
-			case 'C':
-			case 'G':
-			case 'H':
-			case 'L':
-				looks_like_source = true;
+	/* Check for suffix matching any supported extensions */
+	bool looks_like_source = false;
+
+	size_t suffix_len = strlen(suffix);
+
+	/* Suffix len must be above 0 and below 4 chars in len */
+	if (!((suffix_len > 0)
+		&& (suffix_len < 4))) {
+			return false;
 		}
-	} else if((suffix[2] == '\0') /* 2 char suffix */
-			  && (
-                    /* breakpoint listing */
-                    IS_SUFFIX_OF_2(suffix, "bp")
-                    /* Ingres */
-					|| IS_SUFFIX_OF_2(suffix, "qc")
-					|| IS_SUFFIX_OF_2(suffix, "qh")
-                    /* SDL */
-					|| IS_SUFFIX_OF_2(suffix, "sd")
-                    /* C++ source */
-					|| IS_SUFFIX_OF_2(suffix, "cc")
-                    /* C++ header */
-					|| IS_SUFFIX_OF_2(suffix, "hh"))) {
-		looks_like_source = true;
-	} else if(suffix[3] == '\0' && ( /* 3 char suffix */
-		      /* C++ template source */
-		      IS_SUFFIX_OF_3(suffix, "tcc")
-		      /* C++ source: */
-		      || IS_SUFFIX_OF_3(suffix, "cpp")
-		      || IS_SUFFIX_OF_3(suffix, "cxx")
-		      || IS_SUFFIX_OF_3(suffix, "hpp")
-		      || IS_SUFFIX_OF_3(suffix, "hxx")
-              /**/
-		      || IS_SUFFIX_OF_3(suffix, "inc")
-    )) {
-		looks_like_source = true;
+
+	/* Retrieve the extensions string for the suffix */
+	const char *extension_str =  known_source_extensions[suffix_len - 1];
+	char *ext;
+
+	/* When suffix length is 1 */
+	if (suffix_len == 1) {
+		/* Check extension list for extension */
+		ext = strchr(extension_str, suffix[0]);
+		/* If no extension then return false */
+		if (!ext) {
+			return false;
+		}
+		/* If we find it, then it is a valid source file extension */
+		 looks_like_source = true;
+	}
+	/* Else if suffix is longer than a single char */
+	else {
+		/* Search for suffix in extension string */
+		if (strstr(extension_str, suffix)) {
+			/* If we found it, then it is a valid source file extension. */
+			looks_like_source = true;
+		}
 	}
 
-	if (!looks_like_source) { return false; }
+	/* If it is still false, then return false */
+	if (!looks_like_source) {
+		return false;
+	}
 
-	/* make sure it is a file */
-	if(lstat(path, &statstruct) == 0 && S_ISREG(statstruct.st_mode)) { return true; }
+	/* Ensure it is a file */
+	if(lstat(path, &statstruct) == 0
+	   && S_ISREG(statstruct.st_mode)) {
+		   return true;
+	   }
+
+	/* Return false if all else fails */
 	return false;
 }
 
