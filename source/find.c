@@ -680,17 +680,11 @@ char *findinclude(const char *pattern) {
 }
 
 static inline
-void trim_trailing_ws(char *str, size_t len) {
+void trim_trailing_ws(char * str, size_t len) {
+	char * end = str + len;
 
-	/* Jump to end of string */
-	char *end = str;
-	end += len;
-
-	/* While character is space and not NULL.
-	* Checking for NULL is required otherwise 'isspace' will produce undefined
-	 behaviour when encountering a nonstandard character. */
-	while ((end != NULL) && isspace(end)) {
-		/* Move backwards */
+	while (end > str
+       && isspace(*end)) {
 		--end;
 	}
 	*end = '\0';
@@ -753,6 +747,9 @@ int findinit(const char *pattern_) {
 
 	/* Trim trailing whitespace */
 	trim_trailing_ws(pattern, pattlen);
+    if (pattern[0] == '\0') {
+        return NOTSYMBOL;
+    }
 
 	/* Make sure pattern is lowercased. Curses
 	 * mode gets this right all on its own, but at least -L mode
