@@ -701,6 +701,7 @@ void postmsg(char *msg) {
 }
 
 /* clearmsg2 clears the second message line */
+static inline
 void clearmsg2(void) {
 	if(linemode == false) {
 		wmove(wresult, MSGLINE + 1, 0);

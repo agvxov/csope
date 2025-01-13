@@ -233,8 +233,6 @@ void askforchar(void);
 void askforreturn(void);
 void cannotwrite(const char *const file);
 void cannotopen(const char *const file);
-void clearmsg(void);
-void clearmsg2(void);
 void countrefs(void);
 void crossref(char *srcfile);
 void edit(const char * filename, const char *const linenum);
