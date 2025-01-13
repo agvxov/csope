@@ -35,12 +35,11 @@
  *    file editing functions
  */
 
+#include <ncurses.h> // XXX
 #include "global.h"
-#if defined(USE_NCURSES) && !defined(RENAMED_NCURSES)
-# include <ncurses.h>
-#else
-# include <curses.h>
-#endif
+#include "exec.h"
+#include "path.h"
+#include "refsfound.h"
 
 /* edit this displayed reference */
 
@@ -116,17 +115,4 @@ void edit(const char *filename, const char *const linenum) {
 
 end:
 	clear(); /* redisplay screen */
-}
-
-/* if requested, prepend a path to a relative file name */
-const char * prepend_path(const char * prepand_with, const char * file) {
-	static char path[PATHLEN + 1]; // XXX
-
-    if (!prepand_with
-    ||  *file == '/') {
-        return file;
-    }
-
-	snprintf(path, sizeof(path), "%s/%s", prependpath, file);
-	return path;
 }

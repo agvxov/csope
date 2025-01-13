@@ -40,7 +40,6 @@
 #include "vpath.h"
 
 #include "library.h"
-#include "global.h"
 #include "constants.h"
 
 char **vpdirs; /* directories (including current) in view path */

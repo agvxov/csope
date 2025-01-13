@@ -33,9 +33,11 @@
 #include <stdio.h>
 #include <signal.h>
 #include <unistd.h>
+#include <fcntl.h>
 #include <sys/types.h>
 #include <sys/wait.h>
-#include "global.h" /* pid_t, shell, and basename() */
+#include "global.h"
+#include "path.h"
 
 #define tst(a, b) (*mode == 'r' ? (b) : (a))
 #define RDR		  0

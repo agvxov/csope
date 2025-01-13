@@ -36,8 +36,6 @@
  *    build cross-reference file
  */
 
-#include "global.h"
-
 #include "build.h"
 #include "scanner.h"
 

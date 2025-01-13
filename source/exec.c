@@ -36,50 +36,62 @@
  */
 
 #include <unistd.h>
-#include "global.h"
 #include <stdarg.h>
+#include <signal.h>
 #include <sys/wait.h>
 #include <sys/types.h> /* pid_t */
 #ifdef __DJGPP__
 # include <process.h>
 #endif
-#include <ncurses.h>
 
+#include "global.h"
+
+#include "constants.h"
+#include "path.h"
+#include "display.h"
+
+typedef void (*sighandler_t)(int);
 static sighandler_t oldsigquit; /* old value of quit signal */
 static sighandler_t oldsighup;	/* old value of hangup signal */
 static sighandler_t oldsigtstp; /* old value of SIGTSTP */
 
 #ifndef __MSDOS__				/* none of these is needed, there */
 static int	 join(pid_t p);
-static int	 myexecvp(char *a, char **args);
+static int	 myexecvp(char * program_name, char **args);
 static pid_t myfork(void);
+#endif
+
+// XXX
+#ifndef BUFSIZ
+# define BUFSIZ 8192
 #endif
 
 /* execute forks and executes a program or shell script, waits for it to
  * finish, and returns its exit code.
  */
-int execute(char *a, ...) /* NOTE: "exec" is already defined on u370 */
+int execute(char * program_name, ...) /* NOTE: "exec" is already defined on u370 */
 {
 	va_list ap;
 	int		exitcode = -1;
 	char   *argv[BUFSIZ];
 	pid_t	p;
 
+    // XXX: global display access
 	/* fork and exec the program or shell script */
 	endwin(); /* restore the terminal modes */
-	mousecleanup();
+	//mousecleanup();
 	fflush(stdout);
-	va_start(ap, a);
+	va_start(ap, program_name);
 
 	for(p = 0; (argv[p] = va_arg(ap, char *)) != 0; p++) { ; }
 
 #ifdef __MSDOS__
 	/* HBB 20010313: in MSDOG, everything is completely different.
 	 * No fork()/exec()/wait(), but rather a single libc call: */
-	exitcode = spawnvp(P_WAIT, a, argv);
+	exitcode = spawnvp(P_WAIT, program_name, argv);
 #else
 	if((p = myfork()) == 0) {
-		myexecvp(a, argv);	/* child */
+		myexecvp(program_name, argv);	/* child */
 	} else {
 		exitcode = join(p); /* parent */
 	}
@@ -96,20 +108,20 @@ int execute(char *a, ...) /* NOTE: "exec" is already defined on u370 */
 /* myexecvp is an interface to the execvp system call to
  * modify argv[0] to reference the last component of its path-name.
  */
-static int myexecvp(char *a, char **args) {
+static int myexecvp(char *program_name, char **args) {
 	char msg[MSGLEN + 1];
 
 	/* modify argv[0] to reference the last component of its path name */
 	args[0] = (char *)basename(args[0]);
 
 	/* execute the program or shell script */
-	execvp(a, args); /* returns only on failure */
-	snprintf(msg, sizeof(msg), "\nCannot exec %s", a);
+	execvp(program_name, args); /* returns only on failure */
+	snprintf(msg, sizeof(msg), "\nCannot exec %s", program_name);
 	perror(msg);	 /* display the reason */
 	askforreturn();	 /* wait until the user sees the message */
 	myexit(1);		 /* exit the child */
-	/* NOTREACHED */
-	return 0;
+
+	return 0; // XXX
 }
 
 /* myfork acts like fork but also handles signals */

@@ -36,10 +36,7 @@
 #include <stdio.h> /* need FILE* type def. */
 
 /* private library */
-char	   *compress_path(const char *pathname_);
 char	   *egrepinit(const char *egreppat);
-char	   *logdir(char *name);
-const char *basename(const char *path);
 FILE	   *myfopen(const char * path, const char * mode);
 int			myopen(const char * path, int flag, int mode);
 FILE	   *mypopen(char *cmd, char *mode);

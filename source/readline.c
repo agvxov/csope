@@ -1,8 +1,12 @@
+#include "readline.h"
+
 #include <stdio.h>
 #include <readline/readline.h>
 #include <readline/history.h>
-#include "global.h"
 #include "build.h"
+#include "path.h"
+#include "display.h"
+#include "refsfound.h"
 #include <ncurses.h>
 
 static int	input_available = 0;
@@ -54,9 +58,11 @@ bool interpret(int c) {
 			}
 			break;
 		case ESC:
+        /* XXX
 		case ctrl('X'):
 			process_mouse();
 			break;
+        */
 		default:
 			input_char		= c;
 			input_available = 1;

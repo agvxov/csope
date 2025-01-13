@@ -43,6 +43,9 @@
  *         future complete rewrite of mouse support
  */
 
+void mousecleanup(void);
+int process_mouse(void);
+
 void mousemenu(void);
 void mouseinit(void);
 void mousereinit(void);

@@ -32,20 +32,105 @@
 
 /* get a file's base name from its path name */
 
-#include "global.h"
+#include "path.h"
+#include "library.h"
 
-#include <unistd.h>
+#include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
+#include <unistd.h>
 
-const char *basename(const char *path) {
+/* expand the ~ and $ shell meta characters in a path */
+void shellpath(char * out, int limit, char * in) {
+	char * lastchar;
+	char * s, * v;
+
+	/* skip leading white space */
+	while(isspace((unsigned char)*in)) {
+		++in;
+	}
+	lastchar = out + limit - 1;
+
+	/* a tilde (~) by itself represents $HOME; followed by a name it
+	   represents the $LOGDIR of that login name */
+	if(*in == '~') {
+		*out++ = *in++; /* copy the ~ because it may not be expanded */
+
+		/* get the login name */
+		s = out;
+		while(s < lastchar && *in != '/' && *in != '\0' && !isspace((unsigned char)*in)) {
+			*s++ = *in++;
+		}
+		*s = '\0';
+
+		/* if the login name is null, then use $HOME */
+		if(*out == '\0') {
+			v = getenv("HOME");
+		} else { /* get the home directory of the login name */
+			v = logdir(out);
+		}
+		/* copy the directory name if it isn't too big */
+		if(v != NULL && strlen(v) < (lastchar - out)) {
+			strcpy(out - 1, v);
+			out += strlen(v) - 1;
+		} else {
+			/* login not found, so ~ must be part of the file name */
+			out += strlen(out);
+		}
+	}
+	/* get the rest of the path */
+	while(out < lastchar && *in != '\0' && !isspace((unsigned char)*in)) {
+
+		/* look for an environment variable */
+		if(*in == '$') {
+			*out++ = *in++; /* copy the $ because it may not be expanded */
+
+			/* get the variable name */
+			s = out;
+			while(s < lastchar && *in != '/' && *in != '\0' &&
+				  !isspace((unsigned char)*in)) {
+				*s++ = *in++;
+			}
+			*s = '\0';
+
+			/* get its value, but only it isn't too big */
+			if((v = getenv(out)) != NULL && strlen(v) < (lastchar - out)) {
+				strcpy(out - 1, v);
+				out += strlen(v) - 1;
+			} else {
+				/* var not found, or too big, so assume $ must be part of the
+				 * file name */
+				out += strlen(out);
+			}
+		} else { /* ordinary character */
+			*out++ = *in++;
+		}
+	}
+	*out = '\0';
+}
+
+const char * basename(const char *path) {
 	const char *s;
 
 	if((s = strrchr(path, '/')) != 0) { return (s + 1); }
 	return path;
 }
 
+/* if requested, prepend a path to a relative file name */
+const char * prepend_path(const char * prepand_with, const char * file) {
+	static char path[PATHLEN + 1]; // XXX
+
+    if (!prepand_with
+    ||  *file == '/') {
+        return file;
+    }
+
+	snprintf(path, sizeof(path), "%s/%s", prepand_with, file);
+	return path;
+}
+
 /* get the requested path components */
-char *pathcomponents(char *path, int components) {
+char * pathcomponents(char *path, int components) {
 	char * s = path + strlen(path) - 1;
 	for(int i = 0; i < components; i++) {
 		while(s > path && *--s != '/') {
@@ -75,9 +160,9 @@ void path_remove_multiple_slashes(char *path) {
 
 
 static inline
-void path_remove_current_directory_references(char *path) {
-	char *read = path;
-	char *write = path;
+void path_remove_current_directory_references(char * path) {
+	char * read = path;
+	char * write = path;
 
 	while (*read) {
 		if (read[0] == '.' && read[1] == '/' &&
@@ -127,7 +212,7 @@ void path_remove_parent_directory_references(char *path) {
  *         of accidently changing strings obtained from makefiles
  *         and stored in global structures.
  */
-char *compress_path(const char *pathname_) {
+char * compress_path(const char *pathname_) {
 	if (pathname_ == NULL) {
 		return NULL;
 	}
@@ -165,7 +250,7 @@ char *compress_path(const char *pathname_) {
 }
 
 static
-char *nextfield(char *p) {
+char * nextfield(char *p) {
 	while(*p && *p != ':') { ++p; }
 	if(*p) { *p++ = 0; }
 	return p;
@@ -179,7 +264,7 @@ char *nextfield(char *p) {
  *    storage in this package destroys the integrity of the shell's
  *    storage allocation.
  */
-char *logdir(char *name) {
+char * logdir(char *name) {
 	#define BUFFER_SIZE 160
 	static char line[BUFFER_SIZE];
 	char *p;

@@ -37,15 +37,21 @@
 
 #include "global.h"
 
-#include "build.h"
-#include "scanner.h" /* for token definitions */
-
 #include <assert.h>
 #include <signal.h>
 #include <ncurses.h>
 #include <regex.h>
 #include <setjmp.h> /* jmp_buf */
 
+#include "build.h"
+#include "scanner.h" /* for token definitions */
+#include "display.h"
+#include "path.h"
+
+// XXX apparently the yacc header generation is buggy in the build process, but nothing uses it
+extern int egrep(const char * file, FILE *output, char *format);
+
+// XXX where the fuck does this comment belong to???
 /* most of these functions have been optimized so their innermost loops have
  * only one test for the desired character by putting the char and
  * an end-of-block marker (\0) at the end of the disk block buffer.
@@ -104,6 +110,7 @@ static char *findallfcns(const char *dummy);
 
 static inline void trim_trailing_ws(char *str, size_t len);
 static inline bool is_valid_c_symbol(char *str);
+static long dbseek(long offset);
 
 typedef char *(*FP)(const char *); /* pointer to function returning a character pointer */
 /* Paralel array to "fields", indexed by "field" */

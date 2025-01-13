@@ -35,18 +35,17 @@
  *	terminal input functions
  */
 
-#include "global.h"
-#include "build.h"
-#include <ncurses.h>
-#include <setjmp.h> /* jmp_buf */
 #include <stdlib.h>
+#include <setjmp.h> /* jmp_buf */
 #include <errno.h>
 #include <signal.h>
-#if HAVE_SYS_TERMIOS_H
-# include <sys/termios.h>
-#endif
+#include <ncurses.h>
 
 #include "keys.h"
+#include "build.h"
+#include "display.h"
+#include "exec.h"
+#include "readline.h"
 
 extern const void *const		winput;
 extern const void *const		wmode;
@@ -102,81 +101,13 @@ void askforchar(void) {
 	getch();
 }
 
+// XXX: this is more of a display thing; why are we drawing on stderr?
 /* ask user to press the RETURN key after reading the message */
 void askforreturn(void) {
 	fprintf(stderr, "Press the RETURN key to continue: ");
 	getchar();
 	/* HBB 20060419: message probably messed up the screen --- redraw */
 	if(incurses == true) { redrawwin(curscr); }
-}
-
-/* expand the ~ and $ shell meta characters in a path */
-void shellpath(char *out, int limit, char *in) {
-	char *lastchar;
-	char *s, *v;
-
-	/* skip leading white space */
-	while(isspace((unsigned char)*in)) {
-		++in;
-	}
-	lastchar = out + limit - 1;
-
-	/* a tilde (~) by itself represents $HOME; followed by a name it
-	   represents the $LOGDIR of that login name */
-	if(*in == '~') {
-		*out++ = *in++; /* copy the ~ because it may not be expanded */
-
-		/* get the login name */
-		s = out;
-		while(s < lastchar && *in != '/' && *in != '\0' && !isspace((unsigned char)*in)) {
-			*s++ = *in++;
-		}
-		*s = '\0';
-
-		/* if the login name is null, then use $HOME */
-		if(*out == '\0') {
-			v = getenv("HOME");
-		} else { /* get the home directory of the login name */
-			v = logdir(out);
-		}
-		/* copy the directory name if it isn't too big */
-		if(v != NULL && strlen(v) < (lastchar - out)) {
-			strcpy(out - 1, v);
-			out += strlen(v) - 1;
-		} else {
-			/* login not found, so ~ must be part of the file name */
-			out += strlen(out);
-		}
-	}
-	/* get the rest of the path */
-	while(out < lastchar && *in != '\0' && !isspace((unsigned char)*in)) {
-
-		/* look for an environment variable */
-		if(*in == '$') {
-			*out++ = *in++; /* copy the $ because it may not be expanded */
-
-			/* get the variable name */
-			s = out;
-			while(s < lastchar && *in != '/' && *in != '\0' &&
-				  !isspace((unsigned char)*in)) {
-				*s++ = *in++;
-			}
-			*s = '\0';
-
-			/* get its value, but only it isn't too big */
-			if((v = getenv(out)) != NULL && strlen(v) < (lastchar - out)) {
-				strcpy(out - 1, v);
-				out += strlen(v) - 1;
-			} else {
-				/* var not found, or too big, so assume $ must be part of the
-				 * file name */
-				out += strlen(out);
-			}
-		} else { /* ordinary character */
-			*out++ = *in++;
-		}
-	}
-	*out = '\0';
 }
 
 static int wmode_input(const int c) {

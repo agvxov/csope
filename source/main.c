@@ -42,11 +42,11 @@
 #include "vpath.h"
 #include "version.inc"
 #include "scanner.h"
+#include "display.h"
+#include "readline.h"
 
 #include <stdlib.h>	   /* atoi */
 #include <ncurses.h>
-#include <sys/types.h> /* needed by stat.h */
-#include <sys/stat.h>  /* stat */
 #include <signal.h>
 
 /* note: these digraph character frequencies were calculated from possible

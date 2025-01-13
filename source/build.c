@@ -38,12 +38,11 @@
 
 #include "build.h"
 
-#include "global.h" /* FIXME: get rid of this! */
-
 #include "library.h"
 
 #include "scanner.h"
 #include "version.inc"
+#include "path.h"
 #include "vpath.h"
 
 # include <ncurses.h>

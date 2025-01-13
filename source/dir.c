@@ -38,6 +38,7 @@
 
 #include "global.h"
 
+#include "path.h"
 #include "vpath.h" /* vpdirs and vpndirs */
 
 #include <stdlib.h>

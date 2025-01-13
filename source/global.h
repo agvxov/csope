@@ -55,30 +55,7 @@
 #include "invlib.h"	   /* inverted index library */
 #include "library.h"   /* library function return values */
 
-typedef void (*sighandler_t)(int);
-
-struct cmd {					 /* command history struct */
-		struct cmd *prev, *next; /* list ptrs */
-		int			field;		 /* input field number */
-		char	   *text;		 /* input field text */
-};
-
-/* bitmask type to mark which windows have to be rerendered by display()
- */
-enum {
-	CH_NONE	  = 0x0000,
-	CH_RESULT = 0x0001 << 0,
-	CH_INPUT  = 0x0001 << 1,
-	CH_MODE	  = 0x0001 << 2,
-	CH_CASE   = 0x0001 << 3,
-	CH_HELP	  = 0x0001 << 4, /* do NOT add to CH_ALL */
-	CH_ALL	  = CH_RESULT | CH_INPUT | CH_MODE | CH_CASE
-};
-/* Only display.c can directly update the screen.
- * Any other component must request the update of a particular
- *  screen area by OR'ing this variable with the appropriate mask.
- */
-extern int window_change;
+typedef void (*sighandler_t)(int); // XXX: this got copied to multiple places; investigate
 
 enum {
 	INPUT_NORMAL,
@@ -90,7 +67,6 @@ enum {
 };
 extern int input_mode;
 
-#define DEFAULT_INCLUDE_DIRECTORY "/usr/include"
 extern const char * incdir;
 
 /* digraph data for text compression */
@@ -106,8 +82,6 @@ extern char dicode2[]; /* digraph second character code */
 /* Combine the pair into a dicode */
 #define DICODE_COMPRESS(inchar1, inchar2)                                                \
 	((0200 - 2) + dicode1[(unsigned char)(inchar1)] + dicode2[(unsigned char)(inchar2)])
-
-#define PROGRAM_NAME "Csope"
 
 /* main.c global data */
 extern char *editor, /* EDITOR env var */
@@ -189,17 +163,10 @@ extern struct keystruct {
 	struct keystruct *next;
 } keyword[];
 
-/* readline.c global data */
-extern char *rl_line_buffer;
-extern char	 input_line[PATLEN + 1];
-extern int	 rl_point;
-
 /* cscope functions called from more than one function or between files */
 
-const char * prepend_path(const char * prepand_with, const char * file);
 char *inviewpath(const char *file);
 char *lookup(char *ident, bool do_compressed);
-char *pathcomponents(char *path, int components);
 char *read_crossreference_block(void);
 char *scanpast(char c);
 
@@ -212,21 +179,12 @@ extern char *reflines;		   /* symbol reference lines file */
 extern bool	 do_press_any_key; /* wait for any key to continue */
 extern int	 current_page;
 #define topref (current_page * mdisprefs)
-void	   horswp_window(void);
-void	   verswp_window(void);
-bool	   interpret(int c);	// XXX: probably rename
 int		   handle_input(const int c);
 int		   dispchar2int(const char c);
 int		   changestring(const char *from, const char *to, const bool *const change, const int change_len);
 
 void init_temp_files(void);
 void deinit_temp_files(void);
-
-long seekpage(const size_t i);
-long seekrelline(unsigned i);
-void PCS_reset(void);
-
-void rlinit(void);
 
 void addsrcfile(char *path);
 void askforchar(void);
@@ -263,28 +221,12 @@ void myungetch(int c);
 void warning(char *text);
 void writestring(char *s);
 
-void entercurses(void);
-void exitcurses(void);
-void drawscrollbar(int top, int bot);
-void dispinit(void);
-void display(void);
-void redisplay(void);
-
-void shellpath(char *out, int limit, char *in);
-
 bool infilelist(const char * file);
 bool readrefs(char *filename);
 bool search(const char *query);
 bool writerefsfound(void);
 
 int	findinit(const char *pattern_);
-
-int	 egrep(const char * file, FILE *output, char *format);
 int	 hash(const char * ss);
-int	 execute(char *a, ...);
-long dbseek(long offset);
-
-void mousecleanup(void);
-int process_mouse(void);
 
 #endif /* CSCOPE_GLOBAL_H */

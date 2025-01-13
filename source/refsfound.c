@@ -1,5 +1,9 @@
-#include "global.h"
 /* Possibly rename */
+#include "global.h"
+
+#include <stdio.h>
+#include <assert.h>
+#include "refsfound.h"
 
 struct FILE;
 

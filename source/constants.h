@@ -38,6 +38,10 @@
 #ifndef CSCOPE_CONSTANTS_H
 #define CSCOPE_CONSTANTS_H
 
+#define PROGRAM_NAME "Csope"
+
+#define DEFAULT_INCLUDE_DIRECTORY "/usr/include"
+
 #define ctrl(x) (x & 037) /* control character macro */
 
 /* fast string equality tests (avoids most strcmp() calls) */

@@ -35,7 +35,7 @@
  *    command functions
  */
 
-#include "global.h"
+#include "path.h"
 #include "build.h" /* for rebuild() */
 
 

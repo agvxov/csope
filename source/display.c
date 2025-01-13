@@ -35,14 +35,18 @@
  *    display functions
  */
 
+#include "display.h"
+
 #include <ncurses.h>
 #include <time.h>
 #include <errno.h>
 
-#include "global.h"
 #include "build.h"
 #include "colors.h"
 #include "help.h"
+#include "readline.h"
+#include "path.h"
+#include "refsfound.h"
 
 #include "version.inc"
 

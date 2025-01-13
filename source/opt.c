@@ -1,13 +1,12 @@
-#include "global.h"
+#include <stdlib.h>	 /* atoi */
+#include <getopt.h>
 
 #include "build.h"
 #include "vpath.h"
 #include "version.inc"
 #include "auto_vararg.h"
 #include "help.h"
-
-#include <stdlib.h>	 /* atoi */
-#include <getopt.h>
+#include "readline.h"
 
 /* defaults for unset environment variables */
 #define DEFAULT_EDITOR	 "vi"
@@ -131,7 +130,7 @@ char * * parse_options(const int argc, const char * const * const argv) {
         			%d characters\n",
 						PATLEN);
 				}
-				strcpy(input_line, optarg);
+				strcpy(input_line, optarg); // XXX
 				break;
 			case 'b': /* only build the cross-reference */
 				buildonly = true;
