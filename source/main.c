@@ -48,7 +48,6 @@
 #include <sys/types.h> /* needed by stat.h */
 #include <sys/stat.h>  /* stat */
 #include <signal.h>
-#include <getopt.h>
 
 /* note: these digraph character frequencies were calculated from possible
    printable digraphs in the cross-reference for the C compiler */
