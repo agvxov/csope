@@ -183,10 +183,7 @@ void remove_trailing_newline(char *buf, size_t len) {
 static inline
 void linemode_event_loop(void) {
 	if (*input_line != '\0') { /* do any optional search */
-
 		if (search(input_line) == true) {
-
-			/* print the total number of lines in verbose mode */
 			if (verbosemode == true) {
 				printf(PROGRAM_NAME ": %d lines\n", totallines);
 			}
@@ -229,8 +226,6 @@ void linemode_event_loop(void) {
 
 			case 'c': /* toggle caseless mode */
 			case ctrl('C'):
-				/* 27-11-2024 20:42 yama XXX: The logic works but I am unable
-				to test functionality in the terminal? */
 						  caseless = !(caseless);
                           egrepcaseless(caseless);
                           break;
@@ -263,8 +258,8 @@ void linemode_event_loop(void) {
 			case ctrl('D'):
 			case ctrl('Z'):
 				myexit(0);
-				/* NOTREACHED */
 				break;
+
 			default:
 				fprintf(stderr, PROGRAM_NAME ": unknown command '%s'\n", buf);
 				break;
@@ -496,8 +491,6 @@ int main(const int argc, const char * const * const argv) {
 	opendatabase(reffile);
 
 	if (linemode == true) {
-        /* if using the line oriented user interface so cscope can be a
-           subprocess to emacs or samuel */
         linemode_event_loop();
     } else {
         screenmode_event_loop();
