@@ -110,7 +110,7 @@ void cannotopen(const char *const file) {
 
 void cannotwrite(const char * const file) {
 	unlink(file);
-
+    // XXX this seems like a terrible practice
     postfatal("Removed file %s because write failed", file);
 }
 
