@@ -1,5 +1,6 @@
 .PHONY: test
 
+PREFIX?=/usr
 LIBS:=ncurses readline
 
 CFLAGS += $(if $(SAN),-fsanitize=${SAN}) -Wno-unused-result
@@ -41,7 +42,7 @@ source/%.c: source/%.y
 	${YACC} -o $@ $<
 
 install: ${OUTPUT}
-	cp ${OUTPUT} /usr/bin/
+	install ${OUTPUT} ${PREFIX}/bin
 
 clean:
 	-${RM} ${GENLEX}
