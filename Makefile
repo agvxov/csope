@@ -1,4 +1,4 @@
-.PHONY: test
+.PHONY: main install clean test
 
 LIBS:=ncurses readline
 
@@ -26,6 +26,9 @@ OBJD:=object/
 source:=$(shell find ${SRCD} -iname '*.c') ${GENLEX} ${GENYACC}
 object:=$(subst .c,.o,$(subst ${SRCD},${OBJD},${source}))
 
+# PREFIX is old GNU automake convention and DESTDIR is GENTOO convention
+DESTDIR ?= $(or ${PREFIX},/usr/bin/)
+
 OUTPUT:=csope
 
 main: ${object}
@@ -41,7 +44,7 @@ source/%.c: source/%.y
 	${YACC} -o $@ $<
 
 install: ${OUTPUT}
-	cp ${OUTPUT} /usr/bin/
+	install ${OUTPUT} ${DESTDIR}
 
 clean:
 	-${RM} ${GENLEX}
