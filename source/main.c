@@ -30,7 +30,6 @@
  DAMAGE.
  =========================================================================*/
 
-
 /*    cscope - interactive C symbol cross-reference
  *
  *    main functions
@@ -81,7 +80,6 @@ static char path[PATHLEN + 1];	/* file path */
 /* Internal prototypes: */
 static inline void linemode_event_loop(void);
 static inline void screenmode_event_loop(void);
-
 
 static inline
 void siginit(void) {
@@ -369,3 +367,6 @@ int main(const int argc, const char * const * const argv) {
 
 	return 0;
 }
+
+
+
