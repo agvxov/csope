@@ -1,4 +1,4 @@
-.PHONY: test
+.PHONY: main install clean test
 
 PREFIX?=/usr
 LIBS:=ncurses readline
@@ -27,6 +27,9 @@ OBJD:=object/
 source:=$(shell find ${SRCD} -iname '*.c') ${GENLEX} ${GENYACC}
 object:=$(subst .c,.o,$(subst ${SRCD},${OBJD},${source}))
 
+# PREFIX is old GNU automake convention and DESTDIR is Gentoo/ebuild convention
+DESTDIR ?= $(or ${PREFIX},/usr/)
+
 OUTPUT:=csope
 
 main: ${object}
@@ -42,7 +45,8 @@ source/%.c: source/%.y
 	${YACC} -o $@ $<
 
 install: ${OUTPUT}
-	install ${OUTPUT} ${PREFIX}/bin
+	install -d $(DESTDIR)/bin/
+	install ${OUTPUT} ${DESTDIR}/bin/
 
 clean:
 	-${RM} ${GENLEX}
