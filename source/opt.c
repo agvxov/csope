@@ -164,9 +164,6 @@ char * * parse_options(const int argc, const char * const * const argv) {
 			case 'q': /* quick search */
 				invertedindex = true;
 				break;
-			case 'T': /* truncate symbols to 8 characters */
-				trun_syms = true;
-				break;
 			case 'u': /* unconditionally build the cross-reference */
 				unconditional = true;
 				break;

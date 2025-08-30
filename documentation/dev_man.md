@@ -48,3 +48,27 @@ I assume one project wanted it
 and sneaked in the patch.
 
 It has been removed now.
+
+### Reference files
+The `cscope.out` files which contain symbol database are called cross-reference files.
+The code refers to these as ref files.
+The concrete format of a wild ref file could be a number of things:
+* there were 12 versions of ref file formats
+* ref generation accepted a number of options
+    + compression (space efficiency)
+    + inversion (time efficiency)
+    + truncate symbol names (space efficiency with the danger of false results, unless of course you are a `lthxr`)
+
+Cscope 15.9 has some compatibility code for all ref versions,
+but I doubt that anything below 8 would actually work.
+Now, this compatibility layer must have been nice
+when building cross references would take considerable amounts of time
+and cscope was under rapid development,
+however both times are gone now.
+
+The way ref file options are implemented is a huge mess.
+It would be possible to clean it,
+however I do not believe anyone has used actually used them in the past 10 years.
+
+How the situation has progress so far:
+* the Truncation option has been removed

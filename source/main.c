@@ -58,7 +58,6 @@ char dicode1[256];						/* digraph first character code */
 char dicode2[256];						/* digraph second character code */
 
 bool  compress = true;			/* compress the characters in the crossref */
-bool  dbtruncated;				/* database symbols are truncated to 8 chars */
 int	  dispcomponents = 1;		/* file path components to display */
 bool  editallprompt	= true;		/* prompt between editing files */
 int	  fileversion;				/* cross-reference file version */
@@ -66,7 +65,6 @@ bool  incurses = false;			/* in curses */
 char *prependpath;				/* prepend path to file names */
 FILE *refsfound;				/* references found file */
 long  totalterms;				/* total inverted index terms */
-bool  trun_syms;				/* truncate symbols to 8 characters */
 char  tempstring[TEMPSTRING_LEN + 1]; /* use this as a buffer, instead of 'yytext',
 									   * which had better be left alone
                                        */
@@ -322,10 +320,6 @@ void read_old_reffile(const char * reffile) {
 				case 'q': /* quick search */
 					invertedindex = true;
 					fscanf(oldrefs, "%ld", &totalterms);
-					break;
-				case 'T': /* truncate symbols to 8 characters */
-					dbtruncated = true;
-					trun_syms	= true;
 					break;
 			}
 		}

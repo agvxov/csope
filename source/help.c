@@ -149,7 +149,6 @@ void longusage(void) {
 -q            Build an inverted index for quick symbol searching.\n\
 -R            Recurse directories for files.\n\
 -s dir        Look in dir for additional source  files.\n\
--T            Use only the first eight characters to match against C symbols.\n\
 -U            Check file time stamps.\n\
 -u            Unconditionally build the cross-reference file.\n\
 -v            Be more verbose in line mode.\n\

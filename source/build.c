@@ -215,7 +215,6 @@ void build(void) {
 		if(fileversion >= 8) {
 			bool oldcompress	  = true;
 			bool oldinvertedindex = false;
-			bool oldtruncate	  = false;
 
 			/* see if there are options in the database */
 			for(int c;;) {
@@ -232,15 +231,12 @@ void build(void) {
 						oldinvertedindex = true;
 						fscanf(oldrefs, "%ld", &totalterms);
 						break;
-					case 'T': /* truncate symbols to 8 characters */
-						oldtruncate = true;
-						break;
 				}
 			}
 			/* check the old and new option settings */
-			if(oldcompress != compress || oldtruncate != trun_syms) {
+			if(oldcompress != compress) {
 				posterr(PROGRAM_NAME
-					": -c or -T option mismatch between command line and old symbol database\n");
+					": -c option mismatch between command line and old symbol database\n");
 				goto force;
 			}
 			if(oldinvertedindex != invertedindex) {
@@ -517,7 +513,6 @@ void putheader(char *dir) {
 		 * is the same length */
 		dboffset += fprintf(newrefs, "              ");
 	}
-	if(trun_syms == true) { dboffset += fprintf(newrefs, " -T"); }
 
 	dboffset += fprintf(newrefs, " %.10ld\n", traileroffset);
 }

@@ -85,8 +85,8 @@ static void putcrossref(void);
 static void savesymbol(int token, int num);
 
 void crossref(char * srcfile) {
-	unsigned int length;   /* symbol length */
 	unsigned int entry_no; /* function level of the symbol */
+	unsigned int sym_length;
 	struct stat	 st;
 
 	if(!((stat(srcfile, &st) == 0) && S_ISREG(st.st_mode))) {
@@ -119,15 +119,9 @@ void crossref(char * srcfile) {
 		/* get the next token */
 		switch(token = yylex()) {
 			default:
-				/* if requested, truncate C symbols */
-				length = last - first;
-				if(trun_syms == true && length > 8 && token != INCLUDE &&
-					token != NEWFILE) {
-					length = 8;
-					last   = first + 8;
-				}
+				sym_length = last - first;
 				/* see if the token has a symbol */
-				if(length == 0) {
+				if(sym_length == 0) {
 					savesymbol(token, entry_no);
 					break;
 				}
@@ -137,8 +131,8 @@ void crossref(char * srcfile) {
                 {
                     unsigned i;
                     for(i = 0; i < symbols; ++i) {
-                        if(length == symbol[i].length &&
-                            strncmp(my_yytext + first, my_yytext + symbol[i].first, length) ==
+                        if(sym_length == symbol[i].length &&
+                            strncmp(my_yytext + first, my_yytext + symbol[i].first, sym_length) ==
                                 0 &&
                             entry_no == symbol[i].fcn_level &&
                             token == symbol[i].type) { /* could be a::a() */

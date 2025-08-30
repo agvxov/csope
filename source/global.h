@@ -91,7 +91,6 @@ extern char *editor, /* EDITOR env var */
 
 extern bool			lineflagafterfile;
 extern bool			compress;		/* compress the characters in the crossref */
-extern bool			dbtruncated;	/* database symbols truncated to 8 chars */
 extern int			dispcomponents; /* file path components to display */
 extern bool			editallprompt;	/* prompt between editing files */
 extern int			fileversion;	/* cross-reference file version */
@@ -106,7 +105,6 @@ extern char		   *namefile;		/* file of file names */
 extern char		   *prependpath;	/* prepend path to file names */
 extern FILE		   *refsfound;		/* references found file */
 extern long			totalterms;		/* total inverted index terms */
-extern bool			trun_syms;		/* truncate symbols to 8 characters */
 extern char			tempstring[TEMPSTRING_LEN + 1]; /* global dummy string buffer */
 
 extern const char * const * fileargv;		/* file argument values */

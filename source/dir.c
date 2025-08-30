@@ -130,9 +130,6 @@ void read_listfile(FILE * names) {
 					case 'q': /* quick search */
 						invertedindex = true;
 						break;
-					case 'T': /* truncate symbols to 8 characters */
-						trun_syms = true;
-						break;
 					case 'I': /* #include file directory */
 					case 'p': /* file path components to display */
 						/* coverity[overwrite_var] */
