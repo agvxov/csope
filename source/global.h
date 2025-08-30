@@ -92,7 +92,6 @@ extern char *editor, /* EDITOR env var */
 extern bool			lineflagafterfile;
 extern bool			compress;		/* compress the characters in the crossref */
 extern int			dispcomponents; /* file path components to display */
-extern bool			editallprompt;	/* prompt between editing files */
 extern bool			incurses;		/* in curses */
 extern bool			invertedindex;	/* the database has an inverted index */
 extern bool			preserve_database;		/* consider the crossref up-to-date */
@@ -190,7 +189,7 @@ void cannotwrite(const char *const file);
 void cannotopen(const char *const file);
 void countrefs(void);
 void crossref(char *srcfile);
-void edit(const char * filename, const char *const linenum);
+int  edit(const char * filename, const char *const linenum);
 void editall(void);
 void editref(int);
 void force_window(void);

@@ -73,3 +73,9 @@ however I do not believe anyone has used actually used them in the past 10 years
 How the situation has progress so far:
 * the Truncation option has been removed
 * fileversion conditional IO has been removed, the remnants are only there to signal an error
+
+### Edit all
+\<Ctrl\>+e opens all results for editing in a loop.
+Between edits there was a prompt to interrupt the iteration.
+There was an `-e` option which to suppress this behaviour (also making you to break).
+Both models proved to be annoying, therefor now we check for the editor returning non-zero.

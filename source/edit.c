@@ -59,7 +59,6 @@ void editref(int i) {
 }
 
 /* edit all references */
-
 void editall(void) {
 	char file[PATHLEN + 1];	  /* file name */
 	char linenum[NUMLEN + 1]; /* line number */
@@ -71,20 +70,20 @@ void editall(void) {
 	fseek(refsfound, 0, SEEK_SET);
 
 	/* get each file name and line number */
-	while(
-		fscanf(refsfound, "%" PATHLEN_STR "s%*s%" NUMLEN_STR "s%*[^\n]", file, linenum) ==
-		2) {
-		edit(file, linenum); /* edit it */
-		if(editallprompt == true) {
-			addstr(
-				"Type ^D to stop editing all lines, or any other character to continue: ");
-			if((c = getch()) == EOF || c == ctrl('D') || c == ctrl('Z')) { break; }
-		}
+	while(true) {
+        int e;
+
+	    e = fscanf(refsfound, "%" PATHLEN_STR "s%*s%" NUMLEN_STR "s%*[^\n]", file, linenum);
+        if (e != 2) { break; }
+
+		e = edit(file, linenum);
+        if (e) { break; }
 	}
 }
 
 /* call the editor */
-void edit(const char *filename, const char *const linenum) {
+int edit(const char *filename, const char *const linenum) {
+    int r = 0;
 	const char *const editor_basename = basename(editor);
 	char			  msg[MSGLEN + 1]; /* message */
 	char plusnum[NUMLEN + 20]; /* line number option: allow space for wordy line# flag */
@@ -102,17 +101,19 @@ void edit(const char *filename, const char *const linenum) {
 	const char *const shit_pagers[] = {"page", "more", NULL};
 	for(const char *const *sp = shit_pagers; *sp != NULL; sp++) {
 		if(!strcmp(editor_basename, *sp)) {
-			execute(editor, editor, plusnum, filename, "/dev/null", NULL);
+			r = execute(editor, editor, plusnum, filename, "/dev/null", NULL);
 			goto end;
 		}
 	}
 
 	if(lineflagafterfile) {
-		execute(editor, editor, filename, plusnum, NULL);
+		r = execute(editor, editor, filename, plusnum, NULL);
 	} else {
-		execute(editor, editor, plusnum, filename, NULL);
+		r = execute(editor, editor, plusnum, filename, NULL);
 	}
 
 end:
 	clear(); /* redisplay screen */
+
+    return r;
 }

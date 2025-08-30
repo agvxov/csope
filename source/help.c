@@ -58,7 +58,7 @@ static char help_msg[] =
 	"+\t\tDisplay next set of matching lines.\n"
 	"^V\t\tDisplay next set of matching lines.\n"
 	"-\t\tDisplay previous set of matching lines.\n"
-	"^E\t\tEdit all lines.\n"
+	"^E\t\tOpen all results for editing. You may break the iteration by exiting with non-zero (:cq).\n"
 	">\t\tWrite the list of lines being displayed to a file.\n"
 	">>\t\tAppend the list of lines being displayed to a file.\n"
 	"<\t\tRead lines from a file.\n"
@@ -126,7 +126,6 @@ void longusage(void) {
 -C            Ignore letter case when searching.\n\
 -c            Use only ASCII characters in the cross-ref file (don't compress).\n\
 -d            Do not update the cross-reference.\n\
--e            Suppress the <Ctrl>-e command prompt between files.\n\
 -F symfile    Read symbol reference lines from symfile.\n\
 -f reffile    Use reffile as cross-ref file name instead of %s.\n",
 		REFFILE);

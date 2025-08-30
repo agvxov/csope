@@ -102,7 +102,7 @@ char * * parse_options(const int argc, const char * const * const argv) {
 	};
 
 	while((opt = getopt_long(argc, (char**)argv,
-			   "hVbcCdeF:f:I:i:kLl0:1:2:3:4:5:6:7:8:9:P:p:qRs:TUuvX",
+			   "hVbcCdF:f:I:i:kLl0:1:2:3:4:5:6:7:8:9:P:p:qRs:UuvX",
 			   lopts,
 			   &longind)) != -1) {
 		switch(opt) {
@@ -145,9 +145,6 @@ char * * parse_options(const int argc, const char * const * const argv) {
 				break;
 			case 'd':					 /* consider crossref up-to-date */
 				preserve_database = true;
-				break;
-			case 'e': /* suppress ^E prompt between files */
-				editallprompt = false;
 				break;
 			case 'k': /* ignore DEFAULT_INCLUDE_DIRECTORY */
 				kernelmode = true;

@@ -85,17 +85,11 @@ int execute(char * program_name, ...) /* NOTE: "exec" is already defined on u370
 
 	for(p = 0; (argv[p] = va_arg(ap, char *)) != 0; p++) { ; }
 
-#ifdef __MSDOS__
-	/* HBB 20010313: in MSDOG, everything is completely different.
-	 * No fork()/exec()/wait(), but rather a single libc call: */
-	exitcode = spawnvp(P_WAIT, program_name, argv);
-#else
-	if((p = myfork()) == 0) {
-		myexecvp(program_name, argv);	/* child */
-	} else {
-		exitcode = join(p); /* parent */
+	if((p = myfork()) == 0) {	/* child */
+		myexecvp(program_name, argv);
 	}
-#endif /* MSDOS */
+
+	exitcode = join(p);
 
 	entercurses();
 

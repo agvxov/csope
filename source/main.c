@@ -59,7 +59,6 @@ char dicode2[256];						/* digraph second character code */
 
 bool  compress = true;			/* compress the characters in the crossref */
 int	  dispcomponents = 1;		/* file path components to display */
-bool  editallprompt	= true;		/* prompt between editing files */
 bool  incurses = false;			/* in curses */
 char *prependpath;				/* prepend path to file names */
 FILE *refsfound;				/* references found file */
