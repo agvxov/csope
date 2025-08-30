@@ -173,6 +173,7 @@ void rebuild(void) {
 
 /* build the cross-reference */
 void build(void) {
+    int fileversion;
 	unsigned long i;
 	FILE		 *oldrefs;				/* old cross-reference file */
 	time_t		  reftime;				/* old crossref modification time */
@@ -209,53 +210,56 @@ void build(void) {
     && !unconditional
     && fscanf(oldrefs, PROGRAM_NAME " %d %" PATHLEN_STR "s", &fileversion, olddir) == 2
     && (strcmp(olddir, currentdir) == 0 /* remain compatible */ || strcmp(olddir, newdir) == 0)) {
+        if (fileversion < FILEVERSION) {
+            postfatal("Older file versions are no longer supported (version %d requested).", fileversion);
+        }
 		/* get the cross-reference file's modification time */
 		fstat(fileno(oldrefs), &file_status);
 		reftime = file_status.st_mtime;
-		if(fileversion >= 8) {
-			bool oldcompress	  = true;
-			bool oldinvertedindex = false;
 
-			/* see if there are options in the database */
-			for(int c;;) {
-				while((c = getc(oldrefs)) == ' ') { ; }
-				if(c != '-') {
-					ungetc(c, oldrefs);
-					break;
-				}
-				switch(getc(oldrefs)) {
-					case 'c': /* ASCII characters only */
-						oldcompress = false;
-						break;
-					case 'q': /* quick search */
-						oldinvertedindex = true;
-						fscanf(oldrefs, "%ld", &totalterms);
-						break;
-				}
-			}
-			/* check the old and new option settings */
-			if(oldcompress != compress) {
-				posterr(PROGRAM_NAME
-					": -c option mismatch between command line and old symbol database\n");
-				goto force;
-			}
-			if(oldinvertedindex != invertedindex) {
-				posterr(PROGRAM_NAME
-					": -q option mismatch between command line and old symbol database\n");
-				if(invertedindex == false) {
-					posterr(PROGRAM_NAME ": removed files %s and %s\n", invname, invpost);
-					unlink(invname);
-					unlink(invpost);
-				}
-				goto outofdate;
-			}
-			/* seek to the trailer */
-			if(fscanf(oldrefs, "%ld", &traileroffset) != 1 ||
-				fseek(oldrefs, traileroffset, SEEK_SET) == -1) {
-				posterr(PROGRAM_NAME ": incorrect symbol database file format\n");
-				goto force;
-			}
-		}
+        bool oldcompress	  = true;
+        bool oldinvertedindex = false;
+
+        /* see if there are options in the database */
+        for(int c;;) {
+            while((c = getc(oldrefs)) == ' ') { ; }
+            if(c != '-') {
+                ungetc(c, oldrefs);
+                break;
+            }
+            switch(getc(oldrefs)) {
+                case 'c': /* ASCII characters only */
+                    oldcompress = false;
+                    break;
+                case 'q': /* quick search */
+                    oldinvertedindex = true;
+                    fscanf(oldrefs, "%ld", &totalterms);
+                    break;
+            }
+        }
+        /* check the old and new option settings */
+        if(oldcompress != compress) {
+            posterr(PROGRAM_NAME
+                ": -c option mismatch between command line and old symbol database\n");
+            goto force;
+        }
+        if(oldinvertedindex != invertedindex) {
+            posterr(PROGRAM_NAME
+                ": -q option mismatch between command line and old symbol database\n");
+            if(invertedindex == false) {
+                posterr(PROGRAM_NAME ": removed files %s and %s\n", invname, invpost);
+                unlink(invname);
+                unlink(invpost);
+            }
+            goto outofdate;
+        }
+        /* seek to the trailer */
+        if(fscanf(oldrefs, "%ld", &traileroffset) != 1 ||
+            fseek(oldrefs, traileroffset, SEEK_SET) == -1) {
+            posterr(PROGRAM_NAME ": incorrect symbol database file format\n");
+            goto force;
+        }
+
 		/* if assuming that some files have changed */
 		if(fileschanged == true) { goto outofdate; }
 		/* see if the directory lists are the same */
@@ -264,7 +268,7 @@ void build(void) {
 			/* get the old number of files */
 			|| fscanf(oldrefs, "%lu", &oldnum) != 1
 			/* skip the string space size */
-			|| (fileversion >= 9 && fscanf(oldrefs, "%*s") != 0)) {
+			|| fscanf(oldrefs, "%*s") != 0) {
 			goto outofdate;
 		}
 		/* see if the list of source files is the same and

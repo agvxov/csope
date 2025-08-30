@@ -288,13 +288,8 @@ char *find_symbol_or_assignment(const char *pattern, bool assign_flag) {
 					break;
 
 				case DEFINE: /* macro name */
-					if(fileversion >= 10) {
-						s	  = macro;
-						s_len = sizeof(macro);
-					} else {
-						s	  = symbol;
-						s_len = sizeof(symbol);
-					}
+                    s	  = macro;
+                    s_len = sizeof(macro);
 					break;
 
 				case DEFINEEND: /* macro end */
@@ -533,10 +528,8 @@ char *findcalling(const char *pattern) {
 				break;
 
 			case DEFINE: /* could be a macro */
-				if(fileversion >= 10) {
-					skiprefchar();
-					fetch_string_from_dbase(macro, sizeof(macro));
-				}
+                skiprefchar();
+                fetch_string_from_dbase(macro, sizeof(macro));
 				break;
 
 			case DEFINEEND:
@@ -886,12 +879,6 @@ void putsource(int seemore, FILE *output) {
 	char *cp, nextc = '\0';
 	bool  Change = false, retreat = false;
 
-	if(fileversion <= 5) {
-		scanpast(' ');
-		putline(output);
-		putc('\n', output);
-		return;
-	}
 	/* scan back to the beginning of the source line */
 	cp = tmpblockp = blockp;
 	while(*cp != '\n' || nextc != '\n') {
@@ -904,8 +891,9 @@ void putsource(int seemore, FILE *output) {
 		}
 	}
 	blockp = cp;
-	if(*blockp != '\n' || getrefchar() != '\n' ||
-		(!isdigit(getrefchar()) && fileversion >= 12)) {
+	if (*blockp != '\n'
+    ||  getrefchar() != '\n'
+    ||  !isdigit(getrefchar())) {
 		postfatal("Internal error: cannot get source line from database");
 		/* NOTREACHED */
 	}
@@ -1076,7 +1064,6 @@ char * findcalledby(const char *pattern) {
 				break;
 
 			case DEFINE: /* could be a macro */
-				if(fileversion < 10) { break; }
 				macro = true;
 				/* FALLTHROUGH */
 
@@ -1230,10 +1217,7 @@ void findcalledbysub(const char *file, bool macro) {
 		switch(*blockp) {
 
 			case DEFINE:				/* #define inside a function */
-				if(fileversion >= 10) { /* skip it */
-					while(scanpast('\t') != NULL && *blockp != DEFINEEND)
-						;
-				}
+                while(scanpast('\t') != NULL && *blockp != DEFINEEND);
 				break;
 
 			case FCNCALL: /* function call */

@@ -60,7 +60,6 @@ char dicode2[256];						/* digraph second character code */
 bool  compress = true;			/* compress the characters in the crossref */
 int	  dispcomponents = 1;		/* file path components to display */
 bool  editallprompt	= true;		/* prompt between editing files */
-int	  fileversion;				/* cross-reference file version */
 bool  incurses = false;			/* in curses */
 char *prependpath;				/* prepend path to file names */
 FILE *refsfound;				/* references found file */
@@ -288,6 +287,7 @@ void screenmode_event_loop(void) {
 
 static
 void read_old_reffile(const char * reffile) {
+    int fileversion;
 	char * s;
 	FILE * names;	  /* name file pointer */
 	int	oldnum;  /* number in old cross-ref */
@@ -300,32 +300,31 @@ void read_old_reffile(const char * reffile) {
 	if (fscanf(oldrefs, PROGRAM_NAME " %d %*s", &fileversion) != 1) {
 		postfatal(PROGRAM_NAME ": cannot read file version from file %s\n", reffile);
 	}
-	if (fileversion >= 8) {
 
-		/* override these command line options */
-		compress	  = true;
-		invertedindex = false;
+    /* override these command line options */
+    compress	  = true;
+    invertedindex = false;
 
-		/* see if there are options in the database */
-		for (int c;;) {
-			getc(oldrefs); /* skip the blank */
-			if ((c = getc(oldrefs)) != '-') {
-				ungetc(c, oldrefs);
-				break;
-			}
-			switch (getc(oldrefs)) {
-				case 'c': /* ASCII characters only */
-					compress = false;
-					break;
-				case 'q': /* quick search */
-					invertedindex = true;
-					fscanf(oldrefs, "%ld", &totalterms);
-					break;
-			}
-		}
-		initcompress();
-		seek_to_trailer(oldrefs);
-	}
+    /* see if there are options in the database */
+    for (int c;;) {
+        getc(oldrefs); /* skip the blank */
+        if ((c = getc(oldrefs)) != '-') {
+            ungetc(c, oldrefs);
+            break;
+        }
+        switch (getc(oldrefs)) {
+            case 'c': /* ASCII characters only */
+                compress = false;
+                break;
+            case 'q': /* quick search */
+                invertedindex = true;
+                fscanf(oldrefs, "%ld", &totalterms);
+                break;
+        }
+    }
+    initcompress();
+    seek_to_trailer(oldrefs);
+
 	/* skip the source and include directory lists */
 	skiplist(oldrefs);
 	skiplist(oldrefs);
@@ -339,67 +338,55 @@ void read_old_reffile(const char * reffile) {
 	}
 	/* get the source file list */
 	srcfiles = malloc(nsrcfiles * sizeof(*srcfiles));
-	if (fileversion >= 9) {
 
-		/* allocate the string space */
-		if (fscanf(oldrefs, "%d", &oldnum) != 1) {
-			postfatal(
-                PROGRAM_NAME ": cannot read string space size from file %s\n",
-				reffile
-            );
-		}
-		s = malloc(oldnum);
-		getc(oldrefs); /* skip the newline */
+    /* allocate the string space */
+    if (fscanf(oldrefs, "%d", &oldnum) != 1) {
+        postfatal(
+            PROGRAM_NAME ": cannot read string space size from file %s\n",
+            reffile
+        );
+    }
+    s = malloc(oldnum);
+    getc(oldrefs); /* skip the newline */
 
-		/* read the strings */
-		if (fread(s, oldnum, 1, oldrefs) != 1) {
-			postfatal(
-                PROGRAM_NAME ": cannot read source file names from file %s\n",
-				reffile
-            );
-		}
-		/* change newlines to nulls */
-		for (int i = 0; i < nsrcfiles; i++) {
-			srcfiles[i] = s;
-			for (++s; *s != '\n'; ++s) { ; }
-			*s = '\0';
-			++s;
-		}
-		/* if there is a file of source file names */
-		if ((namefile != NULL && (names = vpfopen(namefile, "r")) != NULL)
-        ||  (names = vpfopen(NAMEFILE, "r")) != NULL) {
-			/* read any -p option from it */
-			while(fgets(path, sizeof(path), names) != NULL && *path == '-') {
-				char orig_path1 = path[1];
-				s = path + 2;	 /* for "-Ipath" */
-				if (*s == '\0') { /* if "-I path" */
-					fgets(path, sizeof(path), names);
-					s = path;
-				}
-				switch (orig_path1) {
-					case 'p': /* file path components to display */
-						if (*s < '0' || *s > '9') {
-							posterr(
-                                PROGRAM_NAME ": -p option in file %s: missing or invalid numeric value\n",
-								namefile
-                            );
-						}
-						dispcomponents = atoi(s);
-				}
-			}
-			fclose(names);
-		}
-	} else {
-		for (int i = 0; i < nsrcfiles; ++i) {
-			if (!fgets(path, sizeof(path), oldrefs)) {
-				postfatal(PROGRAM_NAME
-					": cannot read source file name from file %s\n",
-					reffile);
-				/* NOTREACHED */
-			}
-			srcfiles[i] = strdup(path);
-		}
-	}
+    /* read the strings */
+    if (fread(s, oldnum, 1, oldrefs) != 1) {
+        postfatal(
+            PROGRAM_NAME ": cannot read source file names from file %s\n",
+            reffile
+        );
+    }
+    /* change newlines to nulls */
+    for (int i = 0; i < nsrcfiles; i++) {
+        srcfiles[i] = s;
+        for (++s; *s != '\n'; ++s) { ; }
+        *s = '\0';
+        ++s;
+    }
+    /* if there is a file of source file names */
+    if ((namefile != NULL && (names = vpfopen(namefile, "r")) != NULL)
+    ||  (names = vpfopen(NAMEFILE, "r")) != NULL) {
+        /* read any -p option from it */
+        while(fgets(path, sizeof(path), names) != NULL && *path == '-') {
+            char orig_path1 = path[1];
+            s = path + 2;	 /* for "-Ipath" */
+            if (*s == '\0') { /* if "-I path" */
+                fgets(path, sizeof(path), names);
+                s = path;
+            }
+            switch (orig_path1) {
+                case 'p': /* file path components to display */
+                    if (*s < '0' || *s > '9') {
+                        posterr(
+                            PROGRAM_NAME ": -p option in file %s: missing or invalid numeric value\n",
+                            namefile
+                        );
+                    }
+                    dispcomponents = atoi(s);
+            }
+        }
+        fclose(names);
+    }
 	fclose(oldrefs);
 }
 

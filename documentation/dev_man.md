@@ -53,7 +53,7 @@ It has been removed now.
 The `cscope.out` files which contain symbol database are called cross-reference files.
 The code refers to these as ref files.
 The concrete format of a wild ref file could be a number of things:
-* there were 12 versions of ref file formats
+* each cscope has a corresponding file format version, which may or may not be the same as the previous
 * ref generation accepted a number of options
     + compression (space efficiency)
     + inversion (time efficiency)
@@ -72,3 +72,4 @@ however I do not believe anyone has used actually used them in the past 10 years
 
 How the situation has progress so far:
 * the Truncation option has been removed
+* fileversion conditional IO has been removed, the remnants are only there to signal an error

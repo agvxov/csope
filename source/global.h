@@ -93,7 +93,6 @@ extern bool			lineflagafterfile;
 extern bool			compress;		/* compress the characters in the crossref */
 extern int			dispcomponents; /* file path components to display */
 extern bool			editallprompt;	/* prompt between editing files */
-extern int			fileversion;	/* cross-reference file version */
 extern bool			incurses;		/* in curses */
 extern bool			invertedindex;	/* the database has an inverted index */
 extern bool			preserve_database;		/* consider the crossref up-to-date */
