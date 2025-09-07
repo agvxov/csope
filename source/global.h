@@ -214,7 +214,7 @@ void putposting(char *term, int type);
 void fetch_string_from_dbase(char *, size_t);
 void sourcedir(const char * dirlist);
 void myungetch(int c);
-void warning(char *text);
+void parse_warning(char *text);
 void writestring(char *s);
 
 bool infilelist(const char * file);

@@ -566,7 +566,7 @@ if{wsnl}*\(	{ 	/* ignore 'if' */
 				int	c;
 
 				/* skip to the end of the line */
-				warning("line too long");
+				parse_warning("line too long");
 				while ((c = input()) > LEXEOF) {
 					if (c == '\n') {
 						unput(c);
@@ -576,7 +576,7 @@ if{wsnl}*\(	{ 	/* ignore 'if' */
 			}
 			/* truncate a long symbol */
 			if (yyleng > PATLEN) {
-				warning("symbol too long");
+				parse_warning("symbol too long");
 				my_yyleng = first + PATLEN;
 				my_yytext[my_yyleng] = '\0';
 			}

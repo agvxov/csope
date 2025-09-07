@@ -421,8 +421,9 @@ void writestring(char *s) {
 	}
 }
 
+// XXX
 /* print a warning message with the file name and line number */
-void warning(char *text) {
+void parse_warning(char *text) {
 	(void)fprintf(stderr,
 		PROGRAM_NAME ": \"%s\", line %d: warning: %s\n",
 		filename,
