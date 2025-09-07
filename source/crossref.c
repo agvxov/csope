@@ -89,6 +89,7 @@ void crossref(char * srcfile) {
 	unsigned int sym_length;
 	struct stat	 st;
 
+    // XXX is_accessible_file
 	if(!((stat(srcfile, &st) == 0) && S_ISREG(st.st_mode))) {
 		cannotopen(srcfile);
 		errorsfound = true;
@@ -96,7 +97,6 @@ void crossref(char * srcfile) {
 	}
 
 	entry_no = 0;
-	/* open the source file */
     yyin = myfopen(srcfile, "r");
 	if(!yyin) {
 		cannotopen(srcfile);
@@ -207,10 +207,7 @@ void putfilename(char *srcfile) {
 static
 void putcrossref(void) {
 	unsigned int  i, j;
-	unsigned char c;
-	bool		  blank;	  /* blank indicator */
 	unsigned int  symput = 0; /* symbols output */
-	int			  type;
 
 	/* output the source line */
 	lineoffset = dboffset;
@@ -218,11 +215,13 @@ void putcrossref(void) {
 
 	my_yytext[my_yyleng] = '\0';
 
-	blank = false;
+	bool blank = false;
 	for(i = 0; i < my_yyleng; ++i) {
+        char c = my_yytext[i];
 
 		/* change a tab to a blank and compress blanks */
-		if((c = my_yytext[i]) == ' ' || c == '\t') {
+		if (c == ' '
+        ||  c == '\t') {
 			blank = true;
 		} else if(symput < symbols && i == symbol[symput].first) {
 			/* look for the start of a symbol */
@@ -235,7 +234,8 @@ void putcrossref(void) {
 			dbputc('\n'); /* symbols start on a new line */
 
 			/* output any symbol type */
-			if((type = symbol[symput].type) != IDENT) {
+            int type = symbol[symput].type;
+			if(type != IDENT) {
 				dbputc('\t');
 				dbputc(type);
 			} else {
@@ -331,7 +331,6 @@ void putcrossref(void) {
 	symbols = 0;
 }
 
-/* HBB 20000421: new function, for avoiding memory leaks */
 /* free the cross reference symbol table */
 void freecrossref() {
 	if (symbol) { free(symbol); }
@@ -405,18 +404,16 @@ void putposting(char *term, int type) {
 
 /* put the string into the new database */
 void writestring(char *s) {
-	unsigned char c;
 
 	if(compress == false) {
-		/* Save some I/O overhead by using puts() instead of putc(): */
 		dbfputs(s);
 		return;
 	}
+
 	/* compress digraphs */
-	for(int i = 0; (c = s[i]) != '\0'; ++i) {
-		if(/* dicode1[c] && dicode2[(unsigned char) s[i + 1]] */
-			IS_A_DICODE(c, s[i + 1])) {
-			/* c = (0200 - 2) + dicode1[c] + dicode2[(unsigned char) s[i + 1]]; */
+	unsigned char c;
+	for (int i = 0; (c = s[i]) != '\0'; ++i) {
+		if (IS_A_DICODE(c, s[i + 1])) {
 			c = DICODE_COMPRESS(c, s[i + 1]);
 			++i;
 		}
