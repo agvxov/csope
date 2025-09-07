@@ -40,9 +40,6 @@
 #include "scanner.h"
 #include "lookup.h"
 
-/* the line counting has been moved from character reading for speed */
-/* comments are discarded */
-
 #ifndef FLEX_SCANNER
 # error Sorry, this scanner needs flex. It is not usable with AT&T Lex.
 #endif
@@ -117,7 +114,6 @@ function_call       {ws}*\(([*&[\]=,.]|{identifier}|{number}|{wsnl})*
 
 %option stack
 %option noyywrap
-/* unused */
 %option noyy_top_state
 
 %start SDL
