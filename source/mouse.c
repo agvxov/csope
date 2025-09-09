@@ -415,7 +415,7 @@ static int getpercent(void) {
 int process_mouse() {
 	int	   i;
 	MOUSE *p;
-	if((p = getmouseaction(DUMMYCHAR)) == NULL) {
+	if((p = getmouseaction(' ' /*DUMMYCHAR*/)) == NULL) {
 		return false; /* unknown control sequence */
 	}
 	/* if the button number is a scrollbar tag */

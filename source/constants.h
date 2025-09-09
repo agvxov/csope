@@ -62,7 +62,6 @@
 #define skiprefchar() \
 	if(*(++blockp + 1) == '\0') (void)read_crossreference_block()
 
-#define DUMMYCHAR	   ' '			   /* use space as a dummy character */
 #define MSGLEN		   ((PATLEN) + 80) /* displayed message length */
 #define NUMLEN		   10			   /* line number length */
 #define PATHLEN		   250			   /* file pathname length */
