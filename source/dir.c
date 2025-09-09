@@ -92,7 +92,6 @@ void read_listfile(FILE * names) {
 	/* get the names in the file */
 	while(fgets(line, 10 * PATHLEN, names) != NULL) {
 		char  *point_in_line	 = line;
-		size_t length_of_name	 = 0;
 		int	   unfinished_option = 0;
 		bool   done				 = false;
 
@@ -106,7 +105,7 @@ void read_listfile(FILE * names) {
 		while(sscanf(point_in_line, "%" PATHLEN_STR "s", path) == 1) {
 			/* Have to store this length --- inviewpath() will
 			 * modify path, later! */
-			length_of_name = strlen(path);
+			size_t length_of_name = strlen(path);
 
 			if(*path == '-') { /* if an option */
 				if(unfinished_option) {

@@ -62,7 +62,6 @@ void editref(int i) {
 void editall(void) {
 	char file[PATHLEN + 1];	  /* file name */
 	char linenum[NUMLEN + 1]; /* line number */
-	int	 c;
 
 	/* verify that there is a references found file */
 	if(refsfound == NULL) { return; }
