@@ -111,7 +111,7 @@ const char * help(void) {
 /* normal usage message */
 void usage(void) {
 	fputs("Usage: " PROGRAM_NAME
-		  " [-bcCdehklLqRTuUvV] [-f file] [-F file] [-i file] [-I dir] [-s dir]\n"
+		  " [-bcCdehklLqRuUvV] [-f file] [-F file] [-i file] [-I dir] [-s dir]\n"
 		  "              [-p number] [-P path] [-[0-8] pattern] [source files]\n",
 		stderr);
 }
