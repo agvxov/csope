@@ -92,7 +92,6 @@ extern char *editor, /* EDITOR env var */
 extern bool			lineflagafterfile;
 extern bool			compress;		/* compress the characters in the crossref */
 extern int			dispcomponents; /* file path components to display */
-extern bool			incurses;		/* in curses */
 extern bool			invertedindex;	/* the database has an inverted index */
 extern bool			preserve_database;		/* consider the crossref up-to-date */
 extern bool			kernelmode;		/* don't use DEFAULT_INCLUDE_DIRECTORY - bad for kernels */

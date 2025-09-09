@@ -20,13 +20,15 @@ enum {
  */
 extern int window_change;
 
-void entercurses(void);
-void exitcurses(void);
-void drawscrollbar(int top, int bot);
-void dispinit(void);
-void display(void);
-void redisplay(void);
-void horswp_window(void);
-void verswp_window(void);
+extern bool incurses;
+extern void entercurses(void);
+extern void exitcurses(void);
+
+extern void dispinit(void);
+extern void display(void);
+extern void redisplay(void);
+extern void drawscrollbar(int top, int bot);
+extern void horswp_window(void);
+extern void verswp_window(void);
 
 #endif
