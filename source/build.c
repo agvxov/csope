@@ -187,7 +187,6 @@ void build(void) {
 	unsigned long firstfile;			/* first source file in pass */
 	unsigned long lastfile;				/* last source file in pass */
 	int			  built	 = 0;			/* built crossref for these files */
-	int			  copied = 0;			/* copied crossref for these files */
 	unsigned long fileindex;			/* source file name index */
 	bool		  interactive = true;	/* output progress messages */
 
@@ -376,7 +375,7 @@ void build(void) {
 				} else {
 					copydata();
 				}
-				++copied;
+				++built;
 				oldfile = getoldfile();
 			}
 		}
