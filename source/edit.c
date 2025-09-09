@@ -44,8 +44,8 @@
 /* edit this displayed reference */
 
 void editref(int i) {
-	char file[PATHLEN + 1];	  /* file name */
-	char linenum[NUMLEN + 1]; /* line number */
+	char filename[PATHLEN + 1];
+	char linenum[NUMLEN + 1];
 
 	/* verify that there is a references found file */
 	if(refsfound == NULL) { return; }
@@ -53,15 +53,15 @@ void editref(int i) {
 	seekrelline(i);
 
 	/* get the file name and line number */
-	if(fscanf(refsfound, "%" PATHLEN_STR "s%*s%" NUMLEN_STR "s", file, linenum) == 2) {
-		edit(file, linenum);
+	if(fscanf(refsfound, "%" PATHLEN_STR "s%*s%" NUMLEN_STR "s", filename, linenum) == 2) {
+		edit(filename, linenum);
 	}
 }
 
 /* edit all references */
 void editall(void) {
-	char file[PATHLEN + 1];	  /* file name */
-	char linenum[NUMLEN + 1]; /* line number */
+	char filename[PATHLEN + 1];
+	char linenum[NUMLEN + 1];
 
 	/* verify that there is a references found file */
 	if(refsfound == NULL) { return; }
@@ -72,10 +72,10 @@ void editall(void) {
 	while(true) {
         int e;
 
-	    e = fscanf(refsfound, "%" PATHLEN_STR "s%*s%" NUMLEN_STR "s%*[^\n]", file, linenum);
+	    e = fscanf(refsfound, "%" PATHLEN_STR "s%*s%" NUMLEN_STR "s%*[^\n]", filename, linenum);
         if (e != 2) { break; }
 
-		e = edit(file, linenum);
+		e = edit(filename, linenum);
         if (e) { break; }
 	}
 }
