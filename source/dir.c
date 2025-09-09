@@ -85,6 +85,20 @@ static void read_listfile(FILE * listfile);
 
 static
 void read_listfile(FILE * names) {
+    #define HANDLE_OPTION_ARGUMENT(i, s)              \
+        switch(i) {                                   \
+            case 'I': /* #include file directory */   \
+                if(firstbuild == true) {              \
+                    /* expand $ and ~ */              \
+                    shellpath(dir, sizeof(dir), (s)); \
+                    includedir(dir);                  \
+                }                                     \
+                unfinished_option = 0;                \
+                done			  = true;             \
+                break;                                \
+            default:                                  \
+                done = false;                         \
+        }
 	char line[PATHLEN * 10];
 	char path[PATHLEN + 1];
 	char  dir[PATHLEN + 1];
@@ -113,24 +127,14 @@ void read_listfile(FILE * names) {
 					 * -I or -p option with no name after it! */
 					fprintf(stderr,
 						PROGRAM_NAME
-						": Syntax error in namelist file %s: unfinished -I or -p option\n",
+						": Syntax error in namelist file %s: unfinished -I option\n",
 						namefile);
 					unfinished_option = 0;
 				}
 
 				int i = path[1];
 				switch(i) {
-					case 'c': /* ASCII characters only in crossref */
-						compress = false;
-						break;
-					case 'k': /* ignore DEFAULT_INCLUDE_DIRECTORY */
-						kernelmode = true;
-						break;
-					case 'q': /* quick search */
-						invertedindex = true;
-						break;
 					case 'I': /* #include file directory */
-					case 'p': /* file path components to display */
 						/* coverity[overwrite_var] */
 						s = path + 2;	 /* for "-Ipath" */
 						if(*s == '\0') { /* if "-I path" */
@@ -138,36 +142,6 @@ void read_listfile(FILE * names) {
 							break;
 						}
 
-						/* this code block used several times in here
-						 * --> make it a macro to avoid unnecessary
-						 * duplication */
-                        /* XXX: i dont think this does anything here?
-                         *       if only we had tests
-                         */
-#define HANDLE_OPTION_ARGUMENT(i, s)                                                     \
-	switch(i) {                                                                          \
-		case 'I': /* #include file directory */                                          \
-			if(firstbuild == true) {                                                     \
-				/* expand $ and ~ */                                                     \
-				shellpath(dir, sizeof(dir), (s));                                        \
-				includedir(dir);                                                         \
-			}                                                                            \
-			unfinished_option = 0;                                                       \
-			done			  = true;                                                    \
-			break;                                                                       \
-		case 'p': /* file path components to display */                                  \
-			if(*(s) < '0' || *(s) > '9') {                                               \
-				fprintf(stderr,                                                          \
-					"csope: -p option in file %s: missing or invalid numeric value\n",   \
-					namefile);                                                           \
-			}                                                                            \
-			dispcomponents	  = atoi(s);                                                 \
-			unfinished_option = 0;                                                       \
-			done			  = true;                                                    \
-			break;                                                                       \
-		default:                                                                         \
-			done = false;                                                                \
-	} /* switch(i) */
 
 						/* ... and now call it for the first time */
 						HANDLE_OPTION_ARGUMENT(i, s)
@@ -175,11 +149,10 @@ void read_listfile(FILE * names) {
 					default:
 						fprintf(stderr,
 							PROGRAM_NAME
-							": only -I, -c, -k, -p, and -T options can be in file %s\n",
+							": only -I option can be in file %s\n",
 							namefile);
-				} /* switch(i) */
-			}	  /* if('-') */
-			else if(*path == '"') {
+				}
+			} else if(*path == '"') {
 				/* handle quoted filenames... */
 				size_t in = 1, out = 0;
 				char  *newpath = malloc(PATHLEN + 1);
@@ -205,7 +178,7 @@ void read_listfile(FILE * names) {
 					newpath[out] = '\0';
 				}
 
-				/* If an -I or -p arguments was missing before,
+				/* If an -I argument was missing before,
 				 * treat this name as the argument: */
 				HANDLE_OPTION_ARGUMENT(unfinished_option, newpath);
 				if(!done) {
@@ -218,11 +191,10 @@ void read_listfile(FILE * names) {
 					}
 				}
 				free(newpath);
-			} /* if(quoted name) */
-			else {
+			} else {
 				/* ... so this is an ordinary file name, unquoted */
 
-				/* If an -I or -p arguments was missing before,
+				/* If an -I arguments was missing before,
 				 * treat this name as the argument: */
 				HANDLE_OPTION_ARGUMENT(unfinished_option, path);
 				if(!done) {
@@ -233,13 +205,12 @@ void read_listfile(FILE * names) {
 						errorsfound = true;
 					}
 				}
-			} /* else(ordinary name) */
+			}
 
 			point_in_line += length_of_name;
 			while(isspace((unsigned char)*point_in_line)) { point_in_line++; }
 		} /* while(sscanf(line)) */
 	}	  /* while(fgets(line)) */
-
 }
 
 /* make the view source directory list */
@@ -505,15 +476,16 @@ void includedir(const char * dirlist) {
 }
 
 /* make the source file list */
-void makefilelist(const char * const * const argv) {
+void makefilelist(const char * const * const fileargv) {
 
 	make_vp_source_directories(); /* make the view source directory list */
 
 	/* if -i was NOT given and there are source file arguments */
-	if(namefile == NULL && *argv) {
+	if (namefile == NULL
+    && *fileargv) {
 		/* put them in a list that can be expanded */
-		for(unsigned i = 0; argv[i]; i++) {
-			const char * file = argv[i];
+		for (unsigned i = 0; fileargv[i]; i++) {
+			const char * file = fileargv[i];
 			if (!infilelist(file)) {
                 char * s = inviewpath(file);
 				if (s) {
@@ -528,9 +500,12 @@ void makefilelist(const char * const * const argv) {
 	}
 
 	/* see if a file name file exists */
-	if(namefile == NULL && vpaccess(NAMEFILE, READ) == 0) { namefile = NAMEFILE; }
+	if (namefile == NULL
+    && vpaccess(NAMEFILE, READ) == 0) {
+        namefile = NAMEFILE;
+    }
 
-	if(namefile == NULL) {
+	if (namefile == NULL) {
 		/* No namefile --> make a list of all the source files
 		 * in the directories */
 		for(unsigned i = 0; i < nsrcdirs; i++) {

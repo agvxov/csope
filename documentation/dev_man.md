@@ -74,6 +74,24 @@ How the situation has progress so far:
 * the Truncation option has been removed
 * fileversion conditional IO has been removed, the remnants are only there to signal an error
 
+### List files
+Csope can accept a list file which specifies what the source files are of a project.
+Cscope had `cscope.files`; a file that the user was expected to write by hand.
+It would have the following syntax:
+```
+listfile := line+
+line := option* filename
+option := -I | -c | -k | -p | -T
+filename := "string" | string
+```
+
+The fun thing about the options being that they modify global state,
+so it might as well could have been a config file,
+but it wasn't.
+
+Modifying state such a way was deemed undesirable.
+Therefor only -I is allowed until the subsystem is replaced.
+
 ### Edit all
 \<Ctrl\>+e opens all results for editing in a loop.
 Between edits there was a prompt to interrupt the iteration.

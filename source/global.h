@@ -200,7 +200,7 @@ void freefilelist(void);
 void incfile(char *file, char *type);
 void includedir(const char *dirname);
 void initsymtab(void);
-void makefilelist(const char * const * const argv);
+void makefilelist(const char * const * const fileargv);
 void myexit(int sig);
 void myperror(char *text);
 void progress(char *what, long current, long max);
