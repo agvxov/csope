@@ -3,7 +3,7 @@
 ## Control flow
 ...
 
-## Project structure	/*probably move to documentation*/
+## Project structure
 | Component | Purpose |
 | :-------: | :-----: |
 | main.c    | generic init functions, main() and primary event loops (and junk) |
@@ -47,7 +47,7 @@ and there was never a way to set it at run time.
 I assume one project wanted it
 and sneaked in the patch.
 
-It has been removed now.
+It has been removed.
 
 ### Reference files
 The `cscope.out` files which contain symbol database are called cross-reference files.
