@@ -20,7 +20,6 @@ char * editor;
 char * home;
 char * shell;
 char * lineflag;
-char * tmpdir;
 bool lineflagafterfile;
 /* XXX: this might be a war crime;
  *      its currently required for respecting kernel mode

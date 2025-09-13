@@ -58,6 +58,7 @@ char *invname		= invname_buf; /* inverted index to the database */
 char *invpost		= invpost_buf; /* inverted index postings */
 char *reffile		= reffile_buf; /* cross-reference file path name */
 
+char *tmpdir;		               /* temporary directory */
 char *newreffile;				   /* new cross-reference file name */
 FILE *newrefs;					   /* new cross-reference */
 FILE *postings;					   /* new inverted index postings */

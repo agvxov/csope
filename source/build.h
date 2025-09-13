@@ -33,7 +33,6 @@
 #ifndef CSCOPE_BUILD_H
 #define CSCOPE_BUILD_H
 
-#include "global.h" /* FIXME: temp. only */
 #include "invlib.h"
 
 /* types and macros of build.c to be used by other modules */
@@ -48,6 +47,7 @@ extern bool buildonly;		  /* only build the database */
 extern bool unconditional;	  /* unconditionally build database */
 extern bool fileschanged;	  /* assume some files changed */
 
+extern char *tmpdir;		  /* temporary directory */
 extern char *reffile;		  /* cross-reference file path name */
 extern char *invname;		  /* inverted index to the database */
 extern char *invpost;		  /* inverted index postings */

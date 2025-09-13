@@ -118,7 +118,6 @@ extern char			tempstring[TEMPSTRING_LEN + 1]; /* global dummy string buffer */
 
 extern const char * const * fileargv;		/* file argument values */
 
-extern char *tmpdir;								/* temporary directory */
 extern char	 temp1[];								/* temporary file name */
 extern char	 temp2[];								/* temporary file name */
 
