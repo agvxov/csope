@@ -387,7 +387,7 @@ int changestring(const char *from, const char *to, const bool *const change, con
 	if(!anymarked) { return false; }
 
 	/* open the temporary file */
-	if((script = myfopen(temp2, "w")) == NULL) {
+	if((script = fopen(temp2, "w")) == NULL) {
 		cannotopen(temp2);
 		return (false);
 	}

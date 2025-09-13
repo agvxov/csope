@@ -64,7 +64,7 @@ bool readrefs(char *filename) {
 	FILE *file;
 	int	  c;
 
-	if((file = myfopen(filename, "r")) == NULL) {
+	if((file = fopen(filename, "r")) == NULL) {
 		cannotopen(filename);
 		return false;
 	}
@@ -82,7 +82,7 @@ bool readrefs(char *filename) {
 		}
 		fclose(file);
 		fclose(refsfound);
-		if((refsfound = myfopen(temp1, "rb")) == NULL) {
+		if((refsfound = fopen(temp1, "rb")) == NULL) {
 			cannotopen(temp1);
 			return (false);
 		}

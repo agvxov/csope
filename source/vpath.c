@@ -39,7 +39,6 @@
 #include <sys/types.h>
 #include "vpath.h"
 
-#include "library.h"
 #include "constants.h"
 
 char **vpdirs; /* directories (including current) in view path */
@@ -137,7 +136,7 @@ void vpinit(char *current_dir) {
 #define OPENFLAG_READ 0
 int vpopen(const char * path, const int oflag) {
 	char buf[MAXPATH + 1];
-	int	r = myopen(path, oflag, 0666);
+	int	r = open(path, oflag, 0666);
 
     if (r != -1
     ||  path[0] == '/'
@@ -148,7 +147,7 @@ int vpopen(const char * path, const int oflag) {
 	vpinit(NULL);
 	for(int i = 1; i < vpndirs; i++) {
 		(void)snprintf(buf, sizeof(buf), "%s/%s", vpdirs[i], path);
-        r = myopen(buf, oflag, 0666);
+        r = open(buf, oflag, 0666);
 		if(r != -1) { break; }
 	}
 
@@ -157,7 +156,7 @@ int vpopen(const char * path, const int oflag) {
 
 FILE * vpfopen(const char *filename, const char * type) {
 	char  buf[MAXPATH + 1];
-	FILE * r = myfopen(filename, type);
+	FILE * r = fopen(filename, type);
 
     if (r != NULL
     ||  filename[0] == '/'
@@ -168,7 +167,7 @@ FILE * vpfopen(const char *filename, const char * type) {
 	vpinit(NULL);
 	for(int i = 1; i < vpndirs; i++) {
 		(void)snprintf(buf, sizeof(buf), "%s/%s", vpdirs[i], filename);
-        r = myfopen(buf, type);
+        r = fopen(buf, type);
 		if(r != NULL) { break; }
 	}
 

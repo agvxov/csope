@@ -97,7 +97,7 @@ void crossref(char * srcfile) {
 	}
 
 	entry_no = 0;
-    yyin = myfopen(srcfile, "r");
+    yyin = fopen(srcfile, "r");
 	if(!yyin) {
 		cannotopen(srcfile);
 		errorsfound = true;

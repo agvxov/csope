@@ -56,7 +56,7 @@
 static pid_t popen_pid[20];
 static void (*tstat)(int);
 
-int myopen(const char * path, int flag, int mode) {
+int _myopen(const char * path, int flag, int mode) {
 	/* opens a file descriptor and then sets close-on-exec for the file */
 	int fd;
 
@@ -66,15 +66,16 @@ int myopen(const char * path, int flag, int mode) {
 #if O_BINARY != O_TEXT
 	if(!(flag | O_BINARY)) flag |= O_TEXT;
 #endif
-	if(mode)
-		fd = open(path, flag, mode);
-	else
-		fd = open(path, flag);
+	if (mode) {
+		fd = QUOTE(open)(path, flag, mode);
+    } else {
+		fd = QUOTE(open)(path, flag);
+    }
 
-	if(fd != -1 && (fcntl(fd, F_SETFD, CLOSE_ON_EXEC) != -1))
-		return (fd);
-
-	else {
+	if (fd != -1
+    && (fcntl(fd, F_SETFD, CLOSE_ON_EXEC) != -1)) {
+		return fd;
+    } else {
 		/* Ensure that if the fcntl fails and fd is valid, then
 		   the file is closed properly. In general this should
 		   not happen. */
@@ -84,11 +85,11 @@ int myopen(const char * path, int flag, int mode) {
 	}
 }
 
-FILE *myfopen(const char * path, const char * mode) {
+FILE * _myfopen(const char * path, const char * mode) {
 	/* opens a file pointer and then sets close-on-exec for the file */
 	FILE *fp;
 
-	fp = fopen(path, mode);
+	fp = QUOTE(fopen)(path, mode);
 
 	if(fp && (fcntl(fileno(fp), F_SETFD, CLOSE_ON_EXEC) != -1)) {
 		return (fp);
@@ -102,7 +103,7 @@ FILE *myfopen(const char * path, const char * mode) {
 
 /* XXX: these functions should go as soon as build.c is sorted out
  */
-FILE *mypopen(char *cmd, char *mode) {
+FILE * _mypopen(char *cmd, char *mode) {
 	int	   p[2];
 	pid_t *poptr;
 	int	   myside, yourside;
@@ -137,7 +138,7 @@ FILE *mypopen(char *cmd, char *mode) {
 	return (fdopen(myside, mode));
 }
 
-int mypclose(FILE *ptr) {
+int _mypclose(FILE * ptr) {
 	int			 f;
 	pid_t		 r;
 	int			 status = -1;

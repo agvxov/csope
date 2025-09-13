@@ -33,8 +33,8 @@
 /* get a file's base name from its path name */
 
 #include "path.h"
-#include "library.h"
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
@@ -272,7 +272,7 @@ char * logdir(char *name) {
 	int	  pwf;
 
 	/* attempt to open the password file */
-	if((pwf = myopen("/etc/passwd", 0, 0)) == -1) return (0);
+	if((pwf = open("/etc/passwd", 0, 0)) == -1) return (0);
 
 	/* find the matching password entry */
 	do {

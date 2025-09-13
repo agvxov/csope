@@ -53,7 +53,19 @@
 
 #include "constants.h" /* misc. constants */
 #include "invlib.h"	   /* inverted index library */
-#include "library.h"   /* library function return values */
+
+extern FILE * _myfopen(const char * path, const char * mode);
+extern FILE * _mypopen(char * cmd, char * mode);
+extern int    _myopen(const char * path, int flag, int mode);
+extern int    _mypclose(FILE * ptr);
+
+#define open(...)   _myopen(__VA_ARGS__)
+#define fopen(...)  _myfopen(__VA_ARGS__)
+#define popen(...)  _mypopen(__VA_ARGS__)
+#define pclose(...) _mypclose(__VA_ARGS__)
+
+#define EMPTY()
+#define QUOTE(id) id EMPTY()
 
 typedef void (*sighandler_t)(int); // XXX: this got copied to multiple places; investigate
 
@@ -223,5 +235,8 @@ bool writerefsfound(void);
 
 int	findinit(const char *pattern_);
 int	 hash(const char * ss);
+
+char	   *egrepinit(const char *egreppat);
+void		egrepcaseless(int i);
 
 #endif /* CSCOPE_GLOBAL_H */

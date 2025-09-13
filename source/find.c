@@ -1257,13 +1257,13 @@ void findcalledbysub(const char *file, bool macro) {
 /* open the references found file for writing */
 bool writerefsfound(void) {
 	if(refsfound == NULL) {
-		if((refsfound = myfopen(temp1, "wb")) == NULL) {
+		if((refsfound = fopen(temp1, "wb")) == NULL) {
 			cannotopen(temp1);
 			return false;
 		}
 	} else {
 		fclose(refsfound);
-		if((refsfound = myfopen(temp1, "wb")) == NULL) {
+		if((refsfound = fopen(temp1, "wb")) == NULL) {
 			postmsg("Cannot reopen temporary file");
 			return false;
 		}
@@ -1292,7 +1292,7 @@ bool search(const char *query) {
 		if(f == findregexp || f == findstring) {
 			findresult = (*f)(query);
 		} else {
-			if((nonglobalrefs = myfopen(temp2, "wb")) == NULL) {
+			if((nonglobalrefs = fopen(temp2, "wb")) == NULL) {
 				cannotopen(temp2);
 				return (false);
 			}
@@ -1306,7 +1306,7 @@ bool search(const char *query) {
 
 				/* append the non-global references */
 				UNUSED(fclose(nonglobalrefs));
-				if((nonglobalrefs = myfopen(temp2, "rb")) == NULL) {
+				if((nonglobalrefs = fopen(temp2, "rb")) == NULL) {
 					cannotopen(temp2);
 					return (false);
 				}
@@ -1324,7 +1324,7 @@ bool search(const char *query) {
 
 	/* reopen the references found file for reading */
 	fclose(refsfound);
-	if((refsfound = myfopen(temp1, "rb")) == NULL) {
+	if((refsfound = fopen(temp1, "rb")) == NULL) {
 		cannotopen(temp1);
 		return (false);
 	}

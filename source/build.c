@@ -38,8 +38,6 @@
 
 #include "build.h"
 
-#include "library.h"
-
 #include "scanner.h"
 #include "version.inc"
 #include "path.h"
@@ -311,11 +309,10 @@ void build(void) {
 		oldfile = NULL;
 	}
 	/* open the new cross-reference file */
-	if((newrefs = myfopen(newreffile, "wb")) == NULL) {
+	if((newrefs = fopen(newreffile, "wb")) == NULL) {
 		postfatal(PROGRAM_NAME ": cannot open file %s\n", reffile);
-		/* NOTREACHED */
 	}
-	if(invertedindex == true && (postings = myfopen(temp1, "wb")) == NULL) {
+	if(invertedindex == true && (postings = fopen(temp1, "wb")) == NULL) {
 		cannotwrite(temp1);
 		cannotindex();
 	}
@@ -428,7 +425,7 @@ void build(void) {
 			"env LC_ALL=C sort -T %s %s",
 			tmpdir,
 			temp1);
-		if((postings = mypopen(sortcommand, "r")) == NULL) {
+		if((postings = popen(sortcommand, "r")) == NULL) {
 			fprintf(stderr, PROGRAM_NAME ": cannot open pipe to sort command\n");
 			cannotindex();
 		} else {
@@ -438,7 +435,7 @@ void build(void) {
 			} else {
 				cannotindex();
 			}
-			mypclose(postings);
+			pclose(postings);
 		}
 		unlink(temp1);
 		free(srcoffset);
@@ -650,7 +647,6 @@ void movefile(char *new, char *old) {
 	if(rename(new, old) == -1) {
 		myperror(PROGRAM_NAME);
 		postfatal(PROGRAM_NAME ": cannot rename file %s to file %s\n", new, old);
-		/* NOTREACHED */
 	}
 }
 

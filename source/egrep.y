@@ -579,7 +579,7 @@ int egrep(const char * file, FILE *output, char *format) {
     int in_line;
     FILE *fptr;
 
-    if ((fptr = myfopen(file, "r")) == NULL)
+    if ((fptr = fopen(file, "r")) == NULL)
 	return(-1);
 
     lnum = 1;
