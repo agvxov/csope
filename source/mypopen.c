@@ -90,10 +90,6 @@ FILE *myfopen(const char * path, const char * mode) {
 
 	fp = fopen(path, mode);
 
-#ifdef SETMODE
-	if(fp && !strchr(mode, 'b')) { SETMODE(fileno(fp), O_TEXT); }
-#endif /* SETMODE */
-
 	if(fp && (fcntl(fileno(fp), F_SETFD, CLOSE_ON_EXEC) != -1)) {
 		return (fp);
 	}
