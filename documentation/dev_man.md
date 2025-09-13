@@ -21,6 +21,20 @@
 | command.c | XXX: clusterfuck |
 | mouse.c   | XXX: legacy, non-functional (curses) mouse support
 
+## global.h
+`global.h` was the largest dragdown of the original code base.
+It had well over a hundred global symbols being exposed to the entire codebase.
+The problem being that each was used (and sometimes defined) indiscriminately.
+Every subsystem would call into every other
+and manipulating globals was more common than passing arguments.
+
+Therefor, a K&R header structure is being slowly adopted. WIP.
+
+However, `global.h` is not to be replaced completely.
+It rightfully holds macro utilities and macro symbol overrides.
+For example, `fopen()` of the standard library is silently replaced with `_myfopen()`,
+so that its impossible to forget about close-on-exec.
+
 ## Key Symbols
 | Global | Role |
 | :----: | :--: |
