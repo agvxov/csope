@@ -66,7 +66,6 @@ long  totalterms;				/* total inverted index terms */
 char  tempstring[TEMPSTRING_LEN + 1]; /* use this as a buffer, instead of 'yytext',
 									   * which had better be left alone
                                        */
-const char * const * fileargv;	/* file argument values */
 
 static char path[PATHLEN + 1];	/* file path */
 
@@ -169,9 +168,8 @@ void myexit(int sig) {
 /* Remove a singular newline from the end of a string (if any). */
 static inline
 void remove_trailing_newline(char *buf, size_t len) {
-
-	if ((len > 0) &&
-		(buf[len - 1] == '\n')) {
+	if ((len > 0)
+    &&  (buf[len - 1] == '\n')) {
 		buf[len - 1] = '\0';
 	}
 }
@@ -226,13 +224,9 @@ void linemode_event_loop(void) {
                           egrepcaseless(caseless);
                           break;
 
-			case 'r': /* rebuild database cscope style */
+			case 'r': /* rebuild database */
+			case 'R':
 			case ctrl('R'):
-				freefilelist();
-				makefilelist(fileargv);
-				/* FALLTHROUGH */
-
-			case 'R': /* rebuild database samuel style */
 				rebuild();
 				putchar('\n');
 				break;
@@ -394,7 +388,7 @@ int main(const int argc, const char * const * const argv) {
 	yyin  = stdin;
 	yyout = stdout;
 
-	fileargv = (const char*const*)parse_options(argc, argv);
+	const char * const * fileargv = (const char*const*)parse_options(argc, argv);
 
     /* NOTE: the envirnment under no condition can overwrite cli set variables
      */

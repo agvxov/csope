@@ -77,7 +77,7 @@ bool rebuild_reference() {
 	}
 	exitcurses();
 	freefilelist(); /* remake the source file list */
-	makefilelist(fileargv);
+	makefilelist(NULL);
 	rebuild();
 	if(errorsfound == true) {
 		errorsfound = false;

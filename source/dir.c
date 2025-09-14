@@ -69,6 +69,8 @@ static unsigned long mincdirs = DIRINC; /* maximum number of #include directorie
 static unsigned long msrcdirs;			/* maximum number of source directories */
 static unsigned long nvpsrcdirs;		/* number of view path source directories */
 
+static const char * const * stored_fileargv; /* file argument values */
+
 static struct listitem {				/* source file names without view pathing */
 		char			*text;
 		struct listitem *next;
@@ -477,15 +479,18 @@ void includedir(const char * dirlist) {
 
 /* make the source file list */
 void makefilelist(const char * const * const fileargv) {
+    if (fileargv) {
+        stored_fileargv = fileargv;
+    }
 
 	make_vp_source_directories(); /* make the view source directory list */
 
 	/* if -i was NOT given and there are source file arguments */
 	if (namefile == NULL
-    && *fileargv) {
+    && *stored_fileargv) {
 		/* put them in a list that can be expanded */
-		for (unsigned i = 0; fileargv[i]; i++) {
-			const char * file = fileargv[i];
+		for (unsigned i = 0; stored_fileargv[i]; i++) {
+			const char * file = stored_fileargv[i];
 			if (!infilelist(file)) {
                 char * s = inviewpath(file);
 				if (s) {
