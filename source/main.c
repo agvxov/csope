@@ -139,16 +139,14 @@ void skiplist(FILE *oldrefs) {
 
 /* cleanup and exit */
 void myexit(int sig) {
-	/* Close file before unlinking it. DOS absolutely needs it */
 	if (refsfound != NULL) { fclose(refsfound); }
 
     deinit_temp_files();
 
-	/* restore the terminal to its original mode */
 	if (incurses == true) { exitcurses(); }
-	/* dump core for debugging on the quit signal */
+
 	if (sig == SIGQUIT) { abort(); }
-	/* HBB 20000421: be nice: free allocated data */
+
 	freefilelist();
 	freeinclist();
 	freesrclist();
