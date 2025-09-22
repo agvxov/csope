@@ -44,12 +44,12 @@
 #include <stdarg.h>
 #include <stdbool.h>
 #include <assert.h>
-#include <ctype.h>	/* isalpha, isdigit, etc. */
+#include <ctype.h>
 #include <unistd.h>
 #include <sys/types.h>
 #include <fcntl.h>
 
-#include <string.h>	   /* string functions */
+#include <string.h>
 
 #include "constants.h" /* misc. constants */
 #include "invlib.h"	   /* inverted index library */
@@ -69,7 +69,7 @@ void myexit(int sig);
 #define EMPTY()
 #define QUOTE(id) id EMPTY()
 
-typedef void (*sighandler_t)(int); // XXX: this got copied to multiple places; investigate
+typedef void (*sighandler_t)(int);
 
 enum {
 	INPUT_NORMAL,
