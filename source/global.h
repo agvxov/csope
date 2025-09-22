@@ -216,7 +216,6 @@ void postfatal(const char *msg, ...);
 void putposting(char *term, int type);
 void fetch_string_from_dbase(char *, size_t);
 void sourcedir(const char * dirlist);
-void myungetch(int c);
 void parse_warning(char *text);
 void writestring(char *s);
 
@@ -228,7 +227,7 @@ bool writerefsfound(void);
 int	findinit(const char *pattern_);
 int	 hash(const char * ss);
 
-char	   *egrepinit(const char *egreppat);
-void		egrepcaseless(int i);
+char * egrepinit(const char *egreppat);
+void   egrepcaseless(int i);
 
 #endif /* CSCOPE_GLOBAL_H */

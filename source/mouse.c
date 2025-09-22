@@ -115,6 +115,14 @@ static bool	 emacsviterm = false; /* terminal type */
 static void loadmenu(MENU *menu);
 static int	getcoordinate(void);
 static int	getpercent(void);
+/* completely forgotten, never EVER updated */
+static int	prevchar; /* previous, ungotten character */
+
+/* unget a character */
+static
+void myungetch(int c) {
+	prevchar = c;
+}
 
 /* see if there is a mouse interface */
 void mouseinit(void) {

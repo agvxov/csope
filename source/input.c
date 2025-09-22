@@ -56,7 +56,6 @@ extern const void *const *const current_window;
 bool do_press_any_key = false;
 
 static jmp_buf env;		 /* setjmp/longjmp buffer */
-static int	   prevchar; /* previous, ungotten character */
 
 /* Internal prototypes: */
 static void catchint(int sig);
@@ -89,11 +88,6 @@ bool rebuild_reference() {
 	totallines = 0;
 	disprefs   = 0;
 	return true;
-}
-
-/* unget a character */
-void myungetch(int c) {
-	prevchar = c;
 }
 
 /* ask user to enter a character after reading the message */
