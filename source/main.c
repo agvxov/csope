@@ -140,10 +140,6 @@ static inline
 void linemode_event_loop(void) {
 	if (*input_line != '\0') { /* do any optional search */
 		if (search(input_line) == true) {
-			if (verbosemode == true) {
-				printf(PROGRAM_NAME ": %d lines\n", totallines);
-			}
-
 			int c = getc(refsfound);
 			while(c != EOF) {
 				putchar(c);
@@ -301,12 +297,11 @@ int main(const int argc, const char * const * const argv) {
 
 		/* build the cross-reference */
 		initcompress();
-		if (linemode == false
-        || verbosemode == true) { /* display if verbose as well */
-			postmsg("Building cross-reference...");
-		}
+
+		postmsg("Building cross-reference...");
 		build();
-		if (linemode == false) { postmsg(""); /* clear any build progress message */ }
+		postmsg("");
+
 		if (buildonly == true) {
 			myexit(0);
 		}

@@ -111,7 +111,7 @@ const char * help(void) {
 /* normal usage message */
 void usage(void) {
 	fputs("Usage: " PROGRAM_NAME
-		  " [-bcCdehklLqRuUvV] [-f file] [-F file] [-i file] [-I dir] [-s dir]\n"
+		  " [-bcCdehklLqRuUV] [-f file] [-F file] [-i file] [-I dir] [-s dir]\n"
 		  "              [-p number] [-P path] [-[0-8] pattern] [source files]\n",
 		stderr);
 }
@@ -150,7 +150,6 @@ void longusage(void) {
 -s dir        Look in dir for additional source  files.\n\
 -U            Check file time stamps.\n\
 -u            Unconditionally build the cross-reference file.\n\
--v            Be more verbose in line mode.\n\
 -V            Print the version number.\n\
 \n\
 Please see the manpage for more information.\n",

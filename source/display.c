@@ -663,7 +663,7 @@ void progress(char *what, long current, long max) {
 			wmove(wresult, MSGLINE, COLS - strlen(lastmsg));
 			waddstr(wresult, lastmsg);
 			refresh();
-		} else if(verbosemode == true) {
+		} else {
 			snprintf(lastmsg, sizeof(lastmsg), "> %s %ld of %ld", what, current, max);
 		}
 
@@ -677,7 +677,7 @@ void progress(char *what, long current, long max) {
 				waddch(wresult, inch());
 			standend();
 			refresh();
-		} else if(linemode == false || verbosemode == true) {
+		} else {
 			postmsg(lastmsg);
 		}
 	}
@@ -694,6 +694,7 @@ void postperror(char *text) {
 	postmsg(lastmsg);
 }
 
+// XXX: linemode should probably post to stderr
 /* postmsg clears the message line and prints the message */
 void postmsg(char *msg) {
 	if (linemode == true

@@ -321,7 +321,7 @@ void build(void) {
 	}
 	putheader(newdir);
 	fileversion = FILEVERSION;
-	if(buildonly == true && verbosemode != true && !isatty(0)) {
+	if(buildonly == true && !isatty(0)) {
 		interactive = false;
 	} else {
 		searchcount = 0;

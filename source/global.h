@@ -109,7 +109,6 @@ extern bool			invertedindex;	/* the database has an inverted index */
 extern bool			preserve_database;		/* consider the crossref up-to-date */
 extern bool			kernelmode;		/* don't use DEFAULT_INCLUDE_DIRECTORY - bad for kernels */
 extern bool			linemode;		/* use line oriented user interface */
-extern bool			verbosemode;	/* print extra information on line mode */
 extern bool			recurse_dir;	/* recurse dirs when searching for src files */
 extern char		   *namefile;		/* file of file names */
 extern char		   *prependpath;	/* prepend path to file names */

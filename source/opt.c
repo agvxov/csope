@@ -34,7 +34,6 @@ bool  invertedindex;                    /* the database has an inverted index */
 bool  preserve_database = false;            /* consider the crossref up-to-date */
 bool  kernelmode;                       /* don't use DEFAULT_INCLUDE_DIRECTORY - bad for kernels */
 bool  linemode     = false;             /* use line oriented user interface */
-bool  verbosemode = false;              /* print extra information on line mode */
 bool  recurse_dir = false;              /* recurse dirs when searching for src files */
 char *namefile;                         /* file of file names */
 
@@ -101,7 +100,7 @@ char * * parse_options(const int argc, const char * const * const argv) {
 	};
 
 	while((opt = getopt_long(argc, (char**)argv,
-			   "hVbcCdF:f:I:i:kLl0:1:2:3:4:5:6:7:8:9:P:p:qRs:UuvX",
+			   "hVbcCdF:f:I:i:kLl0:1:2:3:4:5:6:7:8:9:P:p:qRs:UuX",
 			   lopts,
 			   &longind)) != -1) {
 		switch(opt) {
@@ -153,9 +152,6 @@ char * * parse_options(const int argc, const char * const * const argv) {
 				/* FALLTHROUGH */
 			case 'l':
 				linemode = true;
-				break;
-			case 'v':
-				verbosemode = true;
 				break;
 			case 'q': /* quick search */
 				invertedindex = true;
