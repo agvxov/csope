@@ -163,11 +163,10 @@ void linemode_event_loop(void) {
 		printf(">> ");
 		fflush(stdout);
 		if (fgets(buf, sizeof(buf), stdin) == NULL) { myexit(0); }
-		/* remove any trailing newline character */
 		remove_trailing_newline(buf, strlen(buf));
 
 		switch (*buf) {
-			case ASCII_DIGIT:
+			case ASCII_DIGIT: {
 				field = *buf - '0';
 				strcpy(input_line, buf + 1);
 				if (search(input_line) == false) {
@@ -179,43 +178,37 @@ void linemode_event_loop(void) {
 						putchar(c);
 					}
 				}
-				break;
-
+			} break;
 			case 'c': /* toggle caseless mode */
-			case ctrl('C'):
-						  caseless = !(caseless);
-                          egrepcaseless(caseless);
-                          break;
-
+			case ctrl('C'): {
+                  caseless = !caseless;
+                  egrepcaseless(caseless);
+            } break;
 			case 'r': /* rebuild database */
 			case 'R':
-			case ctrl('R'):
+			case ctrl('R'): {
 				rebuild();
 				putchar('\n');
-				break;
-
-			case 'C': /* clear file names */
+			} break;
+			case 'C': { /* clear file names */
 				freefilelist();
 				putchar('\n');
-				break;
-
-			case 'F': /* add a file name */
+			} break;
+			case 'F': { /* add a file name */
 				strcpy(path, buf + 1);
 				if (infilelist(path) == false && (s = inviewpath(path)) != NULL) {
 					addsrcfile(s);
 				}
 				putchar('\n');
-				break;
-
+			} break;
 			case 'q': /* quit */
 			case ctrl('D'):
-			case ctrl('Z'):
+			case ctrl('Z'): {
 				myexit(0);
-				break;
-
-			default:
+            } break;
+			default: {
 				fprintf(stderr, PROGRAM_NAME ": unknown command '%s'\n", buf);
-				break;
+			} break;
 		}
 	}
 }
