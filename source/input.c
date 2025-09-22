@@ -55,19 +55,6 @@ extern const void *const *const current_window;
 
 bool do_press_any_key = false;
 
-static jmp_buf env;		 /* setjmp/longjmp buffer */
-
-/* Internal prototypes: */
-static void catchint(int sig);
-
-/* catch the interrupt signal */
-static void catchint(int sig) {
-	UNUSED(sig);
-
-	signal(SIGINT, catchint);
-	longjmp(env, 1);
-}
-
 static inline
 bool rebuild_reference() {
 	if(preserve_database == true) {
