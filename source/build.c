@@ -648,7 +648,7 @@ static
 void movefile(char *new, char *old) {
 	unlink(old);
 	if(rename(new, old) == -1) {
-		myperror(PROGRAM_NAME);
+		postperror(PROGRAM_NAME);
 		postfatal(PROGRAM_NAME ": cannot rename file %s to file %s\n", new, old);
 	}
 }

@@ -1199,7 +1199,7 @@ long dbseek(long offset) {
 
 	if((n = offset / BUFSIZ) != blocknumber) {
 		if((rc = lseek(symrefs, n * BUFSIZ, 0)) == -1) {
-			myperror("Lseek failed");
+			postperror("Lseek failed");
 			sleep(3);
 			return rc;
 		}

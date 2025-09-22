@@ -143,7 +143,7 @@ static pid_t myfork(void) {
 # endif
 	}
 	/* check for fork failure */
-	if(p == -1) { myperror("Cannot fork"); }
+	if(p == -1) { postperror("Cannot fork"); }
 	return p;
 }
 

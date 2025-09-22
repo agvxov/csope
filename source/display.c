@@ -685,7 +685,7 @@ void progress(char *what, long current, long max) {
 }
 
 /* print error message on system call failure */
-void myperror(char *text) {
+void postperror(char *text) {
 	char *s;
 
 	s = strerror(errno);
