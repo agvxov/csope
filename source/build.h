@@ -59,13 +59,13 @@ extern int	 symrefs;		  /* cross-reference file */
 extern INVCONTROL invcontrol; /* inverted file control structure */
 
 /* Prototypes of external functions defined by build.c */
-void build(void);
-void free_newbuildfiles(void);
-void opendatabase(const char * const reffile);
-void rebuild(void);
-void setup_build_filenames(const char * const reffile);
-void seek_to_trailer(FILE *f);
-void read_old_reffile(const char * reffile);
-void initcompress(void);
+extern void build(void);
+extern void free_newbuildfiles(void);
+extern void opendatabase(const char * const reffile);
+extern void rebuild(void);
+extern void setup_build_filenames(const char * const reffile);
+extern void seek_to_trailer(FILE *f);
+extern void read_old_reffile(const char * reffile);
+extern void initcompress(void);
 
-#endif /* CSCOPE_BUILD_H */
+#endif
