@@ -95,6 +95,8 @@ bool readrefs(char *filename) {
 
 /* count the references found */
 void countrefs(void) {
+  #define DISCARD_BUFFER_SIZE 1024
+    static char discard_buffer[DISCARD_BUFFER_SIZE + 1];
 	char  file[PATHLEN + 1];	/* file name */
 	char  function[PATLEN + 1]; /* function name */
 	char  linenum[NUMLEN + 1];	/* line number */
@@ -103,16 +105,16 @@ void countrefs(void) {
 	/* count the references found and find the length of the file,
 	   function, and line number display fields */
 
-	/* HBB NOTE 2012-04-07: it may look like we shouldn't assing tempstring here,
+	/* NOTE: it may look like we shouldn't assing discard_buffer here,
 	 * since it's not used.  But it has to be assigned just so the return value
 	 * of fscanf will actually reach 4. */
 	while(EOF != (i = fscanf(refsfound,
 					  "%" PATHLEN_STR "s%" PATLEN_STR "s%" NUMLEN_STR
-					  "s %" TEMPSTRING_LEN_STR "[^\n]",
+					  "s %" STRINGIZE(DISCARD_BUFFER_SIZE) "[^\n]",
 					  file,
 					  function,
 					  linenum,
-					  tempstring))) {
+					  discard_buffer))) {
 		if((i != 4) || !isgraph((unsigned char)*file) ||
 			!isgraph((unsigned char)*function) || !isdigit((unsigned char)*linenum)) {
 			postmsg("File does not have expected format");
@@ -132,4 +134,5 @@ void countrefs(void) {
 	i = (COLS - 5) / 3;
 	if(filelen > i && i > 4) { filelen = i; }
 	if(fcnlen > i && i > 8) { fcnlen = i; }
+  #undef DISCARD_BUFFER_SIZE
 }
