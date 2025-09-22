@@ -62,7 +62,6 @@ int	  dispcomponents = 1;		/* file path components to display */
 bool  incurses = false;			/* in curses */
 char *prependpath;				/* prepend path to file names */
 FILE *refsfound;				/* references found file */
-long  totalterms;				/* total inverted index terms */
 
 static char path[PATHLEN + 1];	/* file path */
 

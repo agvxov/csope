@@ -63,6 +63,7 @@ char *newreffile;				   /* new cross-reference file name */
 FILE *newrefs;					   /* new cross-reference */
 FILE *postings;					   /* new inverted index postings */
 int	  symrefs = -1;				   /* cross-reference file */
+long  totalterms;	               /* total inverted index terms */
 
 INVCONTROL invcontrol;			   /* inverted file control structure */
 

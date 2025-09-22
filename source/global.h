@@ -113,7 +113,6 @@ extern bool			recurse_dir;	/* recurse dirs when searching for src files */
 extern char		   *namefile;		/* file of file names */
 extern char		   *prependpath;	/* prepend path to file names */
 extern FILE		   *refsfound;		/* references found file */
-extern long			totalterms;		/* total inverted index terms */
 
 extern char	 temp1[];								/* temporary file name */
 extern char	 temp2[];								/* temporary file name */
