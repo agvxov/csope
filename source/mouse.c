@@ -434,7 +434,7 @@ int process_mouse() {
 			if(p->y1 >= 1/*displine[i]*/) { return false; }
 		}
 		/* display it in the file with the editor */
-		editref(i);
+		//editref(i);
 	} else { /* this is an input field selection */
 		field = p->y1 - FLDLINE;
 		/* force it into range */

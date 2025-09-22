@@ -46,6 +46,7 @@
 #include "display.h"
 #include "exec.h"
 #include "readline.h"
+#include "edit.h"
 
 extern const void *const		winput;
 extern const void *const		wmode;

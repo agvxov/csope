@@ -35,8 +35,9 @@
  *    file editing functions
  */
 
-#include <ncurses.h> // XXX
 #include "global.h"
+#include "edit.h"
+#include "display.h"
 #include "exec.h"
 #include "path.h"
 #include "refsfound.h"
@@ -80,7 +81,7 @@ void editall(void) {
 int edit(const char *filename, const char *const linenum) {
     int r = 0;
 	const char *const editor_basename = basename(editor);
-	char			  msg[MSGLEN + 1]; /* message */
+	char			  msg[MSGLEN + 1];
 	char plusnum[NUMLEN + 20]; /* line number option: allow space for wordy line# flag */
 
 	filename = prepend_path(prependpath, filename);
@@ -97,7 +98,7 @@ int edit(const char *filename, const char *const linenum) {
 	for(const char *const *sp = shit_pagers; *sp != NULL; sp++) {
 		if(!strcmp(editor_basename, *sp)) {
 			r = execute(editor, editor, plusnum, filename, "/dev/null", NULL);
-			goto end;
+			return r;
 		}
 	}
 
@@ -106,9 +107,6 @@ int edit(const char *filename, const char *const linenum) {
 	} else {
 		r = execute(editor, editor, plusnum, filename, NULL);
 	}
-
-end:
-	clear(); /* redisplay screen */
 
     return r;
 }

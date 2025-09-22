@@ -7,6 +7,7 @@
 #include "path.h"
 #include "display.h"
 #include "refsfound.h"
+#include "edit.h"
 #include <ncurses.h>
 
 static int	input_available = 0;
