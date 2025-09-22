@@ -38,6 +38,7 @@
 
 #include "global.h"
 
+#include "opt.h"
 #include "build.h"
 #include "vpath.h"
 #include "version.inc"
