@@ -42,14 +42,12 @@
 #include "refsfound.h"
 
 /* edit this displayed reference */
-
 void editref(int i) {
 	char filename[PATHLEN + 1];
 	char linenum[NUMLEN + 1];
 
-	/* verify that there is a references found file */
 	if(refsfound == NULL) { return; }
-	/* get the selected line */
+
 	seekrelline(i);
 
 	/* get the file name and line number */
@@ -58,14 +56,12 @@ void editref(int i) {
 	}
 }
 
-/* edit all references */
 void editall(void) {
 	char filename[PATHLEN + 1];
 	char linenum[NUMLEN + 1];
 
-	/* verify that there is a references found file */
 	if(refsfound == NULL) { return; }
-	/* get the first line */
+
 	fseek(refsfound, 0, SEEK_SET);
 
 	/* get each file name and line number */

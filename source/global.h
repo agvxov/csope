@@ -96,10 +96,11 @@ extern char dicode2[]; /* digraph second character code */
 	((0200 - 2) + dicode1[(unsigned char)(inchar1)] + dicode2[(unsigned char)(inchar2)])
 
 /* main.c global data */
-extern char *editor, /* EDITOR env var */
-	*home,           /* Home directory */
-	*shell,          /* Users shell */
-	*lineflag;       /* Flag used to open EDITOR at a specified line */
+extern char
+    *editor,    /* EDITOR env var */
+	*home,      /* Home directory */
+	*shell,     /* Users shell */
+	*lineflag;  /* Flag used to open EDITOR at a specified line */
 
 extern bool			lineflagafterfile;
 extern bool			compress;		/* compress the characters in the crossref */
@@ -166,7 +167,6 @@ extern struct keystruct {
 } keyword[];
 
 /* cscope functions called from more than one function or between files */
-
 char *inviewpath(const char *file);
 char *lookup(char *ident, bool do_compressed);
 char *read_crossreference_block(void);
