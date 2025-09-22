@@ -114,7 +114,6 @@ extern char		   *namefile;		/* file of file names */
 extern char		   *prependpath;	/* prepend path to file names */
 extern FILE		   *refsfound;		/* references found file */
 extern long			totalterms;		/* total inverted index terms */
-extern char			tempstring[TEMPSTRING_LEN + 1]; /* global dummy string buffer */
 
 extern char	 temp1[];								/* temporary file name */
 extern char	 temp2[];								/* temporary file name */

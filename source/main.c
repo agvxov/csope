@@ -63,9 +63,6 @@ bool  incurses = false;			/* in curses */
 char *prependpath;				/* prepend path to file names */
 FILE *refsfound;				/* references found file */
 long  totalterms;				/* total inverted index terms */
-char  tempstring[TEMPSTRING_LEN + 1]; /* use this as a buffer, instead of 'yytext',
-									   * which had better be left alone
-                                       */
 
 static char path[PATHLEN + 1];	/* file path */
 

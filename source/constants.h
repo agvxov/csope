@@ -66,7 +66,6 @@
 #define NUMLEN		   10			   /* line number length */
 #define PATHLEN		   250			   /* file pathname length */
 #define PATLEN		   250			   /* symbol pattern length */
-#define TEMPSTRING_LEN 8191			   /* max strlen() of the global temp string */
 #define REFFILE		   "cscope.out"	   /* cross-reference output file */
 #define NAMEFILE	   "cscope.files"  /* default list-of-files file */
 #define INVNAME		   "cscope.in.out" /* inverted index to the database */

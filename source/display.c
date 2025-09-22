@@ -53,7 +53,9 @@
 /* XXX */
 #define MSGLINE 0							/* message line */
 #define MSGCOL	0							/* message column */
-static int * displine; /* screen line of displayed reference */
+static int * displine;                      /* screen line of displayed reference */
+#define TEMPSTRING_LEN 8191			        /* max strlen() of the global temp string */
+static char tempstring[TEMPSTRING_LEN + 1]; /* dummy string buffer */
 
 int filelen = sizeof("File") - 1;		/* file name display field length */
 int fcnlen  = sizeof("Function") - 1;	/* function name display field length */
