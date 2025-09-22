@@ -61,7 +61,6 @@ static jmp_buf env;		 /* setjmp/longjmp buffer */
 static void catchint(int sig);
 
 /* catch the interrupt signal */
-
 static void catchint(int sig) {
 	UNUSED(sig);
 
@@ -166,7 +165,7 @@ static int wresult_input(const int c) {
 	}
 
 	window_change |= CH_RESULT;
-noredisp:
+  noredisp:
 	return 1;
 }
 
@@ -445,7 +444,7 @@ int changestring(const char *from, const char *to, const bool *const change, con
 
 	/* edit the files */
 	execute("sh", "sh", temp2, NULL);	// XXX: this should not echo
-end:
+  end:
 	fclose(script);
 	return true;
 }
