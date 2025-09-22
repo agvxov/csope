@@ -47,7 +47,6 @@
 #include "readline.h"
 
 #include <stdlib.h>	   /* atoi */
-#include <ncurses.h>
 #include <signal.h>
 
 /* note: these digraph character frequencies were calculated from possible
