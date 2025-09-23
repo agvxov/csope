@@ -45,7 +45,7 @@ source/%.c: source/%.y
 	${YACC} -o $@ $<
 
 install: ${OUTPUT}
-	install -d $(DESTDIR)/bin/
+	install -d ${DESTDIR}/bin/
 	install ${OUTPUT} ${DESTDIR}/bin/
 
 clean:
