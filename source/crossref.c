@@ -114,16 +114,11 @@ void crossref(char * srcfile) {
 
 			case NEWLINE:			/* end of line containing symbols */
 				entry_no = 0;		/* reset entry_no for each line */
-#ifdef USING_LEX
-				--yyleng;			/* remove the newline */
-#endif
 				putcrossref();		/* output the symbols and source line */
 				lineno = myylineno; /* save the symbol line number */
-#ifndef USING_LEX
-				/* HBB 20010425: replaced yyleng-- by this chunk: */
+
 				if(my_yytext) *my_yytext = '\0';
 				my_yyleng = 0;
-#endif
 				break;
 
 			case LEXERR: /* Lexer error, abort further parsing of this file */
