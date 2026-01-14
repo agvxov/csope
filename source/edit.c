@@ -19,7 +19,6 @@ void editref(int i) {
 
 	seekrelline(i);
 
-	/* get the file name and line number */
 	if(fscanf(refsfound, "%" PATHLEN_STR "s%*s%" NUMLEN_STR "s", filename, linenum) == 2) {
 		edit(filename, linenum);
 	}
@@ -33,7 +32,6 @@ void editall(void) {
 
 	fseek(refsfound, 0, SEEK_SET);
 
-	/* get each file name and line number */
 	while(true) {
         int e;
 
