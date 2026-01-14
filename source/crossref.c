@@ -177,20 +177,20 @@ void putcrossref(void) {
 
 	my_yytext[my_yyleng] = '\0';
 
-	bool blank = false;
+	bool is_blank = false;
 	for(i = 0; i < my_yyleng; ++i) {
         char c = my_yytext[i];
 
-		/* change a tab to a blank and compress blanks */
+		/* change a tab to a is_blank and compress blanks */
 		if (c == ' '
         ||  c == '\t') {
-			blank = true;
+			is_blank = true;
 		} else if(symput < symbols && i == symbol[symput].first) {
 			/* look for the start of a symbol */
 
 			/* check for compressed blanks */
-			if(blank == true) {
-				blank = false;
+			if(is_blank == true) {
+				is_blank = false;
 				dbputc(' ');
 			}
 			dbputc('\n'); /* symbols start on a new line */
@@ -217,9 +217,9 @@ void putcrossref(void) {
 			/* HBB: try to save some time by early-out handling of
 			 * non-compressed mode */
 			if(compress == false) {
-				if(blank == true) {
+				if(is_blank == true) {
 					dbputc(' ');
-					blank = false;
+					is_blank = false;
 				}
 				j = i + strcspn(my_yytext + i, "\t ");
 				if(symput < symbols && j >= symbol[symput].first)
@@ -229,12 +229,12 @@ void putcrossref(void) {
 				writestring(my_yytext + i);
 				my_yytext[j] = c;
 				i			 = j - 1;
-				/* finished this 'i', continue with the blank */
+				/* finished this 'i', continue with the is_blank */
 				continue;
 			}
 
 			/* check for compressed blanks */
-			if(blank == true) {
+			if(is_blank == true) {
 				if(dicode2[c]) {
 					c = DICODE_COMPRESS(' ', c);
 				} else {
@@ -247,7 +247,7 @@ void putcrossref(void) {
 				++i;
 			}
 			dbputc((int)c);
-			blank = false;
+			is_blank = false;
 
 			/* skip compressed characters */
 			if(c < ' ') {
