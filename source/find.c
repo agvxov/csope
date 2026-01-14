@@ -130,45 +130,45 @@ bool check_for_assignment(void) {
 	/* Do the extra work here to determine if this is an
 	 * assignment or not.  Do this by examining the next character
 	 * or two in blockp */
-	char *asgn_char = blockp;
+	char *assignment_char = blockp;
 
-	while(isspace((unsigned char)asgn_char[0])) {
+	while(isspace((unsigned char)assignment_char[0])) {
 		/* skip any whitespace or \n */
-		asgn_char++;
-		if(asgn_char[0] == '\0') {
+		assignment_char++;
+		if (assignment_char[0] == '\0') {
 			/* get the next block when we reach the end of
 			 * the current block */
-			if(NULL == (asgn_char = read_crossreference_block())){
+			if (NULL == (assignment_char = read_crossreference_block())){
 				return false;
 			}
 		}
 	}
 	/* check for digraph starting with = */
-	if((asgn_char[0] & 0x80) && (dichar1[(asgn_char[0] & 0177) / 8] == '=')) {
+	if ((assignment_char[0] & 0x80) && (dichar1[(assignment_char[0] & 0177) / 8] == '=')) {
 		return true;
 	}
 	/* check for plain '=', not '==' */
-	if((asgn_char[0] == '=') &&
-		(((asgn_char[1] != '=') && !(asgn_char[1] & 0x80)) ||
-			((asgn_char[1] & 0x80) && (dichar1[(asgn_char[1] & 0177) / 8] != '=')))) {
+	if ((assignment_char[0] == '=') &&
+		(((assignment_char[1] != '=') && !(assignment_char[1] & 0x80)) ||
+			((assignment_char[1] & 0x80) && (dichar1[(assignment_char[1] & 0177) / 8] != '=')))) {
 		return true;
 	}
 
 	/* check for operator assignments: +=, ... ^= ? */
-	if((asgn_char[1] == '=')
-    || (((asgn_char[1] & 0x80) && (dichar1[(asgn_char[1] & 0177) / 8] == '='))
-	   && ((asgn_char[0] == '+') || (asgn_char[0] == '-') || (asgn_char[0] == '*') ||
-		   (asgn_char[0] == '/') || (asgn_char[0] == '%') || (asgn_char[0] == '&') ||
-		   (asgn_char[0] == '|') || (asgn_char[0] == '^'))
+	if ((assignment_char[1] == '=')
+    || (((assignment_char[1] & 0x80) && (dichar1[(assignment_char[1] & 0177) / 8] == '='))
+	   && ((assignment_char[0] == '+') || (assignment_char[0] == '-') || (assignment_char[0] == '*') ||
+		   (assignment_char[0] == '/') || (assignment_char[0] == '%') || (assignment_char[0] == '&') ||
+		   (assignment_char[0] == '|') || (assignment_char[0] == '^'))
 	)) {
 		return true;
 	}
 
 	/* check for two-letter operator assignments: <<= or >>= ? */
-	if(((asgn_char[0] == '<') || (asgn_char[0] == '>')) &&
-		(asgn_char[1] == asgn_char[0]) &&
-		((asgn_char[2] == '=') ||
-			((asgn_char[2] & 0x80) && (dichar1[(asgn_char[2] & 0177) / 8] == '=')))
+	if (((assignment_char[0] == '<') || (assignment_char[0] == '>')) &&
+		(assignment_char[1] == assignment_char[0]) &&
+		((assignment_char[2] == '=') ||
+			((assignment_char[2] & 0x80) && (dichar1[(assignment_char[2] & 0177) / 8] == '=')))
 	) {
 		return true;
 	}
@@ -194,13 +194,13 @@ char *find_symbol_or_assignment(const char *pattern, bool assign_flag) {
 	char   firstchar; /* first character of a potential symbol */
 	bool   fcndef = false;
 
-	if((invertedindex == true) && (assign_flag == false)) {
+	if ((invertedindex == true) && (assign_flag == false)) {
 		long	 lastline = 0;
 		POSTING *p;
 
 		findterm(pattern);
 		while((p = getposting()) != NULL) {
-			if(p->type != INCLUDE && p->lineoffset != lastline) {
+			if (p->type != INCLUDE && p->lineoffset != lastline) {
 				putpostingref(p, 0);
 				lastline = p->lineoffset;
 			}
@@ -227,10 +227,10 @@ char *find_symbol_or_assignment(const char *pattern, bool assign_flag) {
 		} while(*(cp + 1) == '\0' && (cp = read_crossreference_block()) != NULL);
 
 		/* skip the found character */
-		if(cp != NULL && *(++cp + 1) == '\0') { cp = read_crossreference_block(); }
-		if(cp == NULL) { break; }
+		if (cp != NULL && *(++cp + 1) == '\0') { cp = read_crossreference_block(); }
+		if (cp == NULL) { break; }
 		/* look for a source file, function, or macro name */
-		if(*cp == '\t') {
+		if (*cp == '\t') {
 			blockp = cp;
 			switch(getrefchar()) {
 
@@ -241,7 +241,7 @@ char *find_symbol_or_assignment(const char *pattern, bool assign_flag) {
 					fetch_string_from_dbase(file, sizeof(file));
 
 					/* check for the end of the symbols */
-					if(*file == '\0') { return NULL; }
+					if (*file == '\0') { return NULL; }
 					progress("Search", searchcount, nsrcfiles);
 					/* FALLTHROUGH */
 
@@ -276,20 +276,20 @@ char *find_symbol_or_assignment(const char *pattern, bool assign_flag) {
 			fetch_string_from_dbase(s, s_len);
 
 			/* see if this is a regular expression pattern */
-			if(isregexp_valid == true) {
-				if(caseless == true) { s = lcasify(s); }
-				if(*s != '\0' && regexec(&regexp, s, (size_t)0, NULL, 0) == 0) {
+			if (isregexp_valid == true) {
+				if (caseless == true) { s = lcasify(s); }
+				if (*s != '\0' && regexec(&regexp, s, (size_t)0, NULL, 0) == 0) {
 					goto matched;
 				}
 			}
 			/* match the symbol to the text pattern */
-			else if(strequal(pattern, s)) {
+			else if (strequal(pattern, s)) {
 				goto matched;
 			}
 			goto notmatched;
 		}
 		/* if this is a regular expression pattern */
-		if(isregexp_valid == true) {
+		if (isregexp_valid == true) {
 
 			/* if this is a symbol */
 
@@ -300,46 +300,46 @@ char *find_symbol_or_assignment(const char *pattern, bool assign_flag) {
 			 * Assume that all digraphed chars have the 8th bit
 			 * set (0200).
 			 **************************************************/
-			if(*cp & 0200) { /* digraph char? */
+			if (*cp & 0200) { /* digraph char? */
 				firstchar = dichar1[(*cp & 0177) / 8];
 			} else {
 				firstchar = *cp;
 			}
 
-			if(isalpha((unsigned char)firstchar) || firstchar == '_') {
+			if (isalpha((unsigned char)firstchar) || firstchar == '_') {
 				blockp = cp;
 				fetch_string_from_dbase(symbol, sizeof(symbol));
-				if(caseless == true) {
+				if (caseless == true) {
 					s = lcasify(symbol); /* point to lower case version */
 				} else {
 					s = symbol;
 				}
 
 				/* match the symbol to the regular expression */
-				if(*s != '\0' && regexec(&regexp, s, (size_t)0, NULL, 0) == 0) {
+				if (*s != '\0' && regexec(&regexp, s, (size_t)0, NULL, 0) == 0) {
 					goto matched;
 				}
 				goto notmatched;
 			}
 		}
 		/* match the character to the text pattern */
-		else if(*cp == cpattern[0]) {
+		else if (*cp == cpattern[0]) {
 			blockp = cp;
 
 			/* match the rest of the symbol to the text pattern */
-			if(matchrest()) {
+			if (matchrest()) {
 				s = NULL;
 			matched:
 				/* if the assignment flag is set then
 				 * we are looking for assignments and
 				 * some extra filtering is needed */
-				if(assign_flag == true && !check_for_assignment()) goto notmatched;
+				if (assign_flag == true && !check_for_assignment()) goto notmatched;
 
 
 				/* output the file, function or macro, and source line */
-				if(strcmp(macro, global) && s != macro) {
+				if (strcmp(macro, global) && s != macro) {
 					putref(0, file, macro);
-				} else if(fcndef == true || s != function) {
+				} else if (fcndef == true || s != function) {
 					fcndef = false;
 					putref(0, file, function);
 				} else {
@@ -347,7 +347,7 @@ char *find_symbol_or_assignment(const char *pattern, bool assign_flag) {
 				}
 			}
 		notmatched:
-			if(blockp == NULL) { return NULL; }
+			if (blockp == NULL) { return NULL; }
 			fcndef = false;
 			cp	   = blockp;
 		}
@@ -362,7 +362,7 @@ static
 char *finddef(const char *pattern) {
 	char file[PATHLEN + 1]; /* source file name */
 
-	if(invertedindex == true) {
+	if (invertedindex == true) {
 		POSTING *p;
 
 		findterm(pattern);
@@ -391,7 +391,7 @@ char *finddef(const char *pattern) {
 			case NEWFILE:
 				skiprefchar();		/* save file name */
 				fetch_string_from_dbase(file, sizeof(file));
-				if(*file == '\0') { /* if end of symbols */
+				if (*file == '\0') { /* if end of symbols */
 					return NULL;
 				}
 				progress("Search", searchcount, nsrcfiles);
@@ -407,7 +407,7 @@ char *finddef(const char *pattern) {
 			case UNIONDEF:
 			case GLOBALDEF:	   /* other global definition */
 				skiprefchar(); /* match name to pattern */
-				if(match()) {
+				if (match()) {
 
 					/* output the file, function and source line */
 					putref(0, file, pattern);
@@ -421,11 +421,11 @@ char *finddef(const char *pattern) {
 
 /* find all function definitions (used by samuel only) */
 static
-char *findallfcns(const char *dummy) {
+char *findallfcns(const char * dummy) {
+	(void)dummy;
+
 	char file[PATHLEN + 1];	   /* source file name */
 	char function[PATLEN + 1]; /* function name */
-
-	(void)dummy;			   /* unused argument */
 
 	/* find the next file name or definition */
 	while(scanpast('\t') != NULL) {
@@ -434,7 +434,7 @@ char *findallfcns(const char *dummy) {
 			case NEWFILE:
 				skiprefchar();		/* save file name */
 				fetch_string_from_dbase(file, sizeof(file));
-				if(*file == '\0') { /* if end of symbols */
+				if (*file == '\0') { /* if end of symbols */
 					return NULL;
 				}
 				progress("Search", searchcount, nsrcfiles);
@@ -467,12 +467,12 @@ char *findcalling(const char *pattern) {
 	char *tmpblockp;
 	int	  morefuns, i;
 
-	if(invertedindex == true) {
+	if (invertedindex == true) {
 		POSTING *p;
 
 		findterm(pattern);
 		while((p = getposting()) != NULL) {
-			if(p->type == FCNCALL) { putpostingref(p, 0); }
+			if (p->type == FCNCALL) { putpostingref(p, 0); }
 		}
 		return NULL;
 	}
@@ -488,7 +488,7 @@ char *findcalling(const char *pattern) {
 			case NEWFILE: /* save file name */
 				skiprefchar();
 				fetch_string_from_dbase(file, sizeof(file));
-				if(*file == '\0') { /* if end of symbols */
+				if (*file == '\0') { /* if end of symbols */
 					return NULL;
 				}
 				progress("Search", searchcount, nsrcfiles);
@@ -508,10 +508,10 @@ char *findcalling(const char *pattern) {
 				skiprefchar();
 				fetch_string_from_dbase(function, sizeof(function));
 				for(i = 0; i < morefuns; i++)
-					if(!strcmp(tmpfunc[i], function)) break;
-				if(i == morefuns) {
+					if (!strcmp(tmpfunc[i], function)) break;
+				if (i == morefuns) {
 					(void)strcpy(tmpfunc[morefuns], function);
-					if(++morefuns >= 10) morefuns = 9;
+					if (++morefuns >= 10) morefuns = 9;
 				}
 				break;
 
@@ -523,10 +523,10 @@ char *findcalling(const char *pattern) {
 
 			case FCNCALL: /* match function called to pattern */
 				skiprefchar();
-				if(match()) {
+				if (match()) {
 
 					/* output the file, calling function or macro, and source */
-					if(*macro != '\0') {
+					if (*macro != '\0') {
 						putref(1, file, macro);
 					} else {
 						tmpblockp = blockp;
@@ -551,7 +551,7 @@ char *findstring(const char *pattern) {
 
 	/* translate special characters in the regular expression */
 	for(pp = pattern; *pp != '\0'; ++pp) {
-		if(strchr(".*[\\^$+?|()", *pp) != NULL) { *cp++ = '\\'; }
+		if (strchr(".*[\\^$+?|()", *pp) != NULL) { *cp++ = '\\'; }
 		*cp++ = *pp;
 	}
 	*cp = '\0';
@@ -567,14 +567,14 @@ char *findregexp(const char *egreppat) {
 	char		*egreperror;
 
 	/* compile the pattern */
-	if((egreperror = egrepinit(egreppat)) == NULL) {
+	if ((egreperror = egrepinit(egreppat)) == NULL) {
 
 		/* search the files */
 		for(i = 0; i < nsrcfiles; ++i) {
 			const char * file = prepend_path(prependpath, srcfiles[i]);
 
 			progress("Search", searchcount, nsrcfiles);
-			if(egrep(file, refsfound, "%s <unknown> %ld ") < 0) {
+			if (egrep(file, refsfound, "%s <unknown> %ld ") < 0) {
 				posterr("Cannot open file %s", file);
 			}
 		}
@@ -592,12 +592,12 @@ char *findfile(const char *dummy) {
 	for(i = 0; i < nsrcfiles; ++i) {
 		char *s;
 
-		if(caseless == true) {
+		if (caseless == true) {
 			s = lcasify(srcfiles[i]);
 		} else {
 			s = srcfiles[i];
 		}
-		if(regexec(&regexp, s, (size_t)0, NULL, 0) == 0) {
+		if (regexec(&regexp, s, (size_t)0, NULL, 0) == 0) {
 			(void)fprintf(refsfound, "%s <unknown> 1 <unknown>\n", srcfiles[i]);
 		}
 	}
@@ -610,12 +610,12 @@ static
 char *findinclude(const char *pattern) {
 	char file[PATHLEN + 1]; /* source file name */
 
-	if(invertedindex == true) {
+	if (invertedindex == true) {
 		POSTING *p;
 
 		findterm(pattern);
 		while((p = getposting()) != NULL) {
-			if(p->type == INCLUDE) { putpostingref(p, 0); }
+			if (p->type == INCLUDE) { putpostingref(p, 0); }
 		}
 		return NULL;
 	}
@@ -627,7 +627,7 @@ char *findinclude(const char *pattern) {
 			case NEWFILE: /* save file name */
 				skiprefchar();
 				fetch_string_from_dbase(file, sizeof(file));
-				if(*file == '\0') { /* if end of symbols */
+				if (*file == '\0') { /* if end of symbols */
 					return NULL;
 				}
 				progress("Search", searchcount, nsrcfiles);
@@ -636,7 +636,7 @@ char *findinclude(const char *pattern) {
 			case INCLUDE:	   /* match function called to pattern */
 				skiprefchar();
 				skiprefchar(); /* skip global or local #include marker */
-				if(match()) {
+				if (match()) {
 
 					/* output the file and source line */
 					putref(0, file, global);
@@ -679,7 +679,6 @@ bool is_valid_c_symbol(char *str) {
 	return true;
 }
 
-/* initialize */
 int findinit(const char *pattern_) {
 
 	if (pattern_ == NULL
@@ -695,25 +694,21 @@ int findinit(const char *pattern_) {
 	char		 *s;
 	unsigned char c;
 
-	/* HBB: be nice: free regexp before allocating a new one */
-	if(isregexp_valid == true) regfree(&regexp);
-
+	if (isregexp_valid == true) { regfree(&regexp); }
 	isregexp_valid = false;
 
-	/* Pattern length */
-	size_t pattlen = strlen(pattern);
+	size_t pattern_len = strlen(pattern);
 
 	/* 14-12-2024 23:27 yama
 	 * NOTE: It is necessary to check the length because 'pattern' && 'pattern_'
 	   could be non-null while still being 0 length.
 	 */
-	if (pattlen == 0) {
+	if (pattern_len == 0) {
 		free(pattern);
 		return NOTSYMBOL;
 	}
 
-	/* Trim trailing whitespace */
-	trim_trailing_ws(pattern, pattlen);
+	trim_trailing_ws(pattern, pattern_len);
     if (pattern[0] == '\0') {
         return NOTSYMBOL;
     }
@@ -721,11 +716,11 @@ int findinit(const char *pattern_) {
 	/* Make sure pattern is lowercased. Curses
 	 * mode gets this right all on its own, but at least -L mode
 	 * doesn't */
-	if(caseless == true) { pattern = lcasify(pattern); }
+	if (caseless == true) { pattern = lcasify(pattern); }
 
 	/* allow a partial match for a file name */
-	if(field == FILENAME || field == INCLUDES) {
-		if(regcomp(&regexp, pattern, REG_EXTENDED | REG_NOSUB) != 0) {
+	if (field == FILENAME || field == INCLUDES) {
+		if (regcomp(&regexp, pattern, REG_EXTENDED | REG_NOSUB) != 0) {
 			r = REGCMPERROR;
 		} else {
 			isregexp_valid = true;
@@ -733,7 +728,7 @@ int findinit(const char *pattern_) {
 		goto end;
 	}
 	/* see if the pattern is a regular expression */
-	if(strpbrk(pattern, "^.[{*+$|(") != NULL) {
+	if (strpbrk(pattern, "^.[{*+$|(") != NULL) {
 		isregexp = true;
 	} else {
 		/* check for a valid C symbol */
@@ -745,24 +740,26 @@ int findinit(const char *pattern_) {
 	}
 	/* if this is a regular expression or letter case is to be ignored */
 	/* or there is an inverted index */
-	if(isregexp == true || caseless == true || invertedindex == true) {
+	if (isregexp == true
+    || caseless == true
+    || invertedindex == true) {
 		/* remove a leading ^ */
 		s = pattern;
-		if(*s == '^') {
+		if (*s == '^') {
 			strcpy(newpat, s + 1);
 			strcpy(s, newpat);
 		}
 		/* remove a trailing $ */
 		i = strlen(s) - 1;
-		if(s[i] == '$') {
-			if(i > 0 && s[i - 1] == '\\') { s[i - 1] = '$'; }
+		if (s[i] == '$') {
+			if (i > 0 && s[i - 1] == '\\') { s[i - 1] = '$'; }
 			s[i] = '\0';
 		}
 		/* must be an exact match */
 		/* note: regcomp doesn't recognize ^*keypad$ as a syntax error
 				 unless it is given as a single arg */
 		snprintf(buf, sizeof(buf), "^%s$", s);
-		if(regcomp(&regexp, buf, REG_EXTENDED | REG_NOSUB) != 0) {
+		if (regcomp(&regexp, buf, REG_EXTENDED | REG_NOSUB) != 0) {
 			r = REGCMPERROR;
 			goto end;
 		} else {
@@ -772,7 +769,7 @@ int findinit(const char *pattern_) {
 		/* compress the string pattern for matching */
 		s = cpattern;
 		for(i = 0; (c = pattern[i]) != '\0'; ++i) {
-			if(IS_A_DICODE(c, pattern[i + 1])) {
+			if (IS_A_DICODE(c, pattern[i + 1])) {
 				c = DICODE_COMPRESS(c, pattern[i + 1]);
 				++i;
 			}
@@ -781,7 +778,7 @@ int findinit(const char *pattern_) {
 		*s = '\0';
 	}
 
-end:
+  end:
 	free(pattern);
 	return r;
 }
@@ -796,10 +793,10 @@ bool match(void) {
 	char string[PATLEN + 1];
 
 	/* see if this is a regular expression pattern */
-	if(isregexp_valid == true) {
+	if (isregexp_valid == true) {
 		fetch_string_from_dbase(string, sizeof(string));
-		if(*string == '\0') { return (false); }
-		if(caseless == true) {
+		if (*string == '\0') { return (false); }
+		if (caseless == true) {
 			return (regexec(&regexp, lcasify(string), (size_t)0, NULL, 0) ? false : true);
 		} else {
 			return (regexec(&regexp, string, (size_t)0, NULL, 0) ? false : true);
@@ -822,8 +819,8 @@ bool matchrest(void) {
 		}
 	} while(*(blockp + 1) == '\0' && read_crossreference_block() != NULL);
 
-	if(*blockp == '\n' && cpattern[i] == '\0') { return (true); }
-	return (false);
+	if (*blockp == '\n' && cpattern[i] == '\0') { return (true); }
+	return false;
 }
 
 /* put the reference into the file */
@@ -831,7 +828,7 @@ static
 void putref(int seemore, const char *file, const char *func) {
 	FILE *output;
 
-	if(strcmp(func, global) == 0) {
+	if (strcmp(func, global) == 0) {
 		output = refsfound;
 	} else {
 		output = nonglobalrefs;
@@ -851,7 +848,7 @@ void putsource(int seemore, FILE *output) {
 	cp = tmpblockp = blockp;
 	while(*cp != '\n' || nextc != '\n') {
 		nextc = *cp;
-		if(--cp < block) {
+		if (--cp < block) {
 			retreat = true;
 			/* read the previous block */
 			dbseek((blocknumber - 1) * BUFSIZ);
@@ -868,12 +865,12 @@ void putsource(int seemore, FILE *output) {
 	/* until a double newline is found */
 	do {
 		/* skip a symbol type */
-		if(*blockp == '\t') {
+		if (*blockp == '\t') {
 			/* if retreat == true, that means tmpblockp and blockp
 			 * point to different blocks.  Offset comparison should
 			 * falseT be performed until they point to the same block.
 			 */
-			if(seemore && Change == false && retreat == false && blockp > tmpblockp) {
+			if (seemore && Change == false && retreat == false && blockp > tmpblockp) {
 				Change = true;
 				cp	   = blockp;
 			}
@@ -882,10 +879,10 @@ void putsource(int seemore, FILE *output) {
 		}
 		/* output a piece of the source line */
 		putline(output);
-		if(retreat == true) retreat = false;
+		if (retreat == true) retreat = false;
 	} while(blockp != NULL && getrefchar() != '\n');
 	putc('\n', output);
-	if(Change == true) blockp = cp;
+	if (Change == true) blockp = cp;
 }
 
 /* put the rest of the cross-reference line into the file */
@@ -900,16 +897,16 @@ void putline(FILE *output) {
 		while((c = (unsigned)(*cp)) != '\n') {
 
 			/* check for a compressed digraph */
-			if(c > '\177') {
+			if (c > '\177') {
 				c &= 0177;
 				putc(dichar1[c / 8], output);
 				putc(dichar2[c & 7], output);
 			}
 			/* check for a compressed keyword */
-			else if(c < ' ') {
+			else if (c < ' ') {
 				fputs(keyword[c].text, output);
-				if(keyword[c].delim != '\0') { putc(' ', output); }
-				if(keyword[c].delim == '(') { putc('(', output); }
+				if (keyword[c].delim != '\0') { putc(' ', output); }
+				if (keyword[c].delim == '(') { putc('(', output); }
 			} else {
 				putc((int)c, output);
 			}
@@ -930,7 +927,7 @@ void fetch_string_from_dbase(char *s, size_t length) {
 	cp = blockp;
 	do {
 		while(length > 1 && (c = (unsigned int)(*cp)) != '\n') {
-			if(c >= 0x80 && length > 2) {
+			if (c >= 0x80 && length > 2) {
 				c &= 0x7f;
 				*s++ = dichar1[c / 8];
 				*s++ = dichar2[c & 7];
@@ -958,7 +955,7 @@ char *scanpast(char c) {
 		}
 	} while(*(cp + 1) == '\0' && (cp = read_crossreference_block()) != NULL);
 	blockp = cp;
-	if(cp != NULL) { skiprefchar(); /* skip the found character */ }
+	if (cp != NULL) { skiprefchar(); /* skip the found character */ }
 	return blockp;
 }
 
@@ -973,7 +970,7 @@ char *read_crossreference_block(void) {
 	block[blocklen + 1] = '\0';
 
 	/* return NULL on end-of-file */
-	if(blocklen == 0) {
+	if (blocklen == 0) {
 		blockp = NULL;
 	} else {
 		++blocknumber;
@@ -1001,7 +998,7 @@ char * findcalledby(const char *pattern) {
 	char * found_caller = NULL; /* seen calling function? */
 	bool   macro        = false;
 
-	if(invertedindex == true) {
+	if (invertedindex == true) {
 		POSTING *p;
 
 		findterm(pattern);
@@ -1009,7 +1006,7 @@ char * findcalledby(const char *pattern) {
 			switch(p->type) {
 				case DEFINE: /* could be a macro */
 				case FCNDEF:
-					if(dbseek(p->lineoffset) != -1 &&
+					if (dbseek(p->lineoffset) != -1 &&
 						scanpast('\t') != NULL) { /* skip def */
 						found_caller = (char*)0x01;
 						findcalledbysub(srcfiles[p->fileindex], macro);
@@ -1025,7 +1022,7 @@ char * findcalledby(const char *pattern) {
 			case NEWFILE:
 				skiprefchar();		/* save file name */
 				fetch_string_from_dbase(file, sizeof(file));
-				if(*file == '\0') { /* if end of symbols */
+				if (*file == '\0') { /* if end of symbols */
 					return found_caller;
 				}
 				progress("Search", searchcount, nsrcfiles);
@@ -1037,7 +1034,7 @@ char * findcalledby(const char *pattern) {
 
 			case FCNDEF:
 				skiprefchar(); /* match name to pattern */
-				if(match()) {
+				if (match()) {
 					found_caller = (char*)0x01;
 					findcalledbysub(file, macro);
 				}
@@ -1062,9 +1059,9 @@ void findterm(const char *pattern) {
 
 	/* get the string prefix (if any) of the regular expression */
 	strcpy(prefix, pattern);
-	if((s = strpbrk(prefix, ".[{*+")) != NULL) { *s = '\0'; }
+	if ((s = strpbrk(prefix, ".[{*+")) != NULL) { *s = '\0'; }
 	/* if letter case is to be ignored */
-	if(caseless == true) {
+	if (caseless == true) {
 
 		/* convert the prefix to upper case because it is lexically
 		   less than lower case */
@@ -1076,38 +1073,38 @@ void findterm(const char *pattern) {
 	}
 	/* find the term lexically >= the prefix */
 	UNUSED(invfind(&invcontrol, prefix));
-	if(caseless == true) { /* restore lower case */
+	if (caseless == true) { /* restore lower case */
 		UNUSED(strcpy(prefix, lcasify(prefix)));
 	}
 	/* a null prefix matches the null term in the inverted index,
 	   so move to the first real term */
-	if(*prefix == '\0') { invforward(&invcontrol); }
+	if (*prefix == '\0') { invforward(&invcontrol); }
 	len = strlen(prefix);
 	do {
 		UNUSED(invterm(&invcontrol, term)); /* get the term */
 		s = term;
-		if(caseless == true) { s = lcasify(s); /* make it lower case */ }
+		if (caseless == true) { s = lcasify(s); /* make it lower case */ }
 		/* if it matches */
-		if(regexec(&regexp, s, (size_t)0, NULL, 0) == 0) {
+		if (regexec(&regexp, s, (size_t)0, NULL, 0) == 0) {
 
 			/* add its postings to the set */
-			if((postingp = boolfile(&invcontrol, &npostings, bool_OR)) == NULL) { break; }
+			if ((postingp = boolfile(&invcontrol, &npostings, bool_OR)) == NULL) { break; }
 		}
 		/* if there is a prefix */
-		else if(len > 0) {
+		else if (len > 0) {
 
 			/* if ignoring letter case and the term is out of the
 			   range of possible matches */
-			if(caseless == true) {
-				if(strncmp(term, prefix, len) > 0) { break; /* stop searching */ }
+			if (caseless == true) {
+				if (strncmp(term, prefix, len) > 0) { break; /* stop searching */ }
 			}
 			/* if using letter case and the prefix doesn't match */
-			else if(strncmp(term, prefix, len) != 0) {
+			else if (strncmp(term, prefix, len) != 0) {
 				break; /* stop searching */
 			}
 		}
 		/* display progress about every three seconds */
-		if(++searchcount % 50 == 0) {
+		if (++searchcount % 50 == 0) {
 			progress("Symbols matched", searchcount, totalterms);
 		}
 	} while(invforward(&invcontrol)); /* while didn't wrap around */
@@ -1120,53 +1117,48 @@ void findterm(const char *pattern) {
 /* get the next posting for this term */
 static
 POSTING *getposting(void) {
-	if(npostings-- <= 0) { return (NULL); }
+	if (npostings-- <= 0) { return (NULL); }
 	/* display progress about every three seconds */
-	if(++searchcount % 100 == 0) {
+	if (++searchcount % 100 == 0) {
 		progress("Possible references retrieved", searchcount, postingsfound);
 	}
 	return postingp++;
 }
 
 /* put the posting reference into the file */
-
 static
 void putpostingref(POSTING *p, const char *pat) {
 	// initialize function to "unknown" so that the first line of temp1
 	// is properly formed if symbol matches a header file entry first time
 	static char function[PATLEN + 1] = "unknown"; /* function name */
 
-	if(p->fcnoffset == 0) {
-		if(p->type == FCNDEF) { /* need to find the function name */
-			if(dbseek(p->lineoffset) != -1) {
+	if (p->fcnoffset == 0) {
+		if (p->type == FCNDEF) { /* need to find the function name */
+			if (dbseek(p->lineoffset) != -1) {
 				scanpast(FCNDEF);
 				fetch_string_from_dbase(function, sizeof(function));
 			}
-		} else if(p->type != FCNCALL) {
+		} else if (p->type != FCNCALL) {
 			strcpy(function, global);
 		}
-	} else if(p->fcnoffset != lastfcnoffset) {
-		if(dbseek(p->fcnoffset) != -1) {
+	} else if (p->fcnoffset != lastfcnoffset) {
+		if (dbseek(p->fcnoffset) != -1) {
 			fetch_string_from_dbase(function, sizeof(function));
 			lastfcnoffset = p->fcnoffset;
 		}
 	}
-	if(dbseek(p->lineoffset) != -1) {
-		if(pat)
-			putref(0, srcfiles[p->fileindex], pat);
-		else
-			putref(0, srcfiles[p->fileindex], function);
+	if (dbseek(p->lineoffset) != -1) {
+		putref(0, srcfiles[p->fileindex], pat ? pat : function);
 	}
 }
 
 /* seek to the database offset */
-
 long dbseek(long offset) {
 	long n;
 	int	 rc = 0;
 
-	if((n = offset / BUFSIZ) != blocknumber) {
-		if((rc = lseek(symrefs, n * BUFSIZ, 0)) == -1) {
+	if ((n = offset / BUFSIZ) != blocknumber) {
+		if ((rc = lseek(symrefs, n * BUFSIZ, 0)) == -1) {
 			postperror("Lseek failed");
 			sleep(3);
 			return rc;
@@ -1204,15 +1196,15 @@ void findcalledbysub(const char *file, bool macro) {
 
 			case DEFINEEND: /* #define end */
 
-				if(invertedindex == false) {
-					if(macro == true) { return; }
+				if (invertedindex == false) {
+					if (macro == true) { return; }
 					break; /* inside a function */
 				}
 				/* FALLTHROUGH */
 
 			case FCNDEF: /* function end (pre 9.5) */
 
-				if(invertedindex == false) break;
+				if (invertedindex == false) break;
 				/* FALLTHROUGH */
 
 			case FCNEND:  /* function end */
@@ -1224,14 +1216,14 @@ void findcalledbysub(const char *file, bool macro) {
 
 /* open the references found file for writing */
 bool writerefsfound(void) {
-	if(refsfound == NULL) {
-		if((refsfound = fopen(temp1, "wb")) == NULL) {
+	if (refsfound == NULL) {
+		if ((refsfound = fopen(temp1, "wb")) == NULL) {
 			cannotopen(temp1);
 			return false;
 		}
 	} else {
 		fclose(refsfound);
-		if((refsfound = fopen(temp1, "wb")) == NULL) {
+		if ((refsfound = fopen(temp1, "wb")) == NULL) {
 			postmsg("Cannot reopen temporary file");
 			return false;
 		}
@@ -1250,31 +1242,31 @@ bool search(const char *query) {
 	int			 c;
 
 	/* open the references found file for writing */
-	if(writerefsfound() == false) { return (false); }
+	if (writerefsfound() == false) { return (false); }
 	/* find the pattern - stop on an interrupt */
-	if(linemode == false) { postmsg("Searching"); }
+	if (linemode == false) { postmsg("Searching"); }
 	searchcount = 0;
 	savesig		= signal(SIGINT, jumpback);
-	if(sigsetjmp(env, 1) == 0) {
+	if (sigsetjmp(env, 1) == 0) {
 		f = field_searchers[field];
-		if(f == findregexp || f == findstring) {
+		if (f == findregexp || f == findstring) {
 			findresult = (*f)(query);
 		} else {
-			if((nonglobalrefs = fopen(temp2, "wb")) == NULL) {
+			if ((nonglobalrefs = fopen(temp2, "wb")) == NULL) {
 				cannotopen(temp2);
 				return (false);
 			}
-			if((rc = findinit(query)) == NOERROR) {
+			if ((rc = findinit(query)) == NOERROR) {
 				UNUSED(dbseek(0L)); /* read the first block */
 				findresult = (*f)(query);
-				if(f == findcalledby){
+				if (f == findcalledby){
 					funcexist = (bool)(findresult);
 				}
 				findcleanup();
 
 				/* append the non-global references */
 				UNUSED(fclose(nonglobalrefs));
-				if((nonglobalrefs = fopen(temp2, "rb")) == NULL) {
+				if ((nonglobalrefs = fopen(temp2, "rb")) == NULL) {
 					cannotopen(temp2);
 					return (false);
 				}
@@ -1292,7 +1284,7 @@ bool search(const char *query) {
 
 	/* reopen the references found file for reading */
 	fclose(refsfound);
-	if((refsfound = fopen(temp1, "rb")) == NULL) {
+	if ((refsfound = fopen(temp1, "rb")) == NULL) {
 		cannotopen(temp1);
 		return (false);
 	}
@@ -1300,22 +1292,22 @@ bool search(const char *query) {
 	disprefs   = 0;
 
 	/* see if it is empty */
-	if((c = getc(refsfound)) == EOF) {
-		if(findresult != NULL) {
+	if ((c = getc(refsfound)) == EOF) {
+		if (findresult != NULL) {
 			snprintf(msg,
 				sizeof(msg),
 				"Egrep %s in this pattern: %s",
 				findresult,
 				query);
-		} else if(rc == NOTSYMBOL) {
+		} else if (rc == NOTSYMBOL) {
 			snprintf(msg, sizeof(msg), "This is not a C symbol: %s", query);
-		} else if(rc == REGCMPERROR) {
+		} else if (rc == REGCMPERROR) {
 			snprintf(msg,
 				sizeof(msg),
 				"Error in this regcomp(3) regular expression: %s",
 				query);
 
-		} else if(funcexist == false) {
+		} else if (funcexist == false) {
 			snprintf(msg,
 				sizeof(msg),
 				"Function definition does not exist: %s",
