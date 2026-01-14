@@ -16,6 +16,7 @@
 + -X seems mostly useless; if you want csope to not shitup your $CWD,
    then that should be accomplished with a designated (but optional) dumb dir (similar to vim undodir)
 + listfile should accept the same syntax git does, not because i want to such up to git, but because its extensively sane
++ path.c should be replaced with a static lib
 // From the original
 + Same capabilities as interactive in non interactive (one shot) mode
 + Provide some how-do-I-use-this-thing doc.
