@@ -94,7 +94,6 @@ char * lookup(char *ident, bool do_compressed) {
 	return NULL;
 }
 
-/* form hash value for string */
 int hash(const char * ss) {
 	int			   i = 0;
 	unsigned char *s = (unsigned char *)ss;
