@@ -103,10 +103,8 @@ struct TI {
 };
 extern struct TI fields[FIELDS + 1];
 
-/* Internal prototypes: */
-static void jumpback(int sig);
-
-static void jumpback(int sig) {
+static
+void jumpback(int sig) {
 	signal(sig, jumpback);
 	siglongjmp(env, 1);
 }
