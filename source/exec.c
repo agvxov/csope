@@ -23,11 +23,9 @@ static sighandler_t oldsigquit; /* old value of quit signal */
 static sighandler_t oldsighup;	/* old value of hangup signal */
 static sighandler_t oldsigtstp; /* old value of SIGTSTP */
 
-#ifndef __MSDOS__				/* none of these is needed, there */
 static int	 join(pid_t p);
 static int	 myexecvp(char * program_name, char **args);
 static pid_t myfork(void);
-#endif
 
 // XXX
 #ifndef BUFSIZ
@@ -64,8 +62,6 @@ int execute(char * program_name, ...) /* NOTE: "exec" is already defined on u370
 	va_end(ap);
 	return (exitcode);
 }
-
-#ifndef __MSDOS__ /* None of the following functions is used there */
 
 /* myexecvp is an interface to the execvp system call to
  * modify argv[0] to reference the last component of its path-name.
@@ -135,5 +131,3 @@ static int join(pid_t p) {
 	/* return the child's exit code */
 	return (status >> 8);
 }
-
-#endif /* !MSDOS */
