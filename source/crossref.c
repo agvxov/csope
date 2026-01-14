@@ -136,7 +136,8 @@ void crossref(char * srcfile) {
 }
 
 /* save the symbol in the list */
-static void savesymbol(int token, int num) {
+static
+void savesymbol(int token, int num) {
 	/* make sure there is room for the symbol */
 	if(symbols == msymbols) {
 		msymbols += SYMBOLINC;
@@ -152,7 +153,7 @@ static void savesymbol(int token, int num) {
 }
 
 /* output the file name */
-void putfilename(char *srcfile) {
+void putfilename(const char * const srcfile) {
 	/* check for file system out of space */
 	/* note: dbputc is not used to avoid lint complaint */
 	if(putc(NEWFILE, newrefs) == EOF) {
@@ -294,14 +295,14 @@ void putcrossref(void) {
 }
 
 /* free the cross reference symbol table */
-void freecrossref() {
+void freecrossref(void) {
 	if (symbol) { free(symbol); }
 	symbol	= NULL;
 	symbols = 0;
 }
 
 /* output the inverted index posting */
-void putposting(char *term, int type) {
+void putposting(char * term, int type) {
 	long  n;
 	char *s;
 	int	  digits;  /* digits output */
@@ -365,8 +366,7 @@ void putposting(char *term, int type) {
 }
 
 /* put the string into the new database */
-void writestring(char *s) {
-
+void writestring(const char * const s) {
 	if(compress == false) {
 		dbfputs(s);
 		return;
@@ -385,7 +385,7 @@ void writestring(char *s) {
 
 // XXX
 /* print a warning message with the file name and line number */
-void parse_warning(char *text) {
+void parse_warning(const char * const text) {
 	(void)fprintf(stderr,
 		PROGRAM_NAME ": \"%s\", line %d: warning: %s\n",
 		filename,
