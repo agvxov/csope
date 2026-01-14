@@ -20,46 +20,45 @@ const char uniontext[]   = "union";
  * for old databases.
  */
 struct keystruct keyword[] = {
-	{"",		  '\0', NULL}, /* dummy entry */
-	{"#define",	' ',	 NULL}, /* must be table entry 1 */
-	{"#include",	 ' ',  NULL}, /* must be table entry 2 */
-	{"break",	  '\0', NULL}, /* rarely in cross-reference */
-	{"case",		 ' ',  NULL},
-	{"char",		 ' ',  NULL},
-	{"continue",	 '\0', NULL}, /* rarely in cross-reference */
-	{"default",	'\0', NULL}, /* rarely in cross-reference */
-	{"double",	   ' ',	NULL},
-	{"\t",		   '\0', NULL}, /* must be the table entry 9 */
-	{"\n",		   '\0', NULL}, /* must be the table entry 10 */
-	{"else",		 ' ',  NULL},
-	{enumtext,	   ' ',	NULL},
-	{externtext,	 ' ',  NULL},
-	{"float",	  ' ',  NULL},
-	{"for",		'(',	 NULL},
-	{"goto",		 ' ',  NULL},
-	{"if",		   '(',	NULL},
-	{"int",		' ',	 NULL},
-	{"long",		 ' ',  NULL},
-	{"register",	 ' ',  NULL},
-	{"return",	   '\0', NULL},
-	{"short",	  ' ',  NULL},
-	{"sizeof",	   '\0', NULL},
-	{"static",	   ' ',	NULL},
-	{structtext,	 ' ',  NULL},
-	{"switch",	   '(',	NULL},
-	{typedeftext, ' ',  NULL},
-	{uniontext,	' ',	 NULL},
-	{"unsigned",	 ' ',  NULL},
-	{"void",		 ' ',  NULL},
-	{"while",	  '(',  NULL},
-
+    {"",          '\0', NULL}, /* dummy entry */
+    {"#define",   ' ',  NULL}, /* must be table entry 1 */
+    {"#include",  ' ',  NULL}, /* must be table entry 2 */
+    {"break",     '\0', NULL}, /* rarely in cross-reference */
+    {"case",      ' ',  NULL},
+    {"char",      ' ',  NULL},
+    {"continue",  '\0', NULL}, /* rarely in cross-reference */
+    {"default",   '\0', NULL}, /* rarely in cross-reference */
+    {"double",    ' ',  NULL},
+    {"\t",        '\0', NULL}, /* must be the table entry 9 */
+    {"\n",        '\0', NULL}, /* must be the table entry 10 */
+    {"else",      ' ',  NULL},
+    {enumtext,    ' ',  NULL},
+    {externtext,  ' ',  NULL},
+    {"float",     ' ',  NULL},
+    {"for",       '(',  NULL},
+    {"goto",      ' ',  NULL},
+    {"if",        '(',  NULL},
+    {"int",       ' ',  NULL},
+    {"long",      ' ',  NULL},
+    {"register",  ' ',  NULL},
+    {"return",    '\0', NULL},
+    {"short",     ' ',  NULL},
+    {"sizeof",    '\0', NULL},
+    {"static",    ' ',  NULL},
+    {structtext,  ' ',  NULL},
+    {"switch",    '(',  NULL},
+    {typedeftext, ' ',  NULL},
+    {uniontext,   ' ',  NULL},
+    {"unsigned",  ' ',  NULL},
+    {"void",      ' ',  NULL},
+    {"while",     '(',  NULL},
  /* these keywords are not compressed */
-	{"do",		   '\0', NULL},
-	{"auto",		 ' ',  NULL},
-	{"fortran",	' ',	 NULL},
-	{"const",	  ' ',  NULL},
-	{"signed",	   ' ',	NULL},
-	{"volatile",	 ' ',  NULL},
+    {"do",        '\0', NULL},
+    {"auto",      ' ',  NULL},
+    {"fortran",   ' ',  NULL},
+    {"const",     ' ',  NULL},
+    {"signed",    ' ',  NULL},
+    {"volatile",  ' ',  NULL},
 };
 #define KEYWORDS (sizeof(keyword) / sizeof(keyword[0]))
 
