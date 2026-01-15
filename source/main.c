@@ -16,6 +16,9 @@
 #include <stdlib.h>	   /* atoi */
 #include <signal.h>
 
+#include <readline/readline.h>
+#include <readline/history.h>
+
 /* note: these digraph character frequencies were calculated from possible
    printable digraphs in the cross-reference for the C compiler */
 char dichar1[] = " teisaprnl(of)=c";	/* 16 most frequent first chars */
@@ -120,18 +123,14 @@ void linemode_event_loop(void) {
 	}
 
 	for (char *s;;) {
-		char buf[PATLEN + 2];
 
-		printf(">> ");
-		fflush(stdout);
-		if (fgets(buf, sizeof(buf), stdin) == NULL) { myexit(0); }
-		remove_trailing_newline(buf, strlen(buf));
+        char * local_input_line; // XXX temp name for as long as input_line is a super global
+        local_input_line = readline(">> ");
 
-		switch (*buf) {
+		switch (*local_input_line) {
 			case ASCII_DIGIT: {
-				field = *buf - '0';
-				strcpy(input_line, buf + 1);
-				if (search(input_line) == false) {
+				field = *local_input_line - '0';
+				if (search(local_input_line + 1) == false) {
 					printf("Unable to search database\n");
 				} else {
 					printf("cscope: %d lines\n", totallines);
@@ -156,7 +155,7 @@ void linemode_event_loop(void) {
 				putchar('\n');
 			} break;
 			case 'F': { /* add a file name */
-				strcpy(path, buf + 1);
+				strcpy(path, local_input_line + 1);
 				if (infilelist(path) == false && (s = inviewpath(path)) != NULL) {
 					addsrcfile(s);
 				}
@@ -168,7 +167,7 @@ void linemode_event_loop(void) {
 				myexit(0);
             } break;
 			default: {
-				fprintf(stderr, PROGRAM_NAME ": unknown command '%s'\n", buf);
+				fprintf(stderr, PROGRAM_NAME ": unknown command '%s'\n", local_input_line);
 			} break;
 		}
 	}
