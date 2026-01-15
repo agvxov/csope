@@ -141,10 +141,9 @@ void linemode_event_loop(void) {
 					}
 				}
 			} break;
-			case 'c': /* toggle caseless mode */
-			case ctrl('C'): {
-                  caseless = !caseless;
-                  egrepcaseless(caseless);
+			case 'c': { /* toggle caseless mode */
+                caseless = !caseless;
+                egrepcaseless(caseless);
             } break;
 			case 'r': /* rebuild database */
 			case 'R':
