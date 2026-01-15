@@ -662,13 +662,13 @@ void postperror(char *text) {
 	postmsg(lastmsg);
 }
 
-// XXX: linemode should probably post to stderr
 /* postmsg clears the message line and prints the message */
 void postmsg(char *msg) {
 	if (linemode == true
     ||  incurses == false) {
-        puts(msg);
-		fflush(stdout);
+        fputs(msg, stderr);
+        fputc('\n', stderr);
+		fflush(stderr);
 	} else {
 		window_change |= CH_RESULT;
 	}
