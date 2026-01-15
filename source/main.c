@@ -108,14 +108,12 @@ void remove_trailing_newline(char *buf, size_t len) {
 
 static inline
 void linemode_event_loop(void) {
-	if (*input_line != '\0') { /* do any optional search */
-		if (search(input_line) == true) {
-			int c = getc(refsfound);
-			while(c != EOF) {
-				putchar(c);
-				c = getc(refsfound);
-            }
-		}
+	if (*input_line != '\0' // optional search
+    &&  search(input_line)) {
+        int c;
+        while((c = getc(refsfound)) != EOF) {
+            putchar(c);
+        }
 	}
 
 	if (onesearch == true) {
