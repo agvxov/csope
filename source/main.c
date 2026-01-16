@@ -44,7 +44,6 @@ static inline
 void siginit(void) {
 	/* if running in the foreground */
 	if (signal(SIGINT, SIG_IGN) != SIG_IGN) {
-		/* cleanup on the interrupt and quit signals */
 		signal(SIGINT, myexit);
 		signal(SIGQUIT, myexit);
 	}
@@ -57,8 +56,6 @@ void siginit(void) {
 	 * too
 	 */
 	signal(SIGPIPE, SIG_IGN);
-
-	//if (linemode == false) { signal(SIGWINCH, redisplay); }
 }
 
 void cannotopen(const char *const file) {
@@ -94,16 +91,6 @@ void myexit(int sig) {
 	}
 
 	exit(sig);
-}
-
-
-/* Remove a singular newline from the end of a string (if any). */
-static inline
-void remove_trailing_newline(char *buf, size_t len) {
-	if ((len > 0)
-    &&  (buf[len - 1] == '\n')) {
-		buf[len - 1] = '\0';
-	}
 }
 
 static inline
