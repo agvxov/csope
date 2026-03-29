@@ -84,13 +84,13 @@ and fixing it would likely have been a lost cause without Cscope/Csope.
 
 ## User side
 + Renamed the program, because "cscope" is annoying to type
-+ Improved tui
++ Improved TUI
 + GNU Readline/History integration
 ## To the code
 + Nuked autoconf, replaced with single Makefile
 + Reorganized the control flow
 + Encapsulated various functionalities
-+ Removed macro hell used for compiling on a dead badgers
++ Removed macro hell used for compiling on dead badgers
 + Reduced global state hell
 + Use stdbool instead of YES/NO macros
 + Removed dead code
@@ -133,9 +133,11 @@ csope -s source/
 ## Configuration
 
 ### Readline
-The readline integration should be complete -please let us know if not-, except for your prompt being used, which could easily break the TUIs display.
+The readline integration should be complete -please let us know if not-,
+except for your prompt being used, which could easily break the TUIs display.
 
-The `rl_readline_name` variable will be set to "Csope", so you may have conditional configurations in your .inputrc with the following format:
+The `rl_readline_name` variable will be set to "Csope",
+so you may have conditional configurations in your .inputrc with the following format:
 ```
 $if Csope
 	# <whatever>
