@@ -119,9 +119,10 @@ static int wresult_input(const int c) {
             horswp_window();
             break;
 		default:
-			if(c > mdisprefs) { goto noredisp; }
 			const int pos = dispchar2int(c);
-			if(pos > -1) { editref(pos); }
+			if (pos != -1 && pos < totallines) {
+				editref(pos);
+			}
 			goto noredisp;
 	}
 
