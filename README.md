@@ -100,7 +100,7 @@ Well, Csope now.
 ## Installation
 
 ## Gentoo
-Add [my overlay](https://bis64wqhh3louusbd45iyj76kmn4rzw5ysawyan5bkxwyzihj67c5lid.onion/anon/agvxov-overlay.git)
+Add [my overlay](https://bis64wqhh3louusbd45iyj76kmn4rzw5ysawyan5bkxwyzihj67c5lid.onion/~anon/agvxov-overlay.git)
 and install using portage.
 
 ## From source
