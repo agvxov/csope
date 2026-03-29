@@ -7,14 +7,14 @@
 + scrollbar() uses magic int literals?
 + was there really ever a scrollbar?
 + a search struct could be great for caching and could ease the global situation
-+ add support for ctags
++ merge support for ctags
 + add project summary page(?)
 + add basic search globbing
 + add search filters
 + fix references to BUFSIZ; i dont know who came up with it and i dont want to depend on it
 + line mode should be like a shell; that would allow us to remove the caseless cli flag
 + -X seems mostly useless; if you want csope to not shitup your $CWD,
-   then that should be accomplished with a designated (but optional) dumb dir (similar to vim undodir)
+   then that should be accomplished with a designated (but optional) dump dir (similar to vim undodir)
 + listfile should accept the same syntax git does, not because i want to such up to git, but because its extensively sane
 + path.c should be replaced with a static lib
 // From the original
