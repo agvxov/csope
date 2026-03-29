@@ -80,6 +80,9 @@ static int wmode_input(const int c) {
 		case KEY_LL: /* go to last input field */
 			curdispline = disprefs;
 			break;
+        case '/':
+			verswp_window();
+            break;
 		default:
 			return 0;
 	}
@@ -112,6 +115,9 @@ static int wresult_input(const int c) {
 		case KEY_LL:
 			field = FIELDS - 1;
 			break;
+        case '/':
+            horswp_window();
+            break;
 		default:
 			if(c > mdisprefs) { goto noredisp; }
 			const int pos = dispchar2int(c);
