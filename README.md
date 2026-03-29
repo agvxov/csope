@@ -69,17 +69,16 @@ Csope is alive and well.
 	V |+--------------+---------------+|           |+------------------------------+|
 	  +---------------------Tool Tips--+           +--------------------------------+
 
-## Usacases
-Csope shines at exploring stranger and obscure code bases due to its TUI.
-It sometimes gets mislabelled as a code navigation tool,
-but the original documentation describes it best as a "code browsing tool".
-Many tools can jump you to a definition or grep for patterns,
-but Csope is unique in that it allows for those and many other functionalities
-while providing you with a very comprehensible list of all results,
-ready to fire up your editor at just the spot.
-An example of its excellence is this project. The Cscope code-base used to be a total mess,
-fixing it would have been a lost cause, if not for Cscope itself.
-Well, Csope now.
+## Usacase
+Csope excels at exploring strange and obscure codebases thanks to its TUI.
+It is sometimes mislabeled as a *code navigation tool*,
+but the original documentation describes it more accurately as a *code browsing tool*.
+Many tools can jump to a definition or grep for a pattern,
+but Csope stands out because it does all of that and much more while presenting a clear,
+comprehensive list of results, ready to launch your editor at the exact location of any entry.
+This project itself is a good example of that strength.
+The Cscope codebase used to be a complete mess,
+and fixing it would likely have been a lost cause without Cscope/Csope.
 
 ## Improvements/Changes
 
