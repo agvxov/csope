@@ -94,9 +94,17 @@ char * * parse_options(const int argc, const char * const * const argv) {
 	char *s;
 
 	struct option lopts[] = {
-		{"help",    0, NULL, 'h'},
-		{"version", 0, NULL, 'V'},
-		{0,         0,    0,  0 },
+		{"build-only",        0, NULL, 'b'},
+		{"preserve-database", 0, NULL, 'd'},
+		{"oneshot",           0, NULL, 'L'},
+		{"one-shot",          0, NULL, 'L'}, // undocumented by intention
+		{"force-build",       0, NULL, 'u'},
+		{"kernel-mode",       0, NULL, 'k'},
+		{"line-oriented",     0, NULL, 'L'},
+		{"recursive",         0, NULL, 'R'},
+		{"help",              0, NULL, 'h'},
+		{"version",           0, NULL, 'V'},
+		{0,                   0,    0,  0 },
 	};
 
 	while((opt = getopt_long(argc, (char**)argv,
@@ -184,7 +192,6 @@ char * * parse_options(const int argc, const char * const * const argv) {
 				/*coverity[overwrite_var]*/
 				invpost = strdup(path);
 				break;
-
 			case 'F': /* symbol reference lines file */
 				reflines = optarg;
 				break;
