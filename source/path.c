@@ -174,11 +174,6 @@ void path_remove_parent_directory_references(char *path) {
  *    changed to a single slash.  All occurrences of "./" are removed.
  *    Whenever possible, strings of "/.." are removed together with
  *    the directory names that they follow.
- *
- *    WARNING: since pathname is altered by this function, it should
- *         be located in a temporary buffer. This avoids the problem
- *         of accidently changing strings obtained from makefiles
- *         and stored in global structures.
  */
 char * compress_path(const char *pathname_) {
 	if (pathname_ == NULL) {
