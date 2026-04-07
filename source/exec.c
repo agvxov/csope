@@ -27,11 +27,6 @@ static int	 join(pid_t p);
 static int	 myexecvp(char * program_name, char **args);
 static pid_t myfork(void);
 
-// XXX
-#ifndef BUFSIZ
-# define BUFSIZ 8192
-#endif
-
 /* execute forks and executes a program or shell script, waits for it to
  * finish, and returns its exit code.
  */
