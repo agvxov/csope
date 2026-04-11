@@ -174,15 +174,26 @@ void force_window(void);
 void initsymtab(void);
 void progress(char *what, long current, long max);
 void putfilename(const char * const srcfile);
-void post_message(char *msg);
-void post_message2(char *msg);
-void posterr(char *msg, ...);
-void postperror(char *text);
-void postfatal(const char *msg, ...);
-void putposting(char *term, int type);
 void fetch_string_from_dbase(char *, size_t);
 void parse_warning(const char * const text);
 void writestring(const char * const s);
+
+/* A `message` is a piece of text that should be displayed
+ *  to the user.
+ * In line mode it is echod,
+ *  in othermodes its placed in a well visible place.
+ * Do not expect multiple messages to be visible
+ *  at the same time.
+ */
+void post_message(char * msg);
+void post_message2(char * msg);
+void fpost_message(char * fmt, ...);
+void fpost_message2(char * fmt, ...);
+void posterr(char *msg, ...);
+void postperror(const char * prefix);
+void fpostperror(const char * fmt, ...);
+void postfatal(const char * msg, ...); // XXX exits, terrible name
+void putposting(char * term, int type);
 
 bool infilelist(const char * file);
 bool readrefs(char *filename);

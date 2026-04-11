@@ -62,17 +62,12 @@ int execute(char * program_name, ...) /* NOTE: "exec" is already defined on u370
  * modify argv[0] to reference the last component of its path-name.
  */
 static int myexecvp(char *program_name, char **args) {
-	char msg[MSGLEN + 1];
-
-	/* modify argv[0] to reference the last component of its path name */
 	args[0] = (char *)basename(args[0]);
 
-	/* execute the program or shell script */
 	execvp(program_name, args); /* returns only on failure */
-	snprintf(msg, sizeof(msg), "\nCannot exec %s", program_name);
-	perror(msg);	 /* display the reason */
-	askforreturn();	 /* wait until the user sees the message */
-	myexit(1);		 /* exit the child */
+	fpostperror("Cannot exec %s", program_name);
+	askforreturn();
+	myexit(1);
 
 	return 0; // XXX
 }

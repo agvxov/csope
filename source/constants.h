@@ -30,7 +30,6 @@
 #define skiprefchar() \
 	if(*(++blockp + 1) == '\0') (void)read_crossreference_block()
 
-#define MSGLEN		   ((PATLEN) + 80) /* displayed message length */
 #define NUMLEN		   10			   /* line number length */
 #define PATHLEN		   250			   /* file pathname length */
 #define PATLEN		   250			   /* symbol pattern length */

@@ -328,7 +328,6 @@ int changestring(const char *from, const char *to, const bool *const change, con
 	char  newfile[PATHLEN + 1]; /* new file name */
 	char  oldfile[PATHLEN + 1]; /* old file name */
 	char  linenum[NUMLEN + 1];	/* file line number */
-	char  msg[MSGLEN + 1];		/* message */
 	FILE *script;				/* shell script file */
 
 
@@ -365,8 +364,7 @@ int changestring(const char *from, const char *to, const bool *const change, con
 
 			/* make sure it can be changed */
 			if(access(newfile, WRITE) != 0) {
-				snprintf(msg, sizeof(msg), "Cannot write to file %s", newfile);
-				post_message(msg);
+                fpost_message("Cannot write to file %s", newfile);
 				goto end;
 			}
 			/* if there was an old file */

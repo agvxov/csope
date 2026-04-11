@@ -20,7 +20,7 @@ enum {
  */
 extern int window_change;
 
-extern bool incurses;
+extern bool incurses; // XXX echo mode should be determined by linemode && incurses
 extern void entercurses(void);
 extern void exitcurses(void);
 

@@ -1231,7 +1231,6 @@ bool writerefsfound(void) {
 
 /* Perform token search based on "field" */
 bool search(const char *query) {
-	char		 msg[MSGLEN + 1];
 	char		*findresult = NULL;	   /* find function output */
 	bool		 funcexist	= true;	   /* find "function" error */
 	FINDINIT	 rc			= NOERROR; /* findinit return code */
@@ -1292,32 +1291,16 @@ bool search(const char *query) {
 	/* see if it is empty */
 	if ((c = getc(refsfound)) == EOF) {
 		if (findresult != NULL) {
-			snprintf(msg,
-				sizeof(msg),
-				"Egrep %s in this pattern: %s",
-				findresult,
-				query);
+            fpost_message("Egrep %s in this pattern: %s", findresult, query);
 		} else if (rc == NOTSYMBOL) {
-			snprintf(msg, sizeof(msg), "This is not a C symbol: %s", query);
+            fpost_message("This is not a C symbol: %s", query);
 		} else if (rc == REGCMPERROR) {
-			snprintf(msg,
-				sizeof(msg),
-				"Error in this regcomp(3) regular expression: %s",
-				query);
-
+            fpost_message("Error in this regcomp(3) regular expression: %s", query);
 		} else if (funcexist == false) {
-			snprintf(msg,
-				sizeof(msg),
-				"Function definition does not exist: %s",
-				query);
+            fpost_message("Function definition does not exist: %s", query);
 		} else {
-			snprintf(msg,
-				sizeof(msg),
-				"Could not find the %s: %s",
-				fields[field].text2,
-				query);
+            fpost_message("Could not find the %s: %s", fields[field].text2, query);
 		}
-		post_message(msg);
 		return (false);
 	}
 	/* put back the character read */

@@ -47,12 +47,10 @@ void editall(void) {
 int edit(const char *filename, const char *const linenum) {
     int r = 0;
 	const char *const editor_basename = basename(editor);
-	char			  msg[MSGLEN + 1];
 	char plusnum[NUMLEN + 20]; /* line number option: allow space for wordy line# flag */
 
 	filename = prepend_path(prependpath, filename);
-	snprintf(msg, sizeof(msg), "%s +%s %s", basename(editor), linenum, filename);
-	post_message(msg);
+	fpost_message("%s +%s %s", basename(editor), linenum, filename);
 	snprintf(plusnum, sizeof(plusnum), lineflag, linenum);
 
 	/* Some pagers will not start paging, unless the input

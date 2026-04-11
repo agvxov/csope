@@ -21,6 +21,7 @@
 /* XXX */
 #define MSGLINE 0							/* message line */
 #define MSGCOL	0							/* message column */
+#define MSGLEN	((PATLEN) + 80)             /* displayed message length */
 static int * displine;                      /* screen line of displayed reference */
 #define TEMPSTRING_LEN 8191			        /* max strlen() of the global temp string */
 static char tempstring[TEMPSTRING_LEN + 1]; /* dummy string buffer */
@@ -652,17 +653,16 @@ void progress(char *what, long current, long max) {
 	++searchcount;
 }
 
-/* print error message on system call failure */
-void postperror(char *text) {
+// Messages
+void postperror(const char * prefix) {
 	char *s;
 
 	s = strerror(errno);
 
-	(void)snprintf(lastmsg, sizeof(lastmsg), "%s: %s", text, s);
+	(void)snprintf(lastmsg, sizeof(lastmsg), "%s: %s", prefix, s);
 	post_message(lastmsg);
 }
 
-/* post_message clears the message line and prints the message */
 void post_message(char *msg) {
 	if (linemode == true
     ||  incurses == false) {
@@ -675,7 +675,6 @@ void post_message(char *msg) {
 	UNUSED(strncpy(lastmsg, msg, sizeof(lastmsg) - 1));
 }
 
-/* clearmsg2 clears the second message line */
 static inline
 void clearmsg2(void) {
 	if(linemode == false) {
@@ -684,7 +683,6 @@ void clearmsg2(void) {
 	}
 }
 
-/* post_message2 clears the second message line and prints the message */
 void post_message2(char *msg) {
 	if(linemode == true) {
 		(void)printf("%s\n", msg);
@@ -695,7 +693,6 @@ void post_message2(char *msg) {
 	}
 }
 
-/* display an error mesg - stdout or on second msg line */
 void posterr(char *msg, ...) {
 	va_list ap;
 	char	errbuf[MSGLEN];
@@ -711,7 +708,6 @@ void posterr(char *msg, ...) {
 	va_end(ap);
 }
 
-/* display a fatal error mesg -- stderr *after* shutting down curses */
 void postfatal(const char *msg, ...) {
 
 	if(incurses == true) { exitcurses(); }
@@ -723,6 +719,43 @@ void postfatal(const char *msg, ...) {
 
 	myexit(1);
 }
+
+void fpost_message(char * fmt, ...) {
+    va_list vl;
+    va_start(vl, fmt);
+
+    char buffer[MSGLEN+1];
+    vsnprintf(buffer, MSGLEN, fmt, vl);
+
+    post_message(buffer);
+
+    va_end(vl);
+}
+
+void fpost_message2(char * fmt, ...) {
+    va_list vl;
+    va_start(vl, fmt);
+
+    char buffer[MSGLEN+1];
+    vsnprintf(buffer, MSGLEN, fmt, vl);
+
+    post_message2(buffer);
+
+    va_end(vl);
+}
+
+void fpostperror(const char * fmt, ...) {
+    va_list vl;
+    va_start(vl, fmt);
+
+    char buffer[MSGLEN+1];
+    vsnprintf(buffer, MSGLEN, fmt, vl);
+
+    postperror(buffer);
+
+    va_end(vl);
+}
+// ---
 
 static inline
 void display_tooltip(void) {
