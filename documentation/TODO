@@ -3,7 +3,6 @@
 + sort out constants.h
 + lineflagafterfile is stupid; a format string is infinitly better
 + INCDIR is dump, we should read the include paths normally
-+ library.h...; "private library", in a program using 90 globals; ffs
 + scrollbar() uses magic int literals?
 + was there really ever a scrollbar?
 + a search struct could be great for caching and could ease the global situation
