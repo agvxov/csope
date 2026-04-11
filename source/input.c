@@ -29,22 +29,28 @@ bool rebuild_reference() {
 		post_message("The -d option prevents rebuilding the symbol database");
 		return false;
 	}
+
 	exitcurses();
-	freefilelist(); /* remake the source file list */
+
+	freefilelist();
 	makefilelist(NULL);
+
 	rebuild();
+
 	if(errorsfound == true) {
 		errorsfound = false;
 		askforreturn();
 	}
+
 	entercurses();
-	post_message(""); /* clear any previous message */
+	post_message("");
+
 	totallines = 0;
 	disprefs   = 0;
+
 	return true;
 }
 
-/* ask user to enter a character after reading the message */
 void askforchar(void) {
 	addstr("Type any character to continue: ");
 	getch();
@@ -56,7 +62,9 @@ void askforreturn(void) {
 	fprintf(stderr, "Press the RETURN key to continue: ");
 	getchar();
 	/* HBB 20060419: message probably messed up the screen --- redraw */
-	if(incurses == true) { redrawwin(curscr); }
+	if (incurses == true) {
+        redrawwin(curscr);
+    }
 }
 
 static int wmode_input(const int c) {

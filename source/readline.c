@@ -77,30 +77,34 @@ bool interpret(int c) {
 	return 0;
 }
 
-static int getc_function(FILE *ignore) {
+static
+int getc_function(FILE *ignore) {
 	UNUSED(ignore);
 
 	input_available = 0;
 	return input_char;
 }
 
-static int input_available_hook() {
+static
+int input_available_hook() {
 	return input_available;
 }
 
-static void redisplay_function() {
+static
+void redisplay_function() {
 	window_change |= CH_INPUT;
 }
 
-static void callback_handler(char *line) {
-	if(!line) {
+static
+void callback_handler(char *line) {
+	if (!line) {
 		input_mode = INPUT_NORMAL;
 		return;
 	}
 
 	add_history(line);
 
-	switch(input_mode) {
+	switch (input_mode) {
 		case INPUT_NORMAL: {
 			strncpy(input_line, line, PATLEN);
 			search(input_line);
@@ -143,7 +147,7 @@ static void callback_handler(char *line) {
 		} return;
 	}
 
-	switch(field) {
+	switch (field) {
 		case CHANGE:
 			if(totallines == 0){ return; }
 			input_mode = INPUT_CHANGE_TO;
@@ -156,7 +160,8 @@ static void callback_handler(char *line) {
 	}
 }
 
-static inline void previous_history_proxy(){
+static inline
+void previous_history_proxy(){
 	HIST_ENTRY* i = previous_history();
     if(!i) { return; }
 
@@ -173,7 +178,8 @@ static inline void previous_history_proxy(){
 	rl_point = strlen(i->line);
 }
 
-static inline void next_history_proxy(){
+static inline
+void next_history_proxy(){
 	HIST_ENTRY* i = next_history();
 	if(i){
         rl_replace_line(i->line, 0);
