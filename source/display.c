@@ -654,6 +654,11 @@ void progress(char *what, long current, long max) {
 }
 
 // Messages
+/* XXX currently there are plain and format post message versions,
+ *      this is required, because as far as am aware, up until C23,
+ *      initializing a va_list on no extra arguments was UB;
+ *      im not sure tho
+ */
 void postperror(const char * prefix) {
 	char *s;
 
