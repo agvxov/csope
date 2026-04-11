@@ -646,7 +646,7 @@ void progress(char *what, long current, long max) {
 			standend();
 			refresh();
 		} else {
-			postmsg(lastmsg);
+			post_message(lastmsg);
 		}
 	}
 	++searchcount;
@@ -659,11 +659,11 @@ void postperror(char *text) {
 	s = strerror(errno);
 
 	(void)snprintf(lastmsg, sizeof(lastmsg), "%s: %s", text, s);
-	postmsg(lastmsg);
+	post_message(lastmsg);
 }
 
-/* postmsg clears the message line and prints the message */
-void postmsg(char *msg) {
+/* post_message clears the message line and prints the message */
+void post_message(char *msg) {
 	if (linemode == true
     ||  incurses == false) {
         fputs(msg, stderr);
@@ -684,8 +684,8 @@ void clearmsg2(void) {
 	}
 }
 
-/* postmsg2 clears the second message line and prints the message */
-void postmsg2(char *msg) {
+/* post_message2 clears the second message line and prints the message */
+void post_message2(char *msg) {
 	if(linemode == true) {
 		(void)printf("%s\n", msg);
 	} else {
@@ -706,7 +706,7 @@ void posterr(char *msg, ...) {
 		(void)fputc('\n', stderr);
 	} else {
 		vsnprintf(errbuf, sizeof(errbuf), msg, ap);
-		postmsg2(errbuf);
+		post_message2(errbuf);
 	}
 	va_end(ap);
 }

@@ -26,7 +26,7 @@ bool do_press_any_key = false;
 static inline
 bool rebuild_reference() {
 	if(preserve_database == true) {
-		postmsg("The -d option prevents rebuilding the symbol database");
+		post_message("The -d option prevents rebuilding the symbol database");
 		return false;
 	}
 	exitcurses();
@@ -38,7 +38,7 @@ bool rebuild_reference() {
 		askforreturn();
 	}
 	entercurses();
-	postmsg(""); /* clear any previous message */
+	post_message(""); /* clear any previous message */
 	totallines = 0;
 	disprefs   = 0;
 	return true;
@@ -201,7 +201,7 @@ int normal_global_input(const int c) {
 	switch(c) {
 		case '>':	  /* write or append the lines to a file */
 			if (totallines == 0) {
-				postmsg("There are no lines to write to a file");
+				post_message("There are no lines to write to a file");
 				break;
 			}
 			input_mode = INPUT_APPEND;
@@ -217,7 +217,7 @@ int normal_global_input(const int c) {
 		case '^':
 			break;	  // XXX fix
 			if(totallines == 0) {
-				postmsg("There are no lines to pipe to a shell command");
+				post_message("There are no lines to pipe to a shell command");
 				break;
 			}
 			/* get the shell command */
@@ -251,7 +251,7 @@ int normal_global_input(const int c) {
 			// }
 			// if (commandc == '^') {
 			//	   if (readrefs(temp2) == NO) {
-			//	   postmsg("Ignoring empty output of ^ command");
+			//	   post_message("Ignoring empty output of ^ command");
 			//	   }
 			// }
 			// askforreturn();
@@ -366,7 +366,7 @@ int changestring(const char *from, const char *to, const bool *const change, con
 			/* make sure it can be changed */
 			if(access(newfile, WRITE) != 0) {
 				snprintf(msg, sizeof(msg), "Cannot write to file %s", newfile);
-				postmsg(msg);
+				post_message(msg);
 				goto end;
 			}
 			/* if there was an old file */

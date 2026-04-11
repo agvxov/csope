@@ -85,7 +85,7 @@ void countrefs(void) {
 					  discard_buffer))) {
 		if((i != 4) || !isgraph((unsigned char)*file) ||
 			!isgraph((unsigned char)*function) || !isdigit((unsigned char)*linenum)) {
-			postmsg("File does not have expected format");
+			post_message("File does not have expected format");
 			totallines = 0;
 			disprefs   = 0;
 			return;

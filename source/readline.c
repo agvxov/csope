@@ -128,7 +128,7 @@ static void callback_handler(char *line) {
 				}
 				fclose(file);
 			} else {
-				postmsg2("Failed to open file.");
+				post_message2("Failed to open file.");
 			}
 			input_mode = INPUT_NORMAL;
 		} return;
@@ -136,7 +136,7 @@ static void callback_handler(char *line) {
 			char filename[PATHLEN + 1];
 			shellpath(filename, sizeof(filename), line);
 			if (!readrefs(filename)) {
-				postmsg2("Ignoring an empty file");
+				post_message2("Ignoring an empty file");
 			}
 			window_change |= CH_INPUT | CH_RESULT;
 			input_mode = INPUT_NORMAL;

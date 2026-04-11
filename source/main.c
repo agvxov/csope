@@ -217,7 +217,7 @@ int main(const int argc, const char * const * const argv) {
 
 	if (linemode == false) {
 		dispinit();	 /* initialize display parameters */
-		postmsg(""); /* clear any build progress message */
+		post_message(""); /* clear any build progress message */
 		display();	 /* display the version number and input fields */
 	}
 
@@ -248,9 +248,9 @@ int main(const int argc, const char * const * const argv) {
 		/* build the cross-reference */
 		initcompress();
 
-		postmsg("Building cross-reference...");
+		post_message("Building cross-reference...");
 		build();
-		postmsg("");
+		post_message("");
 
 		if (buildonly == true) {
 			myexit(0);

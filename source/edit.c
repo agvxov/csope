@@ -52,7 +52,7 @@ int edit(const char *filename, const char *const linenum) {
 
 	filename = prepend_path(prependpath, filename);
 	snprintf(msg, sizeof(msg), "%s +%s %s", basename(editor), linenum, filename);
-	postmsg(msg);
+	post_message(msg);
 	snprintf(plusnum, sizeof(plusnum), lineflag, linenum);
 
 	/* Some pagers will not start paging, unless the input

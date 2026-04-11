@@ -1222,7 +1222,7 @@ bool writerefsfound(void) {
 	} else {
 		fclose(refsfound);
 		if ((refsfound = fopen(temp1, "wb")) == NULL) {
-			postmsg("Cannot reopen temporary file");
+			post_message("Cannot reopen temporary file");
 			return false;
 		}
 	}
@@ -1242,7 +1242,7 @@ bool search(const char *query) {
 	/* open the references found file for writing */
 	if (writerefsfound() == false) { return (false); }
 	/* find the pattern - stop on an interrupt */
-	if (linemode == false) { postmsg("Searching"); }
+	if (linemode == false) { post_message("Searching"); }
 	searchcount = 0;
 	savesig		= signal(SIGINT, jumpback);
 	if (sigsetjmp(env, 1) == 0) {
@@ -1317,7 +1317,7 @@ bool search(const char *query) {
 				fields[field].text2,
 				query);
 		}
-		postmsg(msg);
+		post_message(msg);
 		return (false);
 	}
 	/* put back the character read */
