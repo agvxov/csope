@@ -40,8 +40,6 @@
 #define INVNAME2	   "cscope.out.in" /* follows correct naming convention */
 #define INVPOST2	   "cscope.out.po" /* follows correct naming convention */
 
-#define STMTMAX 10000				   /* maximum source statement length */
-
 /* NOTE: _STRINGIZE ensures that if the argument is a macro,
  *        its expanded before stringinization
  */

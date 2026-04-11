@@ -12,6 +12,8 @@
 # error Sorry, this scanner needs flex. It is not usable with AT&T Lex.
 #endif
 
+#define STMTMAX 10000   /* maximum source statement length */
+
 #define	IFLEVELINC	5	/* #if nesting level size increment */
 #define YY_false_TOP_STATE 1
 
