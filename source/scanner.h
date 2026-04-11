@@ -3,9 +3,6 @@
 
 #include <stdio.h>
 
-#undef YYLMAX
-#define YYLMAX STMTMAX + PATLEN + 1 /* scanner line buffer size */
-
 /* cross-reference database mark characters (when new ones are added,
  * update the cscope.out format description in cscope.1)
  */
