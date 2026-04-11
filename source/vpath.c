@@ -7,7 +7,7 @@
 #include <sys/types.h>
 #include "vpath.h"
 
-#include "constants.h"
+#include "global.h"
 
 char **vpdirs; /* directories (including current) in view path */
 int vpndirs; /* number of directories in view path */

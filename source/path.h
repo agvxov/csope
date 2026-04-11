@@ -1,7 +1,7 @@
 #ifndef PATH_H
 #define PATH_H
 
-#include "constants.h"
+#include "global.h"
 
 void shellpath(char *out, int limit, char *in);
 const char * basename(const char * path);

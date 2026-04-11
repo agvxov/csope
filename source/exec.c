@@ -14,7 +14,6 @@
 
 #include "global.h"
 
-#include "constants.h"
 #include "path.h"
 #include "display.h"
 

@@ -1,8 +1,7 @@
 #ifndef READLINE_H
 #define READLINE_H
 
-#include <stdbool.h>
-#include "constants.h"
+#include "global.h"
 
 extern char *rl_line_buffer;
 extern char	 input_line[PATLEN + 1];
