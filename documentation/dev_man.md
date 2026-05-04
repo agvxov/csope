@@ -64,7 +64,8 @@ and sneaked in the patch.
 It has been removed.
 
 ### Reference files
-The `cscope.out` files which contain symbol database are called cross-reference files.
+The `cscope.out` files which contain symbol database are called cross-reference files
+(terminology inherited from MasterScope).
 The code refers to these as ref files.
 The concrete format of a wild ref file could be a number of things:
 * each cscope has a corresponding file format version, which may or may not be the same as the previous
