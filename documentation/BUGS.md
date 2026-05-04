@@ -2,10 +2,10 @@
 
 > 14th December 2024 (yama):
 > Searching for symbol 'pp' (using 'Find assignments to this symbol' for e.g.)
->will return search results for symbols named 'p', for example:
+> will return search results for symbols named 'p', for example:
 >    `p = malloc(sizeof(*p));`
 >
 > The symbol identifiers we return should match 'pp' exclusively, not
->substrings.
+> substrings.
 
-// No known bugs.
+Preserver only this line when appropriate: No known bugs.

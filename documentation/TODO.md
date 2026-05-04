@@ -1,6 +1,5 @@
 + what the hell is the deal with `source/gscope.c`?
 + sort out the global hell
-+ sort out constants.h
 + lineflagafterfile is stupid; a format string is infinitly better
 + INCDIR is dump, we should read the include paths normally
 + scrollbar() uses magic int literals?
@@ -16,6 +15,7 @@
 + listfile should accept the same syntax git does, not because i want to such up to git, but because its extensively sane
 + path.c should be replaced with a static lib
 + address pycscope (https://github.com/portante/pycscope)
-// From the original
+
+### From the original
 + Same capabilities as interactive in non interactive (one shot) mode
 + Provide some how-do-I-use-this-thing doc.
