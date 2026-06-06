@@ -14,7 +14,6 @@
    then that should be accomplished with a designated (but optional) dump dir (similar to vim undodir)
 + listfile should accept the same syntax git does, not because i want to such up to git, but because its extensively sane
 + path.c should be replaced with a static lib
-+ address pycscope (https://github.com/portante/pycscope)
 
 ### From the original
 + Same capabilities as interactive in non interactive (one shot) mode
