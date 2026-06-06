@@ -629,6 +629,9 @@ void fetch_include_from_dbase(char *s, size_t length) {
 	incfile(s + 1, s);
 }
 
+/* XXX:
+ * This function is a disgrace of parsing, should be entirely replaced.
+ */
 void read_old_reffile(const char * reffile) {
     static char path[PATHLEN + 1];	/* file path */
     int fileversion;
@@ -636,12 +639,32 @@ void read_old_reffile(const char * reffile) {
 	FILE * names;	  /* name file pointer */
 	int	oldnum;  /* number in old cross-ref */
 	FILE * oldrefs = vpfopen(reffile, "rb"); /* old cross-reference file */
+
 	if (!oldrefs) {
 		postfatal(PROGRAM_NAME ": cannot open file %s\n", reffile);
 	}
 
+    // Read the magick bytes (up to space)
+    do {
+        const int n_bytes = 32;
+        char magick_bytes[n_bytes];
+        int c;
+        int i = 0;
+        do {
+            c = getc(oldrefs);
+            magick_bytes[i] = c;
+            ++i;
+        } while (c != EOF && c != ' ' && i < n_bytes-1);
+        magick_bytes[i] = '\0';
+
+        if (c == EOF
+        || (strcmp("cscope ", magick_bytes) && strcmp(PROGRAM_NAME " ", magick_bytes))) {
+		    postfatal(PROGRAM_NAME ": wrong mimetype for reffile %s\n", reffile);
+        }
+    } while (0);
+
 	/* get the crossref file version but skip the current directory */
-	if (fscanf(oldrefs, PROGRAM_NAME " %d %*s", &fileversion) != 1) {
+	if (fscanf(oldrefs, "%d %*s", &fileversion) != 1) {
 		postfatal(PROGRAM_NAME ": cannot read file version from file %s\n", reffile);
 	}
 
