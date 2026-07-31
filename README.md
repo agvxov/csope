@@ -146,3 +146,28 @@ $endif
 
 ### Colors
 All can be configured sucklessly under "config/colors.h". Hopefully the comments are self evident.
+
+## Practical notes
+We depend on GNU Readline, which is -as all GNU implementations- a piece of trash.
+Sadly no viable alternative candidate has been found so far.
+
+We depend on Ncurses, see above.
+Ncurses is outdated, but fragile and rigid and a nightmare when combined with advanced features
+such as colors, UTF or concurrency.
+No viable alternative were found as all candidates are even more featureless
+and have an even more serious problem with flickering
+(which to be fair is largely the fault of terminals).
+
+The Cscope parser has a number of positive qualities,
+but it is so tightly put-together that it would be easier to rewrite than to change.
+
+Parsing C is a hard problem.
+This is partially because of [esoteric grammar decisions](https://en.wikipedia.org/wiki/Lexer_hack),
+partially because of esoteric design decisions (sizeof int),
+and partially because of the existence of the preprocessor.
+Any program that attempts to statically analyze C will be technically janky,
+including compilers.
+
+## Future direction
+* replace faulty libraries
+* make the UI compatible with multiple parser backends and other tools
